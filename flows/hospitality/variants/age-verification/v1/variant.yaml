@@ -1,0 +1,78 @@
+# ION Hospitality Variant — age-verification v1
+
+id: ion-hospitality-variant-age-verification-v1
+version: "1.0.0"
+variantName: age-verification
+sector: ion:hospitality
+appliesTo:
+  - delivery-order
+status: ready
+description: >
+  Age verification at doorstep for orders containing alcoholic beverages.
+  Rider must verify consumer age (min 21 years per Indonesian regulation)
+  before handing over the order. If verification fails the order is
+  returned to the restaurant.
+
+activationCondition: >
+  Auto-activates when any RestaurantCommitment line contains a
+  RestaurantMenuItem with isAlcoholic = true.
+  Sets contract.contractAttributes.ageVerificationRequired = true.
+
+phases:
+  pre_delivery:
+    name: Pre-Delivery Flag
+    steps:
+      - step: on_confirm (age-verification flagged)
+        from: BPP
+        to: BAP
+        direction: callback
+        description: >
+          BPP sets ageVerificationRequired=true on the performance record.
+          BAP must display prominent age gate warning to consumer.
+        requiredFields:
+          - message.contract.performance[].performanceAttributes.ageVerificationRequired  # true
+          - message.contract.contractAttributes.ageVerificationRequired  # true
+
+  delivery:
+    name: Doorstep Verification
+    steps:
+      - step: on_status [ARRIVING] (age-verification)
+        from: BPP
+        to: BAP
+        direction: unsolicited callback
+        description: >
+          Rider is approaching. BAP shows age warning to consumer.
+          Consumer must have valid ID ready.
+        requiredFields:
+          - message.contract.performance[].performanceAttributes.riderState  # ARRIVING
+
+      - step: on_status [DELIVERED] (verified)
+        from: BPP
+        to: BAP
+        direction: unsolicited callback
+        description: Rider verified age successfully and handed over order
+        requiredFields:
+          - message.contract.performance[].performanceAttributes.ageVerificationMethod
+          - message.contract.performance[].performanceAttributes.ageVerifiedAt
+          - message.contract.performance[].performanceAttributes.deliveredAt
+          - message.contract.performance[].performanceAttributes.deliveryProofPhotoUrl
+
+      - step: on_status [DELIVERY_FAILED] (verification failed)
+        from: BPP
+        to: BAP
+        direction: unsolicited callback
+        description: Rider could not verify age — order returned to restaurant
+        requiredFields:
+          - message.contract.performance[].performanceAttributes.riderState  # DELIVERY_FAILED
+          - message.contract.performance[].performanceAttributes.ageVerificationFailedReason
+        businessRules:
+          - No refund for age verification failure — consumer was informed at order time
+          - Order returned to restaurant; rider receives return trip fee from platform
+          - BAP must record failure reason for compliance audit
+
+businessRules:
+  - Minimum age is 21 years per Permendag 20/M-DAG/PER/4/2014
+  - Valid Indonesian ID accepted (KTP, SIM, Passport)
+  - Rider must NOT hand over order without successful verification
+  - Platform logs verification method and timestamp for regulatory compliance
+  - Repeated failures by consumer may trigger account flag on BAP side

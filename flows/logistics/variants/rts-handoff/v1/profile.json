@@ -1,0 +1,11 @@
+{
+  "id": "ion-logistics-variant-rts-handoff-v1",
+  "version": "1.0.0",
+  "status": "ready",
+  "sectorCode": "B",
+  "branchType": "rts-handoff",
+  "maintainer": "ION Council \u2014 Sector B Lead",
+  "type": "Variant",
+  "variantName": "rts-handoff",
+  "sector": "ion:logistics"
+}

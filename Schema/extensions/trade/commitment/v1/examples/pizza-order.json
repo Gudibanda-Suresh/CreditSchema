@@ -1,0 +1,34 @@
+{
+  "_comment": "Pack example: contents of two Contract.commitments[i].commitmentAttributes — pizza + garlic bread. The wrapping 'commitmentInstances' shows two instances of the pack content; each individual object IS one commitmentAttributes bag.",
+  "_attachesTo": "Contract.commitments[].commitmentAttributes",
+  "commitmentInstances": [
+    {
+      "@context": "https://schema.ion.id/extensions/trade/commitment/v1/context.jsonld",
+      "@type": "ion:TradeCommitment",
+      "lineId": "L01",
+      "resourceId": "var_pep_med_classic",
+      "offerId": "OFFER-PIZZA-001",
+      "quantity": {"count": 1},
+      "price": {"value": 89000, "currency": "IDR", "unitPrice": 89000},
+      "customisationSelections": [
+        {"groupId": "CG-SIZE", "optionId": "OPT-REGULAR", "priceDelta": 0},
+        {"groupId": "CG-CRUST", "optionId": "OPT-CLASSIC", "priceDelta": 0},
+        {"groupId": "CG-EXTRAS", "optionId": "OPT-EXTRA-CHEESE", "priceDelta": 8000}
+      ],
+      "specialInstructions": "Pinggiran extra crispy",
+      "fulfillmentId": "PERF-001"
+    },
+    {
+      "@context": "https://schema.ion.id/extensions/trade/commitment/v1/context.jsonld",
+      "@type": "ion:TradeCommitment",
+      "lineId": "L02",
+      "resourceId": "var_gbread_regular",
+      "offerId": "OFFER-SIDES-001",
+      "quantity": {"count": 2},
+      "price": {"value": 58000, "currency": "IDR", "unitPrice": 29000},
+      "customisationSelections": [],
+      "specialInstructions": null,
+      "fulfillmentId": "PERF-001"
+    }
+  ]
+}

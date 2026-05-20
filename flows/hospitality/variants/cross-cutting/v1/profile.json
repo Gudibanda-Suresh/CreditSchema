@@ -1,0 +1,10 @@
+{
+  "id": "ion-hospitality-variant-cross-cutting-v1",
+  "version": "1.0.0",
+  "sector": "ion:hospitality",
+  "variantName": "cross-cutting",
+  "crc": "HSC-restaurant-ordering",
+  "applicablePatterns": [
+    "delivery-order"
+  ]
+}

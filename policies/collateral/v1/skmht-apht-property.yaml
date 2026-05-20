@@ -1,0 +1,96 @@
+iri: ion://policy/finance.collateral.skmht-apht-property
+
+version: "1.0.0"
+
+versionEffectiveFrom: "2026-05-01"
+
+category: COLLATERAL
+
+subCategory: PROPERTY_COLLATERAL
+
+status: ratified
+
+ratifiedAt: "2026-04-15"
+
+displayText:
+  id: "Jaminan properti — SKMHT dan APHT"
+  en: "Property collateral — SKMHT and APHT registration"
+
+collateralType: PROPERTY
+
+registrationPath:
+  - step: SKMHT
+    description: "Surat Kuasa Membebankan Hak Tanggungan — power of attorney for lien"
+    executedBy: NOTARY_PPAT
+    validityDays: 30
+    requiredFor: loan amounts up to IDR 100 juta (single SKMHT); no cap for APHT direct
+    note: "SKMHT must be executed within 1 month of loan disbursement per UU HT"
+  - step: APHT
+    description: "Akta Pembebanan Hak Tanggungan — formal lien deed"
+    executedBy: NOTARY_PPAT
+    mustFollowSkmhtWithinDays: 30
+  - step: BPN_REGISTRATION
+    description: "Registration of Hak Tanggungan certificate at BPN (land office)"
+    executedBy: NOTARY_PPAT
+    maxProcessingDays: 7
+    resultDocument: SERTIPIKAT_HAK_TANGGUNGAN
+
+acceptedPropertyTypes:
+  - SHM
+  - SHGB
+  - SHSRS
+
+rejectedPropertyTypes:
+  - GIRIK
+  - LETTER_C
+  - EIGENDOM_VERPONDING
+
+minimumAppraisalRequired: true
+
+appraisalValidityMonths: 6
+
+appraisalProviders:
+  - KJPP_OJK_REGISTERED
+  - INTERNAL_APPRAISAL_TEAM
+
+ltvApplicable: true
+
+ltvPolicyRef: ion://policy/finance.ltv-cap.ojk-kpr-rumah-tapak
+
+notaryEscrowRequired: true
+
+notaryEscrowPolicyRef: ion://policy/finance.disbursement.notary-escrow
+
+firstRankingRequired: true
+
+existingEncumbranceAllowed: false
+
+insuranceRequired:
+  - type: FIRE_AND_NATURAL_DISASTER
+    policyRef: ion://policy/finance.insurance.mrta-standard
+  - type: MRTA
+    policyRef: ion://policy/finance.insurance.mrta-standard
+
+lienReleaseProcess:
+  trigger: FULLY_REPAID
+  documentRequired: ROYA_LETTER
+  processedBy: NOTARY_PPAT
+  bpnRegistrationRequired: true
+  maxProcessingDays: 14
+
+applicablePatterns:
+  - mortgage
+
+applicableLenderTypes:
+  - BANK_UMUM
+  - MULTIFINANCE
+
+regulatoryBasis:
+  - "UU 4/1996 tentang Hak Tanggungan atas Tanah beserta Benda-Benda yang Berkaitan dengan Tanah"
+  - "PP 24/1997 tentang Pendaftaran Tanah"
+  - "Permen ATR/BPN 13/2017 tentang Tata Cara Blokir dan Sita"
+  - "OJK POJK 40/2019 tentang Penilaian Kualitas Aset Bank Umum"
+
+supersededBy: null
+
+deprecatedAt: null

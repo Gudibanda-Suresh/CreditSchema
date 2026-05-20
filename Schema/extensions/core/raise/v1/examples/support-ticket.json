@@ -1,0 +1,10 @@
+{
+  "@context": "https://schema.ion.id/core/raise/v1/context.jsonld",
+  "@type": "ion:IONTicket",
+  "id": "TKT-2026-00001234",
+  "contractId": "ORD-2026-00012345",
+  "category": "WRONG_ITEM",
+  "description": "Received wrong item — ordered electronics, received grocery",
+  "status": "OPEN",
+  "raisedAt": "2026-05-15T10:00:00Z"
+}

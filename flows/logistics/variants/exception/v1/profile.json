@@ -1,0 +1,11 @@
+{
+  "id": "ion-logistics-variant-exception-v1",
+  "version": "1.0.0",
+  "status": "ready",
+  "sectorCode": "B",
+  "branchType": "exception",
+  "maintainer": "ION Council \u2014 Sector B Lead",
+  "type": "Variant",
+  "variantName": "exception",
+  "sector": "ion:logistics"
+}

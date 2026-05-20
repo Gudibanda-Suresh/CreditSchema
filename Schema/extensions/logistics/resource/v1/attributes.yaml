@@ -1,0 +1,539 @@
+openapi: 3.1.1
+info:
+  title: ION Logistics Resource Extension (v1)
+  description: 'Logistics sector resource attributes. Describes the shipment object — physical characteristics,
+    handling requirements, regulatory declarations, vehicle details (for Ro-Ro), inventory details (for Warehouse).
+    Attaches to: beckn:Resource.resourceAttributes
+
+    '
+  version: 1.0.0
+  license:
+    name: Apache-2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+  contact:
+    name: ION Network
+    url: https://schema.ion.id
+components:
+  schemas:
+    LogisticsShipment:
+      type: object
+      title: LogisticsShipment
+      additionalProperties: true
+      x-jsonld:
+        '@context': 'https://schema.ion.id/logistics/resource/v1/context.jsonld'
+        '@type': ion:LogisticsShipment
+      x-beckn-attaches-to: Resource.resourceAttributes
+      properties:
+        serviceType:
+          type: string
+          enum:
+          - PARCEL
+          - DOCUMENT
+          - FREIGHT
+          - VEHICLE
+          - INVENTORY
+          description: Broad category of what is being moved or stored
+        quantity:
+          type: object
+          title: Quantity of this resource
+          additionalProperties: false
+          properties:
+            value:
+              type: number
+              minimum: 1
+            unit:
+              type: string
+              enum:
+              - package
+              - unit
+              - container
+              - pallet
+              - lot
+              - carton
+              - document
+              - vehicle
+              - sku
+              description: Unit of measure appropriate to serviceType
+          required:
+          - value
+          - unit
+        weight:
+          type: object
+          properties:
+            value:
+              type: number
+            unit:
+              type: string
+              enum:
+              - gram
+              - kilogram
+              - tonne
+          x-ion-condition: Required when quantity is declared (unit appropriate to serviceType)
+        dimensions:
+          type: object
+          properties:
+            length:
+              type: number
+            width:
+              type: number
+            height:
+              type: number
+            unit:
+              type: string
+              enum:
+              - centimeter
+              - meter
+          x-ion-condition: Required when chargeable weight is calculated volumetrically
+        volumetricWeight:
+          type: object
+          description: Computed by BPP; carried in on_select if applicable
+          properties:
+            value:
+              type: number
+            unit:
+              type: string
+            formula:
+              type: string
+        totalVolume:
+          type: object
+          description: For freight bookings
+          properties:
+            value:
+              type: number
+            unit:
+              type: string
+              enum:
+              - cbm
+              - liter
+        declaredValue:
+          type: object
+          properties:
+            amount:
+              type: number
+            currency:
+              type: string
+              default: IDR
+          description: 'Declared value for insurance and liability purposes. Mandatory when insurance is requested
+            or value exceeds the provider''s standard liability cap.
+
+            '
+        insuranceRequested:
+          type: boolean
+        fragile:
+          type: boolean
+        stackable:
+          type: boolean
+        hazmatClass:
+          type: string
+          description: 'IATA/IMO/ADR dangerous goods primary class. See IATA DGR for air, IMO IMDG Code for ocean,
+            UN ADR for road/rail.
+
+            '
+          enum:
+          - '1.1'
+          - '1.2'
+          - '1.3'
+          - '1.4'
+          - '1.5'
+          - '1.6'
+          - '2.1'
+          - '2.2'
+          - '2.3'
+          - '3'
+          - '4.1'
+          - '4.2'
+          - '4.3'
+          - '5.1'
+          - '5.2'
+          - '6.1'
+          - '6.2'
+          - '7'
+          - '8'
+          - '9'
+          x-ion-condition: Required when dangerous goods are present (dgClassification is set)
+        hazmatSubsidiaryClasses:
+          type: array
+          items:
+            type: string
+          description: Additional risk classes for multi-hazard DG
+        hazmatUnNumber:
+          type: string
+          description: UN number (e.g. "UN1950") — required for all DG shipments
+          pattern: ^UN[0-9]{4}$
+          x-ion-condition: 'Required when applicable — UN number (e.g. "UN1950") — required for all DG shipments'
+        hazmatPackingGroup:
+          type: string
+          enum:
+          - I
+          - II
+          - III
+          description: Packing Group per IATA DGR / IMO IMDG
+          x-ion-condition: 'Required when applicable — Packing Group per IATA DGR / IMO IMDG'
+        hazmatProperShippingName:
+          type: string
+          description: 'Proper Shipping Name (PSN) as listed in the applicable DGR. Must appear on all documents
+            and outer packaging.
+
+            '
+          x-ion-condition: 'Required when applicable — Proper Shipping Name (PSN) as listed in the applicable DGR. '
+        hazmatNetQuantityPerPackage:
+          type: object
+          properties:
+            value:
+              type: number
+            unit:
+              type: string
+              enum:
+              - gram
+              - kilogram
+              - liter
+              - milliliter
+          description: Net quantity of dangerous substance per package
+          x-ion-condition: Required when shipment contains dangerous goods (DG classification present)
+        hazmatNetExplosiveMass:
+          type: number
+          description: Net Explosive Mass (NEM/NEQ) in kg — Class 1 only
+          x-ion-condition: Required for Class 1 explosive shipments
+        hazmatErgCode:
+          type: string
+          description: Emergency Response Guide (ERG) code for first responders
+          x-ion-condition: 'Required when applicable — Emergency Response Guide (ERG) code for first responders'
+        hazmatSegregationGroup:
+          type: string
+          description: IMDG segregation group code (for mixed-DG ocean)
+          x-ion-condition: Required when transportMode includes SEA and shipment contains mixed DG cargo
+        hazmatPackagingInstruction:
+          type: string
+          description: IATA PI number or IMDG P code specifying packaging used
+          x-ion-condition: Required for all dangerous goods shipments per IATA DGR / IMDG Code
+        hazmatPackagingCertification:
+          type: object
+          properties:
+            unCertifiedMarking:
+              type: string
+              description: UN specification marking on the packaging
+            manufacturer:
+              type: string
+            certificationDate:
+              type: string
+              format: date
+          description: UN-certified packaging marking details
+          x-ion-condition: 'Required when applicable — UN-certified packaging marking details'
+        hazmatOverpack:
+          type: boolean
+          description: True if DG packages are combined in an overpack
+        hazmatLimitedQuantityExemption:
+          type: boolean
+          description: Shipment qualifies for LQ exemption (smaller documentation burden)
+        hazmatExceptedQuantityExemption:
+          type: boolean
+          description: Shipment qualifies for EQ exemption
+        hazmatAirTransportCode:
+          type: string
+          enum:
+          - PAX
+          - CAO
+          - FORBIDDEN_AIR
+          description: 'PAX = allowed on passenger aircraft, CAO = Cargo Aircraft Only, FORBIDDEN_AIR = not allowed
+            by air. Applies to air transport only.
+
+            '
+          x-ion-condition: Required when transportMode includes AIR
+        hazmatOceanStowageCategory:
+          type: string
+          enum:
+          - A
+          - B
+          - C
+          - D
+          - E
+          description: IMDG stowage category — applies to ocean transport
+          x-ion-condition: 'Required when applicable — IMDG stowage category — applies to ocean transport'
+        hazmatShippersDeclaration:
+          type: object
+          properties:
+            documentReference:
+              type: string
+              description: Reference to the Shipper's Declaration for Dangerous Goods
+            documentUrl:
+              type: string
+              format: uri
+            signatoryName:
+              type: string
+            signedAt:
+              type: string
+              format: date-time
+          x-ion-condition: Required when shipment contains dangerous goods (DG classification present)
+        lithiumBattery:
+          type: object
+          description: 'Lithium battery-specific fields — mandatory when UN3480/UN3481/UN3090/UN3091 is declared.
+            Additional to standard hazmat fields.
+
+            '
+          properties:
+            chemistry:
+              type: string
+              enum:
+              - LITHIUM_ION
+              - LITHIUM_METAL
+              - LITHIUM_POLYMER
+            wattHourRating:
+              type: number
+              description: Per cell Wh rating
+            lithiumContentGrams:
+              type: number
+              description: For metal Li only
+            stateOfCharge:
+              type: number
+              description: Fractional SoC — required for air, must be ≤0.30 per IATA
+            configuration:
+              type: string
+              enum:
+              - STANDALONE
+              - PACKED_WITH_EQUIPMENT
+              - CONTAINED_IN_EQUIPMENT
+            section:
+              type: string
+              enum:
+              - SECTION_I
+              - SECTION_IA
+              - SECTION_IB
+              - SECTION_II
+              description: IATA PI section classification
+              x-ion-condition: Required for air transport of dangerous goods (IATA DGR Section classification)
+        temperatureRequirement:
+          type: object
+          properties:
+            controlled:
+              type: boolean
+            minTempC:
+              type: number
+            maxTempC:
+              type: number
+            category:
+              type: string
+              enum:
+              - FROZEN
+              - CHILLED
+              - AMBIENT
+              - CONTROLLED_ROOM
+          x-ion-condition: 'Required when applicable — IATA PI section classification'
+        productCategory:
+          type: string
+          description: Product category for classification (Grocery, Electronics, Pharma, etc.)
+          enum:
+          - GROCERY
+          - FOOD_AND_BEVERAGE
+          - FASHION
+          - ELECTRONICS
+          - BEAUTY
+          - PHARMA
+          - AGRITECH
+          - INDUSTRIAL
+          - AUTOMOTIVE
+          - CHEMICALS
+          - HAZMAT
+          - HIGH_VALUE
+          - DOCUMENTS
+          - OTHER
+        hsCodes:
+          type: array
+          items:
+            type: string
+          description: Harmonised System codes for cross-border shipments
+          x-ion-condition: 'Required when applicable — Harmonised System codes for cross-border shipments'
+        commercialInvoice:
+          type: object
+          description: For cross-border
+          properties:
+            invoiceNumber:
+              type: string
+            invoiceDate:
+              type: string
+              format: date
+            invoiceValue:
+              type: number
+            currency:
+              type: string
+            invoiceUrl:
+              type: string
+              format: uri
+        certificateOfOrigin:
+          type: object
+          properties:
+            certificateNumber:
+              type: string
+            certificateType:
+              type: string
+              enum:
+              - NON_PREFERENTIAL
+              - PREFERENTIAL_AANZFTA
+              - PREFERENTIAL_ACFTA
+              - PREFERENTIAL_AKFTA
+              - PREFERENTIAL_AIFTA
+              - PREFERENTIAL_AJCEP
+              - PREFERENTIAL_RCEP
+              - PREFERENTIAL_IJEPA
+              - PREFERENTIAL_ICFTA
+              - PREFERENTIAL_OTHER
+              description: 'Preferential certificate under trade agreement enables duty reduction. AANZFTA=ASEAN-Australia-NZ,
+                ACFTA=ASEAN-China, RCEP=Regional Comprehensive Economic Partnership, IJEPA=Indonesia-Japan EPA,
+                ICFTA=Indonesia-Chile FTA.
+
+                '
+            form:
+              type: string
+              enum:
+              - FORM_E
+              - FORM_AK
+              - FORM_AI
+              - FORM_D
+              - FORM_AANZ
+              - FORM_AJ
+              - FORM_RCEP
+              - FORM_IJEPA
+              - FORM_GENERAL
+              description: CoO form number
+            issuingAuthority:
+              type: string
+            documentUrl:
+              type: string
+              format: uri
+              x-ion-condition: Required for cross-border shipments where Certificate of Origin is required
+        packingList:
+          type: object
+          properties:
+            documentUrl:
+              type: string
+              format: uri
+          x-ion-condition: Required for cross-border (LGC-XB) consolidated shipments
+        importLicence:
+          type: object
+          properties:
+            licenceNumber:
+              type: string
+            validUntil:
+              type: string
+              format: date
+          x-ion-condition: Required for cross-border (LGC-XB) shipments requiring import licence
+        cargoDescription:
+          type: string
+          description: Detailed cargo description for freight manifests
+        cargoManifest:
+          type: array
+          description: Line-level cargo manifest for freight
+          items:
+            type: object
+            properties:
+              lineId:
+                type: string
+              description:
+                type: string
+              quantity:
+                type: number
+              unitWeight:
+                type: number
+              hsCode:
+                type: string
+        packagingType:
+          type: string
+          enum:
+          - CARTON
+          - PALLET
+          - CRATE
+          - DRUM
+          - BULK
+          - ROLL
+          - OTHER
+        vehicleDetails:
+          type: object
+          properties:
+            category:
+              type: string
+              enum:
+              - PASSENGER_CAR
+              - LIGHT_TRUCK
+              - HEAVY_TRUCK
+              - MOTORCYCLE
+              - TRAILER
+              - BUS
+              - SPECIAL
+            make:
+              type: string
+            model:
+              type: string
+            year:
+              type: integer
+            lengthM:
+              type: number
+            widthM:
+              type: number
+            heightM:
+              type: number
+            weightKg:
+              type: number
+              x-ion-condition: Required when transportMode is RO_RO or when oversized cargo dimensions must be declared
+        vehicleRegistration:
+          type: string
+          description: Vehicle registration plate number
+          x-ion-condition: Required for RO_RO patterns where vehicle identity is part of the shipment
+        skuCount:
+          type: integer
+          description: Number of distinct SKUs
+          x-ion-condition: Required for multi-SKU consolidated shipments
+        storageCategory:
+          type: string
+          enum:
+          - AMBIENT
+          - CHILLED
+          - FROZEN
+          - HIGH_VALUE
+          - HAZMAT
+          - OVERSIZED
+          x-ion-condition: 'Required when applicable — Number of distinct SKUs'
+        skuManifest:
+          type: array
+          description: Per-SKU details for warehouse inbound
+          items:
+            type: object
+            properties:
+              skuId:
+                type: string
+              description:
+                type: string
+              quantity:
+                type: integer
+              unitWeightKg:
+                type: number
+              unitVolumeCbm:
+                type: number
+              expiryDate:
+                type: string
+                format: date
+        maxWeight:
+          type: object
+          description: Maximum shipment weight the BPP accepts. Published in catalog.
+          properties:
+            value:
+              type: number
+            unit:
+              type: string
+        maxDimensions:
+          type: object
+          description: Maximum shipment dimensions the BPP accepts. Published in catalog.
+          properties:
+            length:
+              type: number
+            width:
+              type: number
+            height:
+              type: number
+            unit:
+              type: string
+          x-ion-condition: 'Required when applicable — Maximum shipment dimensions the BPP accepts. Published in ca'
+      required:
+      - serviceType
+      - quantity
+      x-ion-closed-extensions: false
+      allOf:
+      - $ref: ../../../../core/v2/api/v2.0.0/beckn.yaml#/components/schemas/Attributes

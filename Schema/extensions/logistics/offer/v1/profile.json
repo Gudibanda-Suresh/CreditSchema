@@ -1,0 +1,34 @@
+{
+  "id": "ion-logistics-offer-v1",
+  "version": "1.0.0",
+  "status": "ready",
+  "sectorCode": "B",
+  "attaches-to": "beckn:offer Attributes",
+  "maintainer": "ION Council \u2014 Sector B Lead",
+  "specVersion": "0.5.1-draft",
+  "type": "AttributePack",
+  "indexing": {
+    "indexable": [
+      {
+        "path": "$.serviceLevel"
+      },
+      {
+        "path": "$.transportMode"
+      }
+    ],
+    "filterable": [
+      {
+        "path": "$.serviceLevel"
+      },
+      {
+        "path": "$.transportMode"
+      }
+    ],
+    "sortable": []
+  },
+  "minimalForDiscovery": [
+    "serviceLevel",
+    "transportMode"
+  ],
+  "packSchema": "./schema.json"
+}

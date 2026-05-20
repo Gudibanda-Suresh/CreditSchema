@@ -1,0 +1,86 @@
+iri: ion://policy/finance.insurance.credit-life-standard
+
+version: "1.0.0"
+
+versionEffectiveFrom: "2026-05-01"
+
+category: INSURANCE
+
+subCategory: CREDIT_LIFE
+
+status: ratified
+
+ratifiedAt: "2026-04-15"
+
+displayText:
+  id: "Asuransi jiwa kredit — standar"
+  en: "Credit life insurance — standard"
+
+insuranceType: CREDIT_LIFE
+
+coverageEvent:
+  - DEATH
+  - TOTAL_PERMANENT_DISABILITY
+
+coverageBasis: OUTSTANDING_LOAN_BALANCE_AT_TIME_OF_CLAIM
+
+coverageDeclines: true
+
+coverageDeclinesMethod: REDUCING_BALANCE
+
+policyHolder: LENDER
+
+insuredParty: BORROWER
+
+beneficiary: LENDER
+
+premiumPaymentMethod:
+  - SINGLE_PREMIUM_UPFRONT
+  - MONTHLY_PREMIUM_EMBEDDED_IN_INSTALLMENT
+
+premiumRateRange:
+  minPercentOfLoanAmount: 0.1
+  maxPercentOfLoanAmount: 0.5
+  note: "Rate varies by borrower age, loan tenure, and insurer tariff"
+
+maxInsurableAge: 65
+
+minLoanAmountForMandatoryInsurance: null
+
+mandatoryForPatterns: []
+
+optionalForPatterns:
+  - personal-loan
+  - business-loan
+  - revolving-credit
+  - bnpl
+
+bundlingRules:
+  forcedBundlingProhibited: true
+  borrowerMustConsentExplicitly: true
+  regulatoryBasis: "OJK POJK 22/2023 — lender cannot mandate specific insurer"
+  borrowerCanChooseInsurer: true
+
+claimProcess:
+  notificationSlaDays: 30
+  documentRequired:
+    - SURAT_KETERANGAN_KEMATIAN
+    - AKTA_KEMATIAN
+    - KARTU_KELUARGA
+  payoutSlaDays: 30
+  payoutReducesOutstandingLoan: true
+
+applicableLenderTypes:
+  - BANK_UMUM
+  - BPR
+  - MULTIFINANCE
+  - LPBBTI_P2P
+
+regulatoryBasis:
+  - "OJK POJK 69/2016 tentang Bisnis Proses Perusahaan Asuransi"
+  - "OJK POJK 22/2023 tentang Perlindungan Konsumen dan Masyarakat di Sektor Jasa Keuangan"
+  - "OJK SE 05/SEOJK.05/2013 tentang Produk Asuransi yang Dikaitkan dengan Kredit"
+
+supersededBy: null
+
+deprecatedAt: null

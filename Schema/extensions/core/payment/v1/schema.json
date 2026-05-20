@@ -1,0 +1,215 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schema.ion.id/core/payment/v1",
+  "title": "PaymentDeclaration",
+  "type": "object",
+  "description": "Contents of a Beckn Settlement's settlementAttributes bag for a buyer-facing payment event. Binds a payment method to a transaction and carries method-specific instrument details in methodDetail.\n",
+  "properties": {
+    "method": {
+      "type": "string",
+      "enum": [
+        "QRIS",
+        "VIRTUAL_ACCOUNT",
+        "EWALLET",
+        "COD",
+        "BANK_TRANSFER",
+        "BI_FAST",
+        "RTGS",
+        "SKN",
+        "BNPL",
+        "CREDIT_CARD",
+        "DEBIT_CARD",
+        "DIRECT_DEBIT",
+        "CREDIT_FACILITY",
+        "ESCROW"
+      ]
+    },
+    "collectedBy": {
+      "type": "string",
+      "enum": [
+        "BAP",
+        "BPP",
+        "LSP"
+      ],
+      "description": "Which network participant collects payment from consumer."
+    },
+    "timing": {
+      "type": "string",
+      "enum": [
+        "ON_ORDER",
+        "PRE_FULFILLMENT",
+        "ON_FULFILLMENT",
+        "POST_FULFILLMENT"
+      ],
+      "description": "When payment is collected relative to fulfilment."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "PENDING",
+        "PAID",
+        "FAILED",
+        "REFUNDED",
+        "PARTIALLY_REFUNDED"
+      ]
+    },
+    "amount": {
+      "type": "number",
+      "description": "Payment amount in IDR",
+      "x-ion-conditional": true,
+      "x-ion-condition": "Required when payment is confirmed"
+    },
+    "currency": {
+      "type": "string",
+      "const": "IDR",
+      "default": "IDR"
+    },
+    "paidAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of successful payment confirmation",
+      "x-ion-conditional": true,
+      "x-ion-condition": "Required after payment is confirmed"
+    },
+    "gatewayRef": {
+      "type": "string",
+      "description": "Payment gateway transaction reference ID",
+      "x-ion-conditional": true,
+      "x-ion-condition": "Required when payment gateway is used"
+    },
+    "methodDetail": {
+      "oneOf": [
+        {
+          "$ref": "#/components/schemas/QRIS"
+        },
+        {
+          "$ref": "#/components/schemas/VirtualAccount"
+        },
+        {
+          "$ref": "#/components/schemas/EWallet"
+        },
+        {
+          "$ref": "#/components/schemas/CashOnDelivery"
+        },
+        {
+          "$ref": "#/components/schemas/BankTransfer"
+        },
+        {
+          "$ref": "#/components/schemas/BISettlement"
+        },
+        {
+          "$ref": "#/components/schemas/BNPL"
+        },
+        {
+          "$ref": "#/components/schemas/CardPayment"
+        }
+      ],
+      "x-ion-conditional": true,
+      "x-ion-condition": "Required when method requires instrument-specific fields"
+    },
+    "paymentRail": {
+      "type": "string",
+      "description": "Specific rail used for this payment. Enables downstream routing and reconciliation regardless of higher-level method. Example: method=BANK_TRANSFER with paymentRail=BI_FAST.\n",
+      "enum": [
+        "QRIS",
+        "BI_FAST",
+        "RTGS",
+        "SKN",
+        "VIRTUAL_ACCOUNT",
+        "EWALLET_OVO",
+        "EWALLET_DANA",
+        "EWALLET_GOPAY",
+        "EWALLET_SHOPEEPAY",
+        "EWALLET_LINKAJA",
+        "EWALLET_ASTRAPAY",
+        "CARD_VISA",
+        "CARD_MASTERCARD",
+        "CARD_JCB",
+        "CARD_AMEX",
+        "CARD_UNIONPAY",
+        "BILYET_GIRO",
+        "DIRECT_DEBIT",
+        "SWIFT_TT",
+        "LETTER_OF_CREDIT",
+        "COD_CASH",
+        "COD_CARD_TAP"
+      ]
+    },
+    "paymentGatewayProvider": {
+      "type": "string",
+      "description": "Payment gateway aggregator used to route this payment. Declared per transaction. Implementations may use one or more of these aggregators or direct bank/ewallet APIs.\n",
+      "enum": [
+        "DOKU",
+        "XENDIT",
+        "MIDTRANS",
+        "FINPAY",
+        "FASPAY",
+        "ESPAY",
+        "IPAY88",
+        "FINNET",
+        "LINKQU",
+        "DIRECT",
+        "OTHER"
+      ]
+    },
+    "creditTerms": {
+      "$ref": "#/components/schemas/CreditTerms"
+    },
+    "refund": {
+      "$ref": "#/components/schemas/Refund"
+    },
+    "invoice": {
+      "$ref": "#/components/schemas/InvoiceReference"
+    },
+    "processingFee": {
+      "$ref": "#/components/schemas/ProcessingFee"
+    }
+  },
+  "required": [
+    "method",
+    "collectedBy",
+    "timing",
+    "status",
+    "currency"
+  ],
+  "additionalProperties": true,
+  "allOf": [
+    {
+      "$ref": "../../../../core/v2/api/v2.0.0/beckn.yaml#/components/schemas/Attributes"
+    },
+    {
+      "if": {
+        "properties": {
+          "method": {
+            "const": "CREDIT_FACILITY"
+          }
+        },
+        "required": [
+          "method"
+        ]
+      },
+      "then": {
+        "required": [
+          "creditTerms"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "REFUNDED"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "required": [
+          "refund"
+        ]
+      }
+    }
+  ]
+}

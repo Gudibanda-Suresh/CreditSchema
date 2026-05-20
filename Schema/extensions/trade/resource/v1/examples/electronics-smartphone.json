@@ -1,0 +1,114 @@
+{
+  "@context": "https://schema.ion.id/trade/resource/v1/context.jsonld",
+  "@type": "ion:TradeResource",
+  "_comment": "Example: Samsung Galaxy S25 — VARIANT resource (TRC-electronics)",
+  "quantity": {
+    "value": 1,
+    "unit": "piece"
+  },
+  "resourceStructure": "VARIANT",
+  "resourceTangibility": "PHYSICAL",
+  "logisticsServiceType": "DOMESTIC_SURFACE",
+  "ageRestricted": false,
+  "countryOfOrigin": "KOR",
+  "images": [
+    "https://cdn.samsung.com/id/s25-black-front.jpg",
+    "https://cdn.samsung.com/id/s25-black-back.jpg",
+    "https://cdn.samsung.com/id/s25-black-side.jpg"
+  ],
+  "parentResourceId": "SAMSUNG-GALAXY-S25-BASE",
+  "isDefaultVariant": true,
+  "variantGroup": {
+    "id": "VG-COLOUR",
+    "name": {
+      "id": "Warna",
+      "en": "Colour"
+    },
+    "variantOn": "colour"
+  },
+  "availability": {
+    "status": "IN_STOCK",
+    "maxOrderQty": 2,
+    "backorderAllowed": false
+  },
+  "identity": {
+    "brand": "Samsung",
+    "model": "Galaxy S25",
+    "modelYear": 2025,
+    "sku": "SAM-S25-8-256-BLK"
+  },
+  "productCode": {
+    "type": "GTIN",
+    "value": "8806095548227"
+  },
+  "physical": {
+    "colour": "#1C1C1C",
+    "colourName": "Phantom Black",
+    "weightKg": 0.162,
+    "dimensions": {
+      "lengthCm": 14.62,
+      "widthCm": 7.07,
+      "heightCm": 0.75
+    }
+  },
+  "packaged": {
+    "netQuantity": {
+      "value": 1,
+      "unit": "PIECE"
+    },
+    "manufacturerOrPacker": {
+      "type": "MANUFACTURER",
+      "name": "Samsung Electronics Co., Ltd.",
+      "address": "129, Samsung-ro, Yeongtong-gu, Suwon-si, Gyeonggi-do, Korea"
+    },
+    "monthYearOfManufacture": "12/2024",
+    "commonOrGenericName": "Smartphone"
+  },
+  "regulatory": {
+    "registrations": [
+      {
+        "scheme": "SNI",
+        "id": "SNI-2024-EL-001234",
+        "role": "BRAND_OWNER",
+        "validUntil": "2026-12-31"
+      }
+    ],
+    "credentials": [
+      {
+        "type": "SNI",
+        "uri": "https://registry.bsn.go.id/sni/2024-EL-001234",
+        "issuer": "BSN",
+        "validUntil": "2026-12-31"
+      }
+    ]
+  },
+  "electronics": {
+    "ram": 8,
+    "ramUnit": "GB",
+    "rom": 256,
+    "romUnit": "GB",
+    "screenSize": 6.2,
+    "primaryCamera": 200,
+    "secondaryCamera": 12,
+    "cpu": "Snapdragon 8 Elite",
+    "gpu": "Adreno 830",
+    "batteryCapacity": 4000,
+    "osType": "ANDROID",
+    "osVersion": "Android 15",
+    "connectivity": [
+      "WIFI",
+      "BLUETOOTH",
+      "NFC",
+      "USB_C",
+      "SUB6_5G"
+    ],
+    "voltage": "220V",
+    "energyRating": 4
+  },
+  "warranty": {
+    "duration": "P1Y",
+    "type": "MANUFACTURER",
+    "terms": "Garansi resmi Samsung Indonesia 1 tahun untuk kerusakan komponen."
+  },
+  "itemRating": 4.8
+}

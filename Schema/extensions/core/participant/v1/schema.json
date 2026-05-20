@@ -1,0 +1,312 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schema.ion.id/core/participant/v1",
+  "title": "IONParticipant",
+  "type": "object",
+  "properties": {
+    "role": {
+      "type": "string",
+      "description": "Role this participant plays in the transaction. The enum spans all ION sectors. Sector working groups may narrow this at publish time (e.g. trade uses BUYER/SELLER/MERCHANT; logistics uses CONSIGNOR/CONSIGNEE/CARRIER).\n",
+      "enum": [
+        "BAP",
+        "BPP",
+        "PROVIDER",
+        "MERCHANT",
+        "BUYER",
+        "SELLER",
+        "AGENT",
+        "BANK",
+        "UNDERWRITER",
+        "CONSIGNOR",
+        "CONSIGNEE",
+        "SHIPPER",
+        "NOTIFY_PARTY",
+        "FORWARDER",
+        "ACTUAL_CARRIER",
+        "CUSTOMS_BROKER",
+        "INSURANCE_BROKER",
+        "DRIVER",
+        "CUSTOMS_AUTHORITY",
+        "GOVERNMENT_BUYER"
+      ]
+    },
+    "subscriberId": {
+      "type": "string",
+      "description": "ION-registered subscriber ID when the participant is itself a subscriber. Not applicable for individuals (end-consumer CONSIGNEE in B2C).\n",
+      "x-ion-conditional": true,
+      "x-ion-condition": "Required when the participant is itself an ION-registered subscriber"
+    },
+    "npwp": {
+      "type": "string",
+      "description": "NPWP (Nomor Pokok Wajib Pajak) tax ID. 16 digits post-2024 (Indonesia migrated from 15-digit to 16-digit format per PMK 112/2022). Some implementations still accept legacy 15-digit format via the punctuated pattern below.\n",
+      "pattern": "^([0-9]{16}|[0-9]{2}\\.[0-9]{3}\\.[0-9]{3}\\.[0-9]-[0-9]{3}\\.[0-9]{3})$",
+      "x-ion-conditional": true,
+      "x-ion-condition": "Required when participant is a business (PKP or non-PKP) and NPWP is available"
+    },
+    "nib": {
+      "type": "string",
+      "description": "NIB (Nomor Induk Berusaha) business registration — 13 digits",
+      "x-ion-conditional": true,
+      "x-ion-condition": "Required for all seller/provider/merchant participants"
+    },
+    "nik": {
+      "type": "string",
+      "description": "NIK — Indonesian customs registration number for international trade",
+      "x-ion-conditional": true,
+      "x-ion-condition": "Required for cross-border trade (Nomor Identitas Kepabeanan — customs registration number)"
+    },
+    "pkpStatus": {
+      "type": "string",
+      "enum": [
+        "PKP",
+        "NON_PKP",
+        "NOT_APPLICABLE"
+      ],
+      "description": "VAT-registered status — declared at participant onboarding",
+      "x-ion-conditional": true
+    },
+    "ktpNumber": {
+      "type": "string",
+      "description": "KTP national ID number (16 digits)",
+      "x-ion-conditional": true,
+      "x-ion-condition": "Required for DRIVER role; optional for consignee verification"
+    },
+    "passportNumber": {
+      "type": "string",
+      "x-ion-conditional": true,
+      "x-ion-condition": "Required for foreign consignees/shippers in cross-border patterns"
+    },
+    "bankCode": {
+      "type": "string",
+      "description": "BI bank code"
+    },
+    "insurerLicenceNumber": {
+      "type": "string",
+      "description": "OJK (Otoritas Jasa Keuangan) licence number"
+    },
+    "authorisedSignatory": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "nik": {
+          "type": "string"
+        },
+        "position": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string",
+          "format": "email"
+        }
+      },
+      "x-ion-conditional": true,
+      "x-ion-condition": "Required for B2B contracts over materiality threshold"
+    },
+    "addressDetail": {
+      "type": "object",
+      "description": "Full Indonesian administrative hierarchy plus landmark and accessibility metadata. Applies to participants with a physical location: CONSIGNOR, CONSIGNEE, SHIPPER, NOTIFY_PARTY, MERCHANT, BANK_OFFICE, CUSTOMS_BROKER office, buyer/seller for trade, etc.\n",
+      "properties": {
+        "provinsiCode": {
+          "type": "string",
+          "pattern": "^[0-9]{2}$",
+          "description": "Province code per BPS. 34 provinces. E.g. \"31\" DKI Jakarta, \"35\" Jawa Timur, \"51\" Bali.\n"
+        },
+        "provinsiName": {
+          "type": "string"
+        },
+        "kabupatenCode": {
+          "type": "string",
+          "pattern": "^[0-9]{4}$",
+          "description": "4-digit kabupaten/kota BPS code. E.g. \"3174\" Jakarta Selatan, \"3578\" Surabaya.\n"
+        },
+        "kabupatenName": {
+          "type": "string"
+        },
+        "kabupatenType": {
+          "type": "string",
+          "enum": [
+            "KOTA",
+            "KABUPATEN"
+          ]
+        },
+        "kecamatanCode": {
+          "type": "string",
+          "pattern": "^[0-9]{7}$",
+          "description": "7-digit kecamatan (sub-district) code. Essential for parcel zone-based rate computation.\n"
+        },
+        "kecamatanName": {
+          "type": "string"
+        },
+        "kelurahanCode": {
+          "type": "string",
+          "pattern": "^[0-9]{10}$",
+          "description": "10-digit kelurahan/desa code."
+        },
+        "kelurahanName": {
+          "type": "string"
+        },
+        "rt": {
+          "type": "string",
+          "pattern": "^[0-9]{1,3}$",
+          "description": "Rukun Tetangga. Required for rural / kampung addresses without formal street numbers. Essential for COD routing and last-mile parcel delivery.\n"
+        },
+        "rw": {
+          "type": "string",
+          "pattern": "^[0-9]{1,3}$"
+        },
+        "patokan": {
+          "type": "string",
+          "description": "Landmark description. How addresses work in rural Indonesia. Example: \"Depan warung Bu Siti, seberang Masjid Al-Ikhlas\".\n"
+        },
+        "patokanLocationType": {
+          "type": "string",
+          "enum": [
+            "MOSQUE",
+            "CHURCH",
+            "TEMPLE",
+            "SCHOOL",
+            "WARUNG",
+            "MARKET",
+            "HEALTH_CENTER",
+            "VILLAGE_OFFICE",
+            "OTHER"
+          ]
+        },
+        "areaType": {
+          "type": "string",
+          "enum": [
+            "URBAN_RESIDENTIAL",
+            "URBAN_COMMERCIAL",
+            "INDUSTRIAL",
+            "SUBURBAN",
+            "RURAL",
+            "REMOTE",
+            "PORT_AREA",
+            "AIRPORT_AREA",
+            "BONDED_ZONE",
+            "FREE_TRADE_ZONE",
+            "SPECIAL_ECONOMIC_ZONE"
+          ]
+        },
+        "remoteAreaClassification": {
+          "type": "string",
+          "enum": [
+            "NOT_REMOTE",
+            "TERTINGGAL",
+            "TERDEPAN",
+            "TERLUAR",
+            "DISASTER_RECOVERY_AREA"
+          ],
+          "description": "3T classification per Kementerian Desa PDTT"
+        },
+        "accessibility": {
+          "type": "object",
+          "properties": {
+            "motorcycleAccessible": {
+              "type": "boolean"
+            },
+            "carAccessible": {
+              "type": "boolean"
+            },
+            "smallTruckAccessible": {
+              "type": "boolean"
+            },
+            "heavyTruckAccessible": {
+              "type": "boolean"
+            },
+            "containerChassisAccessible": {
+              "type": "boolean"
+            },
+            "requiresBoat": {
+              "type": "boolean"
+            },
+            "requiresOjek": {
+              "type": "boolean"
+            },
+            "roadCondition": {
+              "type": "string",
+              "enum": [
+                "PAVED_GOOD",
+                "PAVED_DAMAGED",
+                "GRAVEL",
+                "DIRT",
+                "UNPAVED"
+              ]
+            }
+          }
+        },
+        "safeLocationForContactlessDelivery": {
+          "type": "string"
+        },
+        "securityAccessRequired": {
+          "type": "boolean"
+        },
+        "operatingHoursForDelivery": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "dayOfWeek": {
+                "type": "string"
+              },
+              "opens": {
+                "type": "string",
+                "format": "time"
+              },
+              "closes": {
+                "type": "string",
+                "format": "time"
+              }
+            }
+          }
+        }
+      },
+      "x-ion-conditional": true
+    }
+  },
+  "required": [
+    "role"
+  ],
+  "additionalProperties": true,
+  "allOf": [
+    {
+      "$ref": "../../../../core/v2/api/v2.0.0/beckn.yaml#/components/schemas/Attributes"
+    },
+    {
+      "if": {
+        "properties": {
+          "role": {
+            "const": "BANK"
+          }
+        },
+        "required": [
+          "role"
+        ]
+      },
+      "then": {
+        "required": [
+          "bankCode"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "role": {
+            "const": "UNDERWRITER"
+          }
+        },
+        "required": [
+          "role"
+        ]
+      },
+      "then": {
+        "required": [
+          "insurerLicenceNumber"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "@context": "https://schema.ion.id/logistics/performance/v1/context.jsonld",
+  "@type": "ion:LogisticsPerformance",
+  "awbNumber": "JNE-2026-00001234",
+  "currentState": "IN_TRANSIT",
+  "lastUpdateAt": "2026-05-15T10:00:00Z",
+  "estimatedDeliveryAt": "2026-05-16T18:00:00Z"
+}

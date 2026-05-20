@@ -1,0 +1,23 @@
+{
+  "@context": {
+    "ion": "https://schema.ion.id/hospitality/offer/v1#",
+    "beckn": "https://spec.beckn.io/vocab/v2.0.0#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "owl": "http://www.w3.org/2002/07/owl#",
+    "skos": "http://www.w3.org/2004/02/skos/core#"
+  },
+  "@graph": [
+    {
+      "@id": "ion:RestaurantOffer",
+      "@type": "rdfs:Class",
+      "rdfs:subClassOf": {
+        "@id": "beckn:Attributes"
+      },
+      "rdfs:label": "RestaurantOffer",
+      "rdfs:comment": "ION Hospitality Restaurant Ordering \u2014 delivery offer, pricing, scheduling, promotions. CRC: HSC-restaurant-ordering",
+      "skos:broader": {
+        "@id": "beckn:Attributes"
+      }
+    }
+  ]
+}

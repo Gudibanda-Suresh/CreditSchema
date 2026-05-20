@@ -1,0 +1,173 @@
+openapi: 3.1.1
+info:
+  title: ION Hospitality Restaurant Ordering Extension (v1)
+  description: >
+    Order line (commitment) attributes for restaurant ordering. Captures per-item selections
+    including customisation choices (size, spice level, add-ons, toppings),
+    special dietary instructions, substitution preferences, and gift notes.
+    x-beckn-attaches-to: Commitment.commitmentAttributes
+  version: 1.0.0
+  license:
+    name: Apache-2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+  contact:
+    name: ION Network
+    url: https://schema.ion.id
+
+components:
+  schemas:
+    RestaurantCommitment:
+      type: object
+      title: RestaurantCommitment
+      description: >
+        Per-item order line for online food ordering.
+        CRC: HSC-restaurant-ordering
+      additionalProperties: true
+      x-ion-closed-extensions: false
+      x-beckn-attaches-to: Commitment.commitmentAttributes
+      x-jsonld:
+        '@context': 'https://schema.ion.id/hospitality/commitment/v1/context.jsonld'
+        '@type': ion:RestaurantCommitment
+      allOf:
+        - $ref: ../../../../core/v2/api/v2.0.0/beckn.yaml#/components/schemas/Attributes
+
+      properties:
+
+        lineId:
+          type: string
+          description: >
+            Unique identifier for this order line within the order.
+            BAP-assigned. Used for modifications and partial cancellations.
+
+        resourceId:
+          type: string
+          description: ID of the RestaurantMenuItem being ordered.
+
+        offerId:
+          type: string
+          description: Offer ID under which this item is being ordered (for promo tracking).
+
+        quantity:
+          type: object
+          additionalProperties: false
+          required: [value, unit]
+          description: Quantity ordered.
+          properties:
+            value:
+              type: number
+              minimum: 1
+            unit:
+              type: string
+              enum: [portion, piece, cup, bowl, plate, set, litre, millilitre]
+
+        lockedPrice:
+          type: object
+          description: >
+            Price locked at /on_select. Includes item price + customisation deltas.
+            Fixed for the duration of the order.
+          x-ion-condition: Set by BPP at on_select
+          additionalProperties: false
+          required: [value, currency]
+          properties:
+            value:
+              type: number
+            currency:
+              type: string
+              const: IDR
+
+        customisationSelections:
+          type: array
+          description: >
+            Buyer's selections from the item's customisationGroups.
+            Required for COMPOSED and WITH_EXTRAS items.
+            Maps groupId → selected optionId(s).
+          x-ion-condition: Required for COMPOSED and WITH_EXTRAS resourceStructure items
+          items:
+            type: object
+            additionalProperties: false
+            required: [groupId, selectedOptions]
+            properties:
+              groupId:
+                type: string
+                description: Matches customisationGroups[].id from RestaurantMenuItem
+              selectedOptions:
+                type: array
+                minItems: 1
+                items:
+                  type: object
+                  additionalProperties: false
+                  required: [optionId]
+                  properties:
+                    optionId:
+                      type: string
+                      description: Matches customisationGroups[].options[].id
+                    quantity:
+                      type: integer
+                      minimum: 1
+                      default: 1
+                      description: >
+                        For add-ons that can be ordered multiple times
+                        (e.g. extra shot of espresso x2).
+
+        specialInstructions:
+          type: string
+          maxLength: 200
+          description: >
+            Per-item free-text buyer instruction.
+            e.g. "Extra crispy", "No onion", "Less spicy", "Separate sauce".
+            Passed to kitchen via BPP KDS (Kitchen Display System).
+
+        dietaryRequest:
+          type: array
+          description: >
+            Structured dietary requests that kitchen must honour.
+            BAP surfaces these as checkboxes; kitchen acknowledges via KDS.
+          items:
+            type: string
+            enum: [NO_PORK, NO_BEEF, NO_SEAFOOD, NO_NUTS, NO_DAIRY, NO_GLUTEN,
+                   VEGAN, VEGETARIAN, HALAL_ONLY, NO_MSG, LOW_SALT, NO_SPICE,
+                   EXTRA_SPICY, NO_ONION, NO_GARLIC, WELL_DONE, MEDIUM, RARE]
+
+        substitutionPreference:
+          type: string
+          enum: [CANCEL_ITEM, SUBSTITUTE_SIMILAR, CONTACT_ME, MERCHANT_DECIDES]
+          description: >
+            What to do if this specific item is unavailable when kitchen starts preparing.
+            CANCEL_ITEM: remove this line and refund.
+            SUBSTITUTE_SIMILAR: merchant substitutes nearest equivalent.
+            CONTACT_ME: BAP/BPP contacts buyer before proceeding.
+            MERCHANT_DECIDES: kitchen decides.
+          default: MERCHANT_DECIDES
+
+        isGift:
+          type: boolean
+          description: Whether this item is being sent as a gift.
+          default: false
+
+        giftMessage:
+          type: string
+          maxLength: 140
+          description: Gift message printed on order or accompanying note.
+          x-ion-condition: Required when isGift is true
+
+        addedAt:
+          type: string
+          format: date-time
+          description: >
+            When this item was added to the cart. Used for group orders
+            where participants join asynchronously.
+
+        addedByParticipantId:
+          type: string
+          description: >
+            In group orders, which participant added this item.
+            Maps to participant identifier in the group order session.
+          x-ion-condition: Required for group order lines
+
+        kitchenNote:
+          type: string
+          description: >
+            Internal kitchen prep note generated by BPP from customisationSelections.
+            Formatted for KDS display. e.g. "NASI GORENG | Extra pedas | No kecap".
+            BPP-generated — not set by BAP.
+          readOnly: true

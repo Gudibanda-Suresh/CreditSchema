@@ -1,0 +1,11 @@
+{
+  "id": "ion-logistics-variant-cross-cutting-v1",
+  "version": "1.0.0",
+  "status": "ready",
+  "sectorCode": "B",
+  "branchType": "cross-cutting",
+  "maintainer": "ION Council \u2014 Sector B Lead",
+  "type": "Variant",
+  "variantName": "cross-cutting",
+  "sector": "ion:logistics"
+}

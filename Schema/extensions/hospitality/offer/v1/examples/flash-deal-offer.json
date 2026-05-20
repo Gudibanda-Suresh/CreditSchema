@@ -1,0 +1,30 @@
+{
+  "@context": "https://schema.ion.id/hospitality/offer/v1/context.jsonld",
+  "@type": "ion:RestaurantOffer",
+  "priceModel": "FIXED",
+  "deliveryFeeModel": "FREE",
+  "freeDeliveryThreshold": 0,
+  "packagingFee": 1000,
+  "deliveryMode": "IMMEDIATE",
+  "estimatedPrepTime": "PT15M",
+  "estimatedDeliveryTime": "PT30M",
+  "offerType": "FLASH_DEAL",
+  "discountType": "PERCENT",
+  "discountValue": 0.5,
+  "maxDiscountAmount": 30000,
+  "minBasketForDiscount": 40000,
+  "subsidyBreakup": {
+    "merchantFundedPct": 30,
+    "platformFundedPct": 70
+  },
+  "isFlashDeal": true,
+  "flashDealExpiresAt": "2026-05-16T18:00:00+07:00",
+  "totalQuantityCap": 50,
+  "remainingQuantity": 23,
+  "startAt": "2026-05-16T17:00:00+07:00",
+  "endAt": "2026-05-16T18:00:00+07:00",
+  "stackable": false,
+  "cancellationPolicy": "https://registry.ion.id/policies/restaurant/cancel/no-cancel",
+  "cancellationWindowSeconds": 30,
+  "availableOnCod": false
+}

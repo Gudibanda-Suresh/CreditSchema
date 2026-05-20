@@ -1,0 +1,17 @@
+{
+  "@context": "https://schema.ion.id/core/identity/v1/context.jsonld",
+  "@type": "ion:IONBusinessIdentity",
+  "businessType": "INDIVIDUAL_MERCHANT",
+  "legalName": "Budi Santoso",
+  "nik": "3171234567890001",
+  "npwp": "0123456789012345",
+  "nib": "1234567890123",
+  "address": {
+    "street": "Jl. Kemang Raya No. 45",
+    "kelurahan": "Bangka",
+    "kecamatan": "Mampang Prapatan",
+    "kabupatenKota": "Jakarta Selatan",
+    "provinsi": "DKI Jakarta",
+    "kodePos": "12730"
+  }
+}

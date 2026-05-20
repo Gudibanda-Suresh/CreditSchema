@@ -1,0 +1,9 @@
+{
+  "@context": "https://schema.ion.id/trade/provider/v1/context.jsonld",
+  "@type": "ion:TradeProvider",
+  "storeStatus": "OPEN",
+  "invoicingModel": "PER_ORDER",
+  "kycStatus": "APPROVED",
+  "nibRegistered": true,
+  "providerCategory": "GENERAL_MERCHANDISE"
+}

@@ -1,0 +1,11 @@
+{
+  "id": "ion-logistics-variant-cold-chain-v1",
+  "version": "1.0.0",
+  "status": "ready",
+  "sectorCode": "B",
+  "branchType": "cold-chain",
+  "maintainer": "ION Council \u2014 Sector B Lead",
+  "type": "Variant",
+  "variantName": "cold-chain",
+  "sector": "ion:logistics"
+}

@@ -1,0 +1,31 @@
+{
+  "@context": "https://schema.ion.id/hospitality/performance/v1/context.jsonld",
+  "@type": "ion:RestaurantPerformance",
+  "kitchenState": "READY_FOR_PICKUP",
+  "kitchenAcceptedAt": "2026-05-16T12:06:00+07:00",
+  "kitchenPreparationStartedAt": "2026-05-16T12:08:00+07:00",
+  "kitchenReadyAt": "2026-05-16T12:24:00+07:00",
+  "riderState": "IN_TRANSIT",
+  "riderId": "DRV-GJK-00123",
+  "riderName": "Agus Setiawan",
+  "riderPhone": "+62-812-9876-5432",
+  "riderPhoto": "https://cdn.platform.ion.id/riders/DRV-GJK-00123.jpg",
+  "riderVehicleType": "MOTORCYCLE",
+  "riderPlateNumber": "B 3456 FGH",
+  "riderAssignedAt": "2026-05-16T12:22:00+07:00",
+  "riderPickedUpAt": "2026-05-16T12:28:00+07:00",
+  "realTimeGps": {
+    "latitude": -6.2145,
+    "longitude": 106.8451,
+    "updatedAt": "2026-05-16T12:33:15+07:00",
+    "heading": 135,
+    "speedKmh": 28
+  },
+  "liveTrackingUrl": "https://track.platform.ion.id/order/ORD-2026-00012345",
+  "estimatedDeliveryAt": "2026-05-16T12:40:00+07:00",
+  "etaWindowMinutes": 5,
+  "distanceRemainingKm": 1.2,
+  "ageVerificationRequired": false,
+  "redeliveryAttempt": 1,
+  "slaBreached": false
+}

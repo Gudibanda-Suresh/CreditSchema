@@ -1,0 +1,33 @@
+{
+  "@context": "https://schema.ion.id/hospitality/contract/v1/context.jsonld",
+  "@type": "ion:HospitalityContract",
+  "deliveryInstructions": "Kantor lantai 8, reception. Minta ke Budi.",
+  "contactlessDelivery": false,
+  "deliveryOtpRequired": false,
+  "ageVerificationRequired": false,
+  "cutleryRequested": true,
+  "ecoPackagingRequested": false,
+  "isGroupOrder": true,
+  "groupOrderSessionId": "GRPORD-2026-001234",
+  "groupOrderInitiatorId": "USR-BUDI-001",
+  "groupOrderParticipants": [
+    {
+      "participantId": "USR-BUDI-001",
+      "name": "Budi",
+      "joinedAt": "2026-05-16T11:45:00+07:00"
+    },
+    {
+      "participantId": "USR-SARI-002",
+      "name": "Sari",
+      "joinedAt": "2026-05-16T11:47:00+07:00"
+    },
+    {
+      "participantId": "USR-ANDI-003",
+      "name": "Andi",
+      "joinedAt": "2026-05-16T11:50:00+07:00"
+    }
+  ],
+  "groupOrderLockedAt": "2026-05-16T12:00:00+07:00",
+  "isGiftOrder": false,
+  "disputeWindowHours": 24
+}

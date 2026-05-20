@@ -1,0 +1,28 @@
+{
+  "@context": "https://schema.ion.id/trade/offer/v1/context.jsonld",
+  "@type": "ion:TradeOffer",
+  "_comment": "Example: Electronics offer — returnable 14 days, manufacturer warranty 1 year, no COD",
+  "cancellationPolicy": "ion://policy/cancel.prepacked.free",
+  "cancellationAllowedReasons": [
+    "CHANGE_OF_MIND",
+    "WRONG_ITEM_ORDERED",
+    "FOUND_BETTER_PRICE"
+  ],
+  "returnable": true,
+  "returnPolicy": "ion://policy/return.electronics.14d-unopened-or-defective-sellerpays",
+  "sellerPickupReturn": true,
+  "returnEvidenceRequirement": "VIDEO_UNBOXING_REQUIRED",
+  "returnEvidenceMinPhotos": 3,
+  "warrantyPolicy": "ion://policy/warranty.manufacturer.1y-distance-service",
+  "disputePolicy": "ion://policy/dispute.consumer.bpsk",
+  "grievanceSlaPolicy": "ion://policy/grievance-sla.consumer.standard",
+  "paymentTermsPolicy": "ion://policy/payment-terms.upfront.full",
+  "timeToShip": "P1D",
+  "availableOnCod": false,
+  "proofOfDeliveryType": "OTP",
+  "contactDetailsConsumerCare": "Samsung Care Indonesia,support@samsung.co.id,0800-112-8888",
+  "displayLanguage": [
+    "id",
+    "en"
+  ]
+}

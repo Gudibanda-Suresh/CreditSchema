@@ -1,0 +1,246 @@
+# ION Hospitality Pattern — delivery-order v1
+# NOT OAS. ION pattern specification document.
+# Food and beverage ordered for delivery or self-pickup.
+# Resource is a prepared food item — made after order placement.
+# CRC: HSC-delivery  Sector: ion:hospitality
+
+id: ion-hospitality-pattern-delivery-order-v1
+version: "1.0.0"
+patternName: delivery-order
+sector: ion:hospitality
+crc: HSC-delivery
+status: ready
+description: >
+  Buyer browses a restaurant or food platform catalogue, selects prepared food
+  or beverage items, and places an order for delivery or self-pickup.
+  The item is prepared after confirmation — not from pre-packed stock.
+  Covers GoFood, GrabFood, Tokopedia Food, and any ION-connected food delivery platform.
+
+participants:
+  BAP: Buyer App Platform (food delivery app)
+  BPP: Seller Platform (restaurant, cloud kitchen, food operator)
+  ION_CATALOG: ION Catalogue Service (Phase 1 only)
+
+phases:
+  phase1:
+    name: Catalog
+    communication: async pub/sub
+    steps:
+      - step: publish_catalog
+        from: BPP
+        to: ION_CATALOG
+        direction: publish
+        requiredFields:
+          - context.domain                                      # ion:hospitality
+          - context.bppId
+          - context.timestamp
+          - message.catalog.provider.id
+          - message.catalog.provider.descriptor.name
+          - message.catalog.provider.providerAttributes.storeStatus
+          - message.catalog.provider.providerAttributes.operatingHours[]
+          - message.catalog.provider.providerAttributes.averagePreparationTime
+          - message.catalog.provider.availableAt[].gps
+          - message.catalog.resources[].id
+          - message.catalog.resources[].resourceAttributes.quantity
+          - message.catalog.resources[].resourceAttributes.images[]
+          - message.catalog.resources[].resourceAttributes.availability.status
+          - message.catalog.resources[].resourceAttributes.preparationTime
+          - message.catalog.resources[].resourceAttributes.classification
+          - message.catalog.resources[].resourceAttributes.allergens[]
+          - message.catalog.resources[].resourceAttributes.countryOfOrigin
+          - message.catalog.resources[].resourceAttributes.ageRestricted
+          - message.catalog.offers[].price
+          - message.catalog.offers[].offerAttributes.cancellationPolicy
+          - message.catalog.offers[].offerAttributes.returnable
+          - message.catalog.offers[].offerAttributes.timeToShip
+          - message.catalog.offers[].offerAttributes.availableOnCod
+          - message.catalog.offers[].offerAttributes.contactDetailsConsumerCare
+          - message.catalog.offers[].offerAttributes.disputePolicy
+          - message.catalog.offers[].offerAttributes.grievanceSlaPolicy
+          - message.catalog.offers[].offerAttributes.paymentTermsPolicy
+        conditionalFields:
+          - field: message.catalog.resources[].resourceAttributes.halalCertNumber
+            condition: required when classification = HALAL
+          - field: message.catalog.resources[].resourceAttributes.customisationGroups[]
+            condition: required when resourceStructure IN [COMPOSED, WITH_EXTRAS]
+          - field: message.catalog.resources[].resourceAttributes.menuCategory
+            condition: recommended for all restaurant resources
+          - field: message.catalog.offers[].offerAttributes.selfPickupOtp
+            condition: required when self-pickup available
+        businessRules:
+          - classification and allergens are mandatory on every resource
+          - No pharmacy sub-object. No regulatory.registrations required for restaurant food
+          - averagePreparationTime drives ETA shown to buyer
+
+  phase2:
+    name: Transaction
+    communication: direct BAP to BPP
+    steps:
+      - step: discover
+        from: BAP
+        to: ION_CATALOG
+        direction: request
+        description: BAP queries for restaurants within delivery radius
+        requiredFields:
+          - context.domain
+          - message.intent.provider.location.gps
+          - message.intent.provider.location.radius
+
+      - step: on_discover
+        from: ION_CATALOG
+        to: BAP
+        direction: callback
+        description: Returns matching restaurant catalogs within radius
+
+      - step: select
+        from: BAP
+        to: BPP
+        direction: request
+        requiredFields:
+          - context.transactionId
+          - message.contract.commitments[].commitmentAttributes.lineId
+          - message.contract.commitments[].commitmentAttributes.resourceId
+          - message.contract.commitments[].commitmentAttributes.offerId
+          - message.contract.commitments[].commitmentAttributes.quantity
+        conditionalFields:
+          - field: message.contract.commitments[].commitmentAttributes.customisationSelections[]
+            condition: required when resource has customisationGroups
+
+      - step: on_select
+        from: BPP
+        to: BAP
+        direction: callback
+        requiredFields:
+          - message.contract.commitments[].commitmentAttributes.price
+          - message.contract.considerations[].considerationAttributes.breakupLineType
+          - message.contract.considerations[].considerationAttributes.totalAmount
+        businessRules:
+          - BPP confirms availability at time of select
+          - BPP may return OUT_OF_STOCK for sold-out daily specials
+          - Quote includes item price + delivery fee + applicable taxes
+
+      - step: init
+        from: BAP
+        to: BPP
+        direction: request
+        requiredFields:
+          - message.contract.participants[].participantAttributes.role   # BUYER
+          - message.contract.participants[].participantAttributes.addressDetail
+          - message.contract.settlements[].settlementAttributes.method
+          - message.contract.settlements[].settlementAttributes.collectedBy
+          - message.contract.contractAttributes.deliveryPreferences.preferredPerformanceMode
+
+      - step: on_init
+        from: BPP
+        to: BAP
+        direction: callback
+        description: BPP confirms receipt and payment method details
+        conditionalFields:
+          - field: message.contract.settlements[].settlementAttributes.methodDetail
+            condition: present for QRIS (QR string), VirtualAccount (VA number), EWallet (deep link)
+
+      - step: confirm
+        from: BAP
+        to: BPP
+        direction: request
+        requiredFields:
+          - message.contract.id
+          - message.contract.participants[].participantAttributes.npwp
+        businessRules:
+          - Payment must be confirmed or committed at this step
+          - Once confirmed, cancellation only allowed within the declared cancellationPolicy window (typically within 5 minutes of confirm, before preparation starts)
+
+      - step: on_confirm
+        from: BPP
+        to: BAP
+        direction: callback
+        requiredFields:
+          - message.contract.id
+          - message.contract.status                                    # ACTIVE
+          - message.contract.performance[].performanceAttributes.performanceMode
+          - message.contract.performance[].performanceAttributes.sla.min
+          - message.contract.performance[].performanceAttributes.sla.max
+        conditionalFields:
+          - field: message.contract.performance[].performanceAttributes.selfPickupCode
+            condition: present when performanceMode = SELF_PICKUP
+          - field: message.contract.performance[].performanceAttributes.deliveryOtp
+            condition: present when proofOfDeliveryType = OTP (set on offer)
+        businessRules:
+          - Preparation begins immediately after on_confirm
+          - Cancellation window is typically very short (5 min) or closed
+
+  phase3:
+    name: Fulfilment
+    steps:
+      - step: on_status [PREPARING]
+        from: BPP
+        to: BAP
+        direction: unsolicited callback
+        description: Kitchen has started preparing the order
+        requiredFields:
+          - message.contract.performance[].status.code   # PREPARING
+
+      - step: on_status [READY_FOR_PICKUP]
+        from: BPP
+        to: BAP
+        direction: unsolicited callback
+        description: Order is ready. Waiting for rider (delivery) or customer (self-pickup).
+        requiredFields:
+          - message.contract.performance[].status.code   # READY_FOR_PICKUP
+
+      - step: on_status [OUT_FOR_DELIVERY]
+        from: BPP
+        to: BAP
+        direction: unsolicited callback
+        description: Rider has picked up the order and is en route
+        requiredFields:
+          - message.contract.performance[].status.code   # OUT_FOR_DELIVERY
+          - message.contract.performance[].performanceAttributes.agentName
+          - message.contract.performance[].performanceAttributes.agentPhone
+          - message.contract.performance[].performanceAttributes.estimatedDeliveryTime
+        conditionalFields:
+          - field: message.contract.performance[].performanceAttributes.realTimeGps
+            condition: present in /on_track response (not in passive on_status)
+
+      - step: on_status [DELIVERED]
+        from: BPP
+        to: BAP
+        direction: unsolicited callback
+        requiredFields:
+          - message.contract.performance[].status.code   # DELIVERED
+          - message.contract.performance[].performanceAttributes.deliveryProofUrl
+
+  phase4:
+    name: Post-Fulfilment
+    steps:
+      - step: rate / on_rate
+        description: Consumer rates food quality, delivery, and restaurant
+      - step: reconcile / on_reconcile
+        description: BAP and BPP agree on net settlement amounts
+
+stateSequence:
+  delivery:
+    - ACCEPTED
+    - PREPARING
+    - READY_FOR_PICKUP
+    - OUT_FOR_DELIVERY
+    - DELIVERED
+  self_pickup:
+    - ACCEPTED
+    - PREPARING
+    - READY_FOR_PICKUP
+    - PICKED_UP
+
+applicableVariants:
+  - cross-cutting      # track, support, rating, reconcile, raise — always available
+  - cancellation       # cancellation before kitchen-accepts or preparation window
+  - cash-on-delivery   # when RestaurantOffer.availableOnCod=true
+  - pre-order          # scheduled advance delivery slots
+  - group-order        # multi-participant shared cart (RestaurantProvider.groupOrderEnabled=true)
+  - age-verification   # alcohol orders — doorstep age check (auto-activates on ageRestricted items)
+
+notes:
+  - No returns for prepared food — returnable: false on all offers
+  - Cancellation window typically 5 minutes post-confirm or closes at PREPARING state
+  - Preparation time drives the PREPARING → READY_FOR_PICKUP window
+  - SLA clock starts at ACCEPTED (order_confirmation)

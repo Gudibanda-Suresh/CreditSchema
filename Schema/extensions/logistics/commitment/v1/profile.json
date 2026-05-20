@@ -1,0 +1,33 @@
+{
+  "id": "ion-logistics-commitment-v1",
+  "version": "1.0.0",
+  "status": "ready",
+  "sectorCode": "B",
+  "attaches-to": "beckn:commitment Attributes",
+  "maintainer": "ION Council \u2014 Sector B Lead",
+  "specVersion": "0.5.1-draft",
+  "type": "AttributePack",
+  "indexing": {
+    "indexable": [
+      {
+        "path": "$.lineId"
+      },
+      {
+        "path": "$.resourceId"
+      }
+    ],
+    "filterable": [
+      {
+        "path": "$.lineId"
+      },
+      {
+        "path": "$.resourceId"
+      }
+    ],
+    "sortable": []
+  },
+  "minimalForDiscovery": [
+    "lineId"
+  ],
+  "packSchema": "./schema.json"
+}

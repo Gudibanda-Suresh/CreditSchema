@@ -1,0 +1,55 @@
+{
+  "id": "ion-hospitality-restaurant-ordering-v1",
+  "version": "1.0.0",
+  "domain": "hospitality",
+  "type": "AttributePack",
+  "name": "ION Hospitality Restaurant Ordering Extension (v1)",
+  "packSchema": "./schema.json",
+  "jsonldContext": "./context.jsonld",
+  "extends": "beckn:Resource",
+  "attachmentPoints": {
+    "resourceAttributes": [
+      "RestaurantMenuItem"
+    ]
+  },
+  "ionResourceCategory": "HSC-restaurant-ordering",
+  "sector": "ion:hospitality",
+  "indexing": {
+    "indexable": [
+      {
+        "path": "$.classification"
+      },
+      {
+        "path": "$.cuisineType"
+      },
+      {
+        "path": "$.spiceLevel"
+      },
+      {
+        "path": "$.menuCategory.id"
+      }
+    ],
+    "filterable": [
+      {
+        "path": "$.classification"
+      },
+      {
+        "path": "$.cuisineType"
+      },
+      {
+        "path": "$.allergens"
+      }
+    ],
+    "sortable": [
+      {
+        "path": "$.itemRating"
+      }
+    ]
+  },
+  "minimalForDiscovery": [
+    "classification",
+    "allergens",
+    "preparationTime",
+    "availability.status"
+  ]
+}

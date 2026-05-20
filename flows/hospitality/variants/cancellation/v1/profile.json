@@ -1,0 +1,10 @@
+{
+  "id": "ion-hospitality-variant-cancellation-v1",
+  "version": "1.0.0",
+  "sector": "ion:hospitality",
+  "variantName": "cancellation",
+  "crc": "HSC-restaurant-ordering",
+  "applicablePatterns": [
+    "delivery-order"
+  ]
+}

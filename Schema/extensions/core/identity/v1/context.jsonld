@@ -1,0 +1,23 @@
+{
+  "@context": {
+    "@version": 1.1,
+    "ion": "https://schema.ion.id/core/identity/v1#",
+    "beckn": "https://spec.beckn.io/vocab/v2.0.0#",
+    "schema": "https://schema.org/",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "npwp": "ion:npwp",
+    "nib": "ion:nib",
+    "nikNumber": "ion:nikNumber",
+    "pkpStatus": "ion:pkpStatus",
+    "legalEntityName": "ion:legalEntityName",
+    "businessType": "ion:businessType",
+    "siupNumber": "ion:siupNumber",
+    "spPIRTNumber": "ion:spPIRTNumber",
+    "IONBusinessIdentity": "ion:IONBusinessIdentity",
+    "@protected": true,
+    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "skos": "http://www.w3.org/2004/02/skos/core#",
+    "owl": "http://www.w3.org/2002/07/owl#"
+  }
+}

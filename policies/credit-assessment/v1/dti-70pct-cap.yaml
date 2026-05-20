@@ -1,0 +1,52 @@
+iri: ion://policy/finance.credit-assessment.dti-70pct-cap
+
+version: "1.0.0"
+
+versionEffectiveFrom: "2026-05-01"
+
+category: CREDIT_ASSESSMENT
+
+subCategory: DTI_COMPUTATION
+
+status: ratified
+
+ratifiedAt: "2026-04-15"
+
+displayText:
+  id: "Batas rasio utang terhadap pendapatan 70% — penghasilan tinggi"
+  en: "Debt-to-income ratio cap at 70% — high income borrowers"
+
+maxDtiPercent: 70
+
+incomeBase: GROSS_MONTHLY_INCOME
+
+existingObligationsIncluded: true
+
+proposedInstallmentIncluded: true
+
+incomeVerificationRequired: true
+
+applicableIncomeTier:
+  monthlyIncomeMin: 8000001
+  currency: IDR
+  note: >
+    OJK allows up to 70% DTI for borrowers with monthly gross income
+    above IDR 8 juta, subject to lender's credit policy. Higher DTI
+    threshold reflects greater repayment capacity at higher income levels.
+
+dtiFormula: "(totalExistingMonthlyObligations + proposedMonthlyInstallment) / grossMonthlyIncome × 100"
+
+applicablePatterns:
+  - personal-loan
+  - mortgage
+  - vehicle-loan
+  - business-loan
+  - revolving-credit
+
+regulatoryBasis:
+  - "OJK POJK 40/2019 tentang Penilaian Kualitas Aset Bank Umum"
+  - "OJK Surat Edaran tentang Batas Angsuran Kredit Konsumtif"
+
+supersededBy: null
+
+deprecatedAt: null

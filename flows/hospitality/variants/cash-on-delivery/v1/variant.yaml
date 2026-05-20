@@ -1,0 +1,64 @@
+# ION Hospitality Variant — cash-on-delivery v1
+
+id: ion-hospitality-variant-cash-on-delivery-v1
+version: "1.0.0"
+variantName: cash-on-delivery
+sector: ion:hospitality
+appliesTo:
+  - delivery-order
+status: ready
+description: >
+  Cash on Delivery variant for restaurant food orders. Consumer pays
+  the rider in cash at doorstep. Rider collects and remits to
+  restaurant or platform. OTP used for high-value COD orders.
+
+activationCondition: >
+  Activates when RestaurantOffer.availableOnCod is true
+  AND consumer selects COD as payment method at /init.
+
+phases:
+  init_cod:
+    name: COD Declaration
+    steps:
+      - step: init (COD)
+        from: BAP
+        to: BPP
+        direction: request
+        description: Consumer selects COD at payment step
+        requiredFields:
+          - message.contract.settlements[].settlementAttributes.method  # COD
+          - message.contract.settlements[].settlementAttributes.collectedBy  # AGENT
+        conditionalFields:
+          - field: message.contract.considerations[].considerationAttributes.codAmount
+            condition: Required — total cash the rider will collect
+
+  delivery_cod:
+    name: COD Collection at Delivery
+    steps:
+      - step: on_status [ARRIVING]
+        from: BPP
+        to: BAP
+        direction: unsolicited callback
+        description: Rider is approaching. BAP shows COD amount to consumer.
+        requiredFields:
+          - message.contract.performance[].performanceAttributes.riderState  # ARRIVING
+          - message.contract.considerations[].considerationAttributes.codAmount
+
+      - step: on_status [DELIVERED]
+        from: BPP
+        to: BAP
+        direction: unsolicited callback
+        description: Rider confirms cash collected and order delivered
+        requiredFields:
+          - message.contract.performance[].performanceAttributes.riderState  # DELIVERED
+          - message.contract.performance[].performanceAttributes.deliveredAt
+          - message.contract.performance[].performanceAttributes.deliveryProofPhotoUrl
+        conditionalFields:
+          - field: message.contract.performance[].performanceAttributes.deliveryOtpVerifiedAt
+            condition: Present when deliveryOtpRequired was true on the contract
+
+businessRules:
+  - codAmount must not exceed RestaurantOffer.codMaxAmount
+  - Rider app records cash collected; platform reconciles next settlement cycle
+  - If consumer cannot pay (no cash/exact change) delivery fails — rider returns order
+  - COD eligibility re-evaluated at on_select via RestaurantOffer.codEligibilityForBuyer

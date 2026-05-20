@@ -1,0 +1,10 @@
+{
+  "@context": "https://schema.ion.id/logistics/offer/v1/context.jsonld",
+  "@type": "ion:LogisticsOffer",
+  "serviceLevel": "REGULAR",
+  "transportMode": "MOTORCYCLE",
+  "rateLogic": "WEIGHT_BASED",
+  "selectRequired": false,
+  "availableOnCod": true,
+  "cancellationPolicy": "https://registry.ion.id/policies/logistics/cancellation/standard"
+}

@@ -1,0 +1,103 @@
+iri: ion://policy/finance.collections-conduct.ojk-pojk-22-2023
+
+version: "1.0.0"
+
+versionEffectiveFrom: "2026-05-01"
+
+category: COLLECTIONS_CONDUCT
+
+subCategory: ETHICAL_COLLECTIONS
+
+status: ratified
+
+ratifiedAt: "2026-04-15"
+
+displayText:
+  id: "Standar etika penagihan kredit — POJK 22/2023"
+  en: "Ethical debt collection standards — OJK POJK 22/2023"
+
+scopeOfApplication: ALL_CREDIT_PRODUCTS_AND_LENDER_TYPES
+
+permittedContactHours:
+  weekdays: "08:00 - 20:00 WIB"
+  saturday: "08:00 - 17:00 WIB"
+  sunday: NOT_PERMITTED
+  publicHolidays: NOT_PERMITTED
+
+permittedContactMethods:
+  - PHONE_CALL
+  - SMS
+  - WHATSAPP
+  - EMAIL
+  - IN_PERSON_VISIT_WITH_PRIOR_NOTICE
+
+prohibitedActions:
+  - CONTACTING_NON_EMERGENCY_CONTACTS_WITHOUT_PRIOR_CONSENT
+  - THREATENING_VIOLENCE_OR_HARM
+  - USING_INTIMIDATING_LANGUAGE
+  - CONTACTING_BORROWER_FAMILY_EMPLOYER_WITHOUT_CONSENT
+  - PUBLIC_SHAMING_OR_SOCIAL_MEDIA_EXPOSURE
+  - CONTACTING_OUTSIDE_PERMITTED_HOURS
+  - MULTIPLE_CALLS_WITHIN_SAME_HOUR
+  - IMPERSONATING_LAW_ENFORCEMENT
+  - MISREPRESENTING_DEBT_AMOUNT
+
+maxContactAttemptsPerDay: 3
+
+collectorCertification:
+  required: true
+  certificationBody: ASOSIASI_COLLECTOR_NASIONAL
+  backgroundCheckRequired: true
+
+thirdPartyDebtCollectors:
+  allowed: true
+  mustBeRegisteredWith: OJK
+  lenderRemainsResponsibleForConductOf: true
+
+dataSecurity:
+  borrowerDataSharedOnlyForCollectionPurpose: true
+  collectorNdaRequired: true
+
+escalationOfPhysicalVisit:
+  priorNoticeRequired: true
+  noticeLeadTimeDays: 3
+  visitOnlyDuringPermittedHours: true
+  identificationRequired: true
+
+collateralExecution:
+  requiresCourtOrder: true
+  fiduciaDirectExecutionFidusiaAct: true
+  note: >
+    MK Decision 2/PUU-XIX/2021: fiducia direct execution without court
+    order only allowed when borrower has consented in writing at origination
+    AND no dispute exists. If borrower objects, court order required.
+
+borrowerRightToComplain:
+  complaintChannelRef: ion://policy/finance.dispute.consumer-ojk-pojk-18
+
+recordKeepingYears: 5
+
+applicablePatterns:
+  - personal-loan
+  - mortgage
+  - vehicle-loan
+  - business-loan
+  - revolving-credit
+  - bnpl
+
+applicableLenderTypes:
+  - BANK_UMUM
+  - BPR
+  - MULTIFINANCE
+  - LPBBTI_P2P
+  - LPBBTI_DIGITAL
+
+regulatoryBasis:
+  - "OJK POJK 22/2023 tentang Perlindungan Konsumen dan Masyarakat di Sektor Jasa Keuangan"
+  - "OJK POJK 77/2016 tentang Layanan Pinjam Meminjam Uang Berbasis Teknologi Informasi"
+  - "Putusan Mahkamah Konstitusi No.2/PUU-XIX/2021 tentang Eksekusi Jaminan Fidusia"
+  - "UU 8/1999 tentang Perlindungan Konsumen"
+
+supersededBy: null
+
+deprecatedAt: null

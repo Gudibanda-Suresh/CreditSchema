@@ -1,0 +1,135 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schema.ion.id/core/address/v1",
+  "title": "IONAddressSubdivisions",
+  "type": "object",
+  "properties": {
+    "provinsiCode": {
+      "type": "string",
+      "enum": [
+        "BPS-11",
+        "BPS-12",
+        "BPS-13",
+        "BPS-14",
+        "BPS-15",
+        "BPS-16",
+        "BPS-17",
+        "BPS-18",
+        "BPS-19",
+        "BPS-21",
+        "BPS-31",
+        "BPS-32",
+        "BPS-33",
+        "BPS-34",
+        "BPS-35",
+        "BPS-36",
+        "BPS-51",
+        "BPS-52",
+        "BPS-53",
+        "BPS-61",
+        "BPS-62",
+        "BPS-63",
+        "BPS-64",
+        "BPS-65",
+        "BPS-71",
+        "BPS-72",
+        "BPS-73",
+        "BPS-74",
+        "BPS-75",
+        "BPS-76",
+        "BPS-81",
+        "BPS-82",
+        "BPS-91",
+        "BPS-92",
+        "BPS-94"
+      ],
+      "description": "Indonesian province code using BPS 2-digit numeric codes prefixed with BPS-. 34 provinces. Used for serviceability, tax zone determination, and logistics pricing.\n",
+      "example": "BPS-31",
+      "x-ion-regulatory": "Permendagri 72/2019 tentang Perubahan atas Permendagri 137/2017"
+    },
+    "kabupatenCode": {
+      "type": "string",
+      "pattern": "^[0-9]{4}$",
+      "description": "BPS 4-digit kabupaten/kota code. 514 kabupaten and kota in Indonesia. Used for granular serviceability and tax zone resolution.\n",
+      "example": "3171",
+      "x-ion-regulatory": "Permendagri 72/2019"
+    },
+    "kelurahan": {
+      "type": "string",
+      "description": "Village or urban administrative zone (kelurahan/desa). Required for precise last-mile delivery address.\n",
+      "example": "Gambir",
+      "x-ion-conditional": true,
+      "x-ion-condition": "Required for delivery addresses"
+    },
+    "kecamatan": {
+      "type": "string",
+      "description": "District or sub-city (kecamatan). Administrative level between kabupaten and kelurahan.\n",
+      "example": "Gambir",
+      "x-ion-conditional": true,
+      "x-ion-condition": "Required for delivery addresses"
+    },
+    "rt": {
+      "type": "string",
+      "description": "Rukun Tetangga — neighborhood group, typically ~40 households. Critical for last-mile delivery in Indonesia — riders use RT/RW to locate specific houses in dense residential areas.\n",
+      "example": "02"
+    },
+    "rw": {
+      "type": "string",
+      "description": "Rukun Warga — association of RTs, typically ~400 people. Used together with RT for precise address resolution.\n",
+      "example": "03"
+    },
+    "postalCode": {
+      "type": "string",
+      "pattern": "^[0-9]{5}$",
+      "description": "Indonesian kodepos (postal code). 5 digits. Distinct from Beckn core area_code which conflates many country-specific codes.\n",
+      "example": "12190",
+      "x-ion-regulatory": "PermenKomInfo — Standar Kodepos Nasional"
+    },
+    "addressType": {
+      "type": "string",
+      "enum": [
+        "HOME",
+        "OFFICE",
+        "APARTMENT",
+        "BOARDING_HOUSE",
+        "WAREHOUSE",
+        "PO_BOX",
+        "PICKUP_POINT",
+        "OTHER"
+      ],
+      "description": "Address classification. Affects delivery SLA and surcharges — offices have restricted delivery hours, apartments require lobby/concierge handling, warehouses accept larger shipments. BOARDING_HOUSE (kost) is common in Indonesian urban delivery.\n",
+      "example": "HOME"
+    },
+    "receiverInstructions": {
+      "type": "string",
+      "maxLength": 500,
+      "description": "Instructions for delivery receiver. Distinct from buyerInstructions — used for gift orders where receiver != buyer, and for handover preferences (leave at door, signature required, call first).\n",
+      "example": "Tinggalkan di pos satpam apartemen. Jangan ketuk pintu."
+    },
+    "gpsAccuracyMeters": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Accuracy of GPS coordinate in metres. Required for pin-point delivery addresses in unaddressed areas (kampung, peri-urban). Affects agent last-mile routing.\n",
+      "example": 10
+    },
+    "landmark": {
+      "type": "string",
+      "description": "Notable nearby landmark for finding the address. Common in Indonesian urban delivery where street numbering is inconsistent.\n",
+      "example": "Sebelah Indomaret, seberang masjid"
+    },
+    "blockUnit": {
+      "type": "string",
+      "description": "Block/unit identifier for apartments and complexes. Beckn core 'door' captures house number; this captures block/floor/unit where applicable.\n",
+      "example": "Blok A3 Lantai 12 Unit 05"
+    }
+  },
+  "required": [
+    "provinsiCode"
+  ],
+  "additionalProperties": true,
+  "allOf": [
+    {
+      "$ref": "../../../../core/v2/api/v2.0.0/beckn.yaml#/components/schemas/Attributes"
+    }
+  ]
+}

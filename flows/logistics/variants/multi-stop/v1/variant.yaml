@@ -1,0 +1,168 @@
+# ION Logistics Variant — Multi-Stop v1
+# NOT OAS. ION variant specification document.
+
+id: ion-logistics-variant-multi-stop-v1
+version: "1.0.0"
+variantType: multi-stop
+sector: ion:logistics
+status: ready
+description: >
+  Single-booking, single-rider (or single-AWB) delivery visiting one pickup
+  stop and two or more drop stops in declared sequence. Each stop is a
+  separate Performance record. Applies to P2P hyperlocal dispatches and
+  parcel bookings with routingTopology P2P_MULTI_STOP.
+
+appliesTo:
+  - parcel
+  - hyperlocal
+
+window:
+  earliest: init
+  latest: "on_status[DELIVERED]"
+
+activationTrigger: >
+  offer.routingTopology = P2P_MULTI_STOP OR
+  (offer.routingTopology = P2P AND count(performance[].type=DROP) >= 2)
+
+subBranches:
+
+  multi-stop-booking:
+    id: multi-stop-booking
+    description: >
+      BAP declares multiple stops at init. BPP confirms all stops with
+      individual verification methods and the single AWB at on_confirm.
+      All stops share one Commitment and one Consideration.
+
+    steps:
+      - step: init
+        from: BAP
+        to: BPP
+        direction: request
+        description: >
+          BAP provides one PICKUP Performance and two or more DROP Performance
+          records. Each carries address, contact, time window, and the
+          packageIds[] it covers. Verification type per stop is declared here
+          but the actual OTP/barcode is issued at on_confirm.
+        additionalRequiredFields:
+          - message.contract.performance[?type=PICKUP].performanceAttributes.sequence
+          - message.contract.performance[?type=PICKUP].performanceAttributes.type
+          - message.contract.performance[?type=PICKUP].performanceAttributes.packageIds[]
+          - message.contract.performance[?type=DROP].performanceAttributes.sequence
+          - message.contract.performance[?type=DROP].performanceAttributes.type
+          - message.contract.performance[?type=DROP].performanceAttributes.packageIds[]
+          - message.contract.performance[?type=DROP].performanceAttributes.location.address
+          - message.contract.performance[?type=DROP].performanceAttributes.contact
+        conditionalFields:
+          - field: message.contract.performance[?type=DROP].performanceAttributes.codAmount
+            condition: required per-stop when settlement.method=COD and that stop has a cod obligation
+          - field: message.contract.performance[?type=DROP].performanceAttributes.verification.type
+            condition: OTP | BARCODE | PHOTO — declared at init, activated at on_confirm
+
+      - step: on_init
+        from: BPP
+        to: BAP
+        direction: callback
+        description: >
+          BPP confirms serviceability for all stops and returns the
+          multi-stop tariff breakup including MULTI_STOP_FEE lines.
+          COD handling fees per stop returned as COD_FEE breakup lines
+          with stopRef.
+        additionalRequiredFields:
+          - message.contract.consideration[].considerationAttributes.breakup[?titleType=MULTI_STOP_FEE]
+        conditionalFields:
+          - field: message.contract.consideration[].considerationAttributes.breakup[?titleType=COD_FEE].stopRef
+            condition: required when a COD_FEE breakup line covers a specific stop
+
+      - step: confirm
+        from: BAP
+        to: BPP
+        direction: request
+        description: Binding commit. All stops confirmed with their cod obligations and payment method.
+        additionalRequiredFields:
+          - message.contract.performance[].performanceAttributes.sequence
+          - message.contract.performance[].performanceAttributes.type
+          - message.contract.performance[].performanceAttributes.packageIds[]
+
+      - step: on_confirm
+        from: BPP
+        to: BAP
+        direction: callback
+        description: >
+          BPP issues booking. Returns AWB shared across all stops, pre-assigned
+          agent (if applicable), per-stop verification credentials
+          (OTP values / barcode strings), and tracking URL.
+        additionalRequiredFields:
+          - message.contract.performance[?type=PICKUP].performanceAttributes.awbNumber
+          - message.contract.performance[].performanceAttributes.verification.status
+        conditionalFields:
+          - field: message.contract.performance[?type=PICKUP].performanceAttributes.agentDetails
+            condition: required when offer.agentAssignmentModel=PRE_ASSIGNED
+          - field: message.contract.performance[?type=PICKUP].performanceAttributes.tracking.url
+            condition: always recommended; required when offer supports live tracking
+          - field: message.contract.performance[?type=DROP].performanceAttributes.verification.otp
+            condition: populated when verification.type=OTP
+          - field: message.contract.performance[?type=DROP].performanceAttributes.verification.barcode
+            condition: populated when verification.type=BARCODE
+          - field: message.contract.performance[?type=PICKUP].performanceAttributes.executionLogs[]
+            condition: BPP populates ORDER_CONFIRMED and RIDER_ASSIGNED log entries at on_confirm
+        schemaPacks:
+          logistics: [performance/v1, consideration/v1, commitment/v1]
+
+  multi-stop-status:
+    id: multi-stop-status
+    description: >
+      BPP pushes on_status per stop. Each push carries the specific Performance
+      record for the stop that changed state. The pickup Performance moves through
+      the normal READY_FOR_PICKUP → OUT_FOR_PICKUP → PICKED_UP sequence.
+      Each drop Performance independently transitions PENDING → OUT_FOR_DELIVERY
+      → DELIVERED (or DELIVERY_ATTEMPT_FAILED for COD refusal).
+    steps:
+      - step: on_status
+        trigger: PICKED_UP
+        from: BPP
+        to: BAP
+        direction: unsolicited
+        description: Pickup stop confirmed. AWB scanned. All package weights finalised.
+        additionalRequiredFields:
+          - message.contract.performance[?type=PICKUP].performanceAttributes.proofOfPickup
+
+      - step: on_status
+        trigger: OUT_FOR_DELIVERY
+        from: BPP
+        to: BAP
+        direction: unsolicited
+        description: >
+          Rider en route to next drop stop. The specific Performance record
+          for that drop is pushed. Stops are delivered in sequence order.
+        additionalRequiredFields:
+          - message.contract.performance[?type=DROP].performanceAttributes.estimatedDeliveryTime
+
+      - step: on_status
+        trigger: DELIVERED
+        from: BPP
+        to: BAP
+        direction: unsolicited
+        description: >
+          Individual drop stop delivered. Proof of delivery captured for that stop.
+          Contract reaches COMPLETE only when ALL drop stops reach DELIVERED
+          or a terminal exception state.
+        additionalRequiredFields:
+          - message.contract.performance[?type=DROP].performanceAttributes.proofOfDelivery
+          - message.contract.performance[?type=DROP].performanceAttributes.deliveryTimestamp
+        conditionalFields:
+          - field: message.contract.settlements[].settlementAttributes.codAmountCollected
+            condition: required for the specific stop when codAmount was declared and collection succeeded
+
+businessRules:
+  - All stops MUST share the same Commitment id. Multiple commitments per multi-stop booking is not supported.
+  - Sequence values MUST be unique within a booking and MUST start at 1.
+  - The single PICKUP stop MUST have sequence=1.
+  - packageIds[] on each stop MUST reference only package ids declared in commitmentAttributes.packages[].
+  - A package id MAY appear on only one DROP stop. If it appears on both, the payload is invalid.
+  - The AWB declared at on_confirm MUST be the same string across all Performance records of the same booking (shared AWB model).
+  - COD amount per stop is independent. A booking may have COD on some drops and not others.
+  - If any stop fails permanently (DELIVERY_FAILED_FINAL), the remaining stops MAY continue at LSP discretion per their SLA policy. The contract does not auto-cancel on a single stop failure.
+
+policyReferences:
+  - ion://policy/liability.multi-stop-partial-delivery
+  - ion://policy/sla.multi-stop-completion

@@ -1,0 +1,18 @@
+{
+  "@context": "https://schema.ion.id/logistics/resource/v1/context.jsonld",
+  "@type": "ion:LogisticsShipment",
+  "serviceType": "PARCEL",
+  "quantity": {
+    "value": 1,
+    "unit": "package"
+  },
+  "weight": {
+    "value": 2.5,
+    "unit": "kg"
+  },
+  "dimensions": {
+    "lengthCm": 30,
+    "widthCm": 20,
+    "heightCm": 15
+  }
+}

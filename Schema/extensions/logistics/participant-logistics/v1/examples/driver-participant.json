@@ -1,0 +1,8 @@
+{
+  "@context": "https://schema.ion.id/logistics/participant-logistics/v1/context.jsonld",
+  "@type": "ion:LogisticsParticipantAddendum",
+  "role": "DRIVER",
+  "vehicleType": "MOTORCYCLE",
+  "vehicleRegistration": "B 1234 XYZ",
+  "driverLicenceNumber": "1234567890123456"
+}

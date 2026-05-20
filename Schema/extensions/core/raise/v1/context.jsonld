@@ -1,0 +1,32 @@
+{
+  "@context": {
+    "@version": 1.1,
+    "ion": "https://schema.ion.id/core/raise/v1#",
+    "beckn": "https://spec.beckn.io/vocab/v2.0.0#",
+    "schema": "https://schema.org/",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "id": "@id",
+    "externalRef": "ion:externalRef",
+    "title": "ion:title",
+    "description": "ion:description",
+    "type": "ion:type",
+    "priority": "ion:priority",
+    "raisedBy": "ion:raisedBy",
+    "assignedTo": "ion:assignedTo",
+    "contractId": "ion:contractId",
+    "reconId": "ion:reconId",
+    "status": "ion:status",
+    "thread": "ion:thread",
+    "resolution": "ion:resolution",
+    "sla": "ion:sla",
+    "createdAt": "ion:createdAt",
+    "updatedAt": "ion:updatedAt",
+    "resolvedAt": "ion:resolvedAt",
+    "IONTicket": "ion:IONTicket",
+    "@protected": true,
+    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "skos": "http://www.w3.org/2004/02/skos/core#",
+    "owl": "http://www.w3.org/2002/07/owl#"
+  }
+}

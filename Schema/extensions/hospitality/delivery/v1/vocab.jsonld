@@ -1,0 +1,121 @@
+{
+  "@context": {
+    "ion": "https://schema.ion.id/hospitality/delivery/v1#",
+    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#"
+  },
+  "@graph": [
+    {
+      "@id": "ion:RestaurantMenuItem",
+      "@type": "rdfs:Class",
+      "rdfs:label": "RestaurantMenuItem",
+      "rdfs:comment": "Resource attributes for prepared food and beverage items available for delivery or self-pickup in the Hospitality sector.",
+      "rdfs:subClassOf": {
+        "@id": "beckn:Resource"
+      }
+    },
+    {
+      "@id": "ion:preparationTime",
+      "@type": "rdf:Property",
+      "rdfs:label": "preparationTime",
+      "rdfs:comment": "Time from order confirm to item ready for pickup or dispatch. ISO 8601 duration. Used for SLA computation and ETA display."
+    },
+    {
+      "@id": "ion:menuCategory",
+      "@type": "rdf:Property",
+      "rdfs:label": "menuCategory",
+      "rdfs:comment": "Menu section this item belongs to. Drives display order and grouping in buyer app menu screens."
+    },
+    {
+      "@id": "ion:customisationGroups",
+      "@type": "rdf:Property",
+      "rdfs:label": "customisationGroups",
+      "rdfs:comment": "Customisation groups for COMPOSED and WITH_EXTRAS resources. Each group defines choices the buyer makes at order time (e.g. size, spice level, toppings)."
+    },
+    {
+      "@id": "ion:quantity",
+      "@type": "rdf:Property",
+      "rdfs:label": "quantity",
+      "rdfs:comment": "Quantity sold per order line. Unit options include portion, piece, cup, bowl, plate, set."
+    },
+    {
+      "@id": "ion:itemRating",
+      "@type": "rdf:Property",
+      "rdfs:label": "itemRating",
+      "rdfs:comment": "Aggregate item rating 1-5. Maintained by the BPP from verified purchase ratings."
+    },
+    {
+      "@id": "ion:classification",
+      "@type": "rdf:Property",
+      "rdfs:label": "classification",
+      "rdfs:comment": "Dietary classification for halal, vegetarian status",
+      "skos:broader": {
+        "@id": "ion:RestaurantMenuItem"
+      }
+    },
+    {
+      "@id": "ion:allergens",
+      "@type": "rdf:Property",
+      "rdfs:label": "allergens",
+      "rdfs:comment": "Declared allergens present in this menu item",
+      "skos:broader": {
+        "@id": "ion:RestaurantMenuItem"
+      }
+    },
+    {
+      "@id": "ion:halalCertNumber",
+      "@type": "rdf:Property",
+      "rdfs:label": "halalCertNumber",
+      "rdfs:comment": "MUI/BPJPH halal certificate number",
+      "skos:broader": {
+        "@id": "ion:RestaurantMenuItem"
+      }
+    },
+    {
+      "@id": "ion:isAlcoholic",
+      "@type": "rdf:Property",
+      "rdfs:label": "isAlcoholic",
+      "rdfs:comment": "Whether the item contains alcohol",
+      "skos:broader": {
+        "@id": "ion:RestaurantMenuItem"
+      }
+    },
+    {
+      "@id": "ion:cuisineType",
+      "@type": "rdf:Property",
+      "rdfs:label": "cuisineType",
+      "rdfs:comment": "Cuisine type for discovery and filtering",
+      "skos:broader": {
+        "@id": "ion:RestaurantMenuItem"
+      }
+    },
+    {
+      "@id": "ion:spiceLevel",
+      "@type": "rdf:Property",
+      "rdfs:label": "spiceLevel",
+      "rdfs:comment": "Spice level of the dish",
+      "skos:broader": {
+        "@id": "ion:RestaurantMenuItem"
+      }
+    },
+    {
+      "@id": "ion:nutritionalInfo",
+      "@type": "rdf:Property",
+      "rdfs:label": "nutritionalInfo",
+      "rdfs:comment": "Nutritional summary per serving",
+      "skos:broader": {
+        "@id": "ion:RestaurantMenuItem"
+      }
+    },
+    {
+      "@id": "ion:bpomRegistration",
+      "@type": "rdf:Property",
+      "rdfs:label": "bpomRegistration",
+      "rdfs:comment": "BPOM registration number for pre-packaged ingredients",
+      "skos:broader": {
+        "@id": "ion:RestaurantMenuItem"
+      }
+    }
+  ]
+}

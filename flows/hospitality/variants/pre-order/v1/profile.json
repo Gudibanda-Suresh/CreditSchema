@@ -1,0 +1,10 @@
+{
+  "id": "ion-hospitality-variant-pre-order-v1",
+  "version": "1.0.0",
+  "sector": "ion:hospitality",
+  "variantName": "pre-order",
+  "crc": "HSC-restaurant-ordering",
+  "applicablePatterns": [
+    "delivery-order"
+  ]
+}

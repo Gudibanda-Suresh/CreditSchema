@@ -1,0 +1,10 @@
+{
+  "id": "ion-hospitality-pattern-delivery-order-v1",
+  "version": "1.0.0",
+  "type": "Pattern",
+  "patternName": "delivery-order",
+  "sector": "ion:hospitality",
+  "crc": "HSC-delivery",
+  "name": "ION Hospitality Food Delivery Pattern",
+  "status": "ready"
+}

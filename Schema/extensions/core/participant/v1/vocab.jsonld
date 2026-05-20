@@ -1,0 +1,59 @@
+{
+  "@context": {
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "ion": "https://schema.ion.id/core/participant/v1#"
+  },
+  "@graph": [
+    {
+      "@id": "ion:IONParticipant",
+      "@type": "rdfs:Class",
+      "rdfs:label": "ION Participant Attributes",
+      "rdfs:comment": "Cross-sector participant attributes attaching to beckn:Participant.participantAttributes. Carries role, Indonesian business/individual identity, authorised-signatory metadata, and full Indonesian administrative address hierarchy with accessibility.",
+      "rdfs:subClassOf": {
+        "@id": "beckn:Participant"
+      }
+    },
+    {
+      "@id": "ion:role",
+      "@type": "rdfs:Property",
+      "rdfs:label": "role",
+      "rdfs:comment": "Role this participant plays in the transaction. Spans all ION sectors (BAP, BPP, PROVIDER, MERCHANT, BUYER, SELLER, AGENT, BANK, UNDERWRITER, CONSIGNOR, CONSIGNEE, SHIPPER, NOTIFY_PARTY, FORWARDER, ACTUAL_CARRIER, CUSTOMS_BROKER, INSURANCE_BROKER, DRIVER, CUSTOMS_AUTHORITY, GOVERNMENT_BUYER)."
+    },
+    {
+      "@id": "ion:subscriberId",
+      "@type": "rdfs:Property",
+      "rdfs:label": "subscriberId",
+      "rdfs:comment": "ION-registered subscriber ID when the participant is itself a subscriber. Not applicable for individuals (end-consumer CONSIGNEE in B2C)."
+    },
+    {
+      "@id": "ion:npwp",
+      "@type": "rdfs:Property",
+      "rdfs:label": "npwp",
+      "rdfs:comment": "NPWP (Nomor Pokok Wajib Pajak) tax ID. 16 digits post-2024 (Indonesia migrated from 15-digit to 16-digit format per PMK 112/2022). Some implementations still accept legacy 15-digit format via the punctuated pattern below."
+    },
+    {
+      "@id": "ion:nib",
+      "@type": "rdfs:Property",
+      "rdfs:label": "nib",
+      "rdfs:comment": "Business registration number (Nomor Induk Berusaha), 13 digits."
+    },
+    {
+      "@id": "ion:nik",
+      "@type": "rdfs:Property",
+      "rdfs:label": "nik",
+      "rdfs:comment": "Indonesian customs registration number (Nomor Identitas Kepabeanan) for international trade."
+    },
+    {
+      "@id": "ion:ktpNumber",
+      "@type": "rdfs:Property",
+      "rdfs:label": "ktpNumber",
+      "rdfs:comment": "KTP (national ID) number, 16 digits. Used for DRIVER and optional consignee verification."
+    },
+    {
+      "@id": "ion:addressDetail",
+      "@type": "rdfs:Property",
+      "rdfs:label": "addressDetail",
+      "rdfs:comment": "Full Indonesian administrative hierarchy plus landmark and accessibility metadata. Applies to participants with a physical location: CONSIGNOR, CONSIGNEE, SHIPPER, NOTIFY_PARTY, MERCHANT, BANK branch, CUSTOMS_BROKER office, buyer/seller for trade, etc."
+    }
+  ]
+}

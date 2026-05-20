@@ -1,0 +1,367 @@
+openapi: 3.1.1
+info:
+  title: ION Hospitality Restaurant Ordering Extension (v1)
+  description: >
+    Offer-level attributes for restaurant ordering and self-pickup. Covers pricing model,
+    delivery windows, delivery fee structure, packaging fee, surge pricing,
+    promotional offers (platform-funded vs merchant-funded), pre-order slot scheduling,
+    payment method eligibility, cancellation policy, and platform-specific features
+    (flash deals, bundle offers, free delivery thresholds).
+
+    Designed for Grab Food, Gojek GoFood, Zomato, Swiggy style offer publishing.
+
+    x-beckn-attaches-to: Offer.offerAttributes
+  version: 1.0.0
+  license:
+    name: Apache-2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+  contact:
+    name: ION Network
+    url: https://schema.ion.id
+
+components:
+  schemas:
+    RestaurantOffer:
+      type: object
+      title: RestaurantOffer
+      description: >
+        Offer attributes for online food ordering.
+        CRC: HSC-restaurant-ordering
+      additionalProperties: true
+      x-ion-closed-extensions: false
+      x-beckn-attaches-to: Offer.offerAttributes
+      x-jsonld:
+        '@context': 'https://schema.ion.id/hospitality/offer/v1/context.jsonld'
+        '@type': ion:RestaurantOffer
+      allOf:
+        - $ref: ../../../../core/v2/api/v2.0.0/beckn.yaml#/components/schemas/Attributes
+
+      properties:
+
+        # ── Pricing and fees ───────────────────────────────────────
+        priceModel:
+          type: string
+          enum: [FIXED, VARIABLE_BY_PORTION, VARIABLE_BY_WEIGHT, SET_MEAL]
+          description: >
+            FIXED: item has a single price.
+            VARIABLE_BY_PORTION: different portions have different prices (S/M/L).
+            VARIABLE_BY_WEIGHT: priced per gram/kg (e.g. live seafood).
+            SET_MEAL: bundle of items at a combined price.
+
+        deliveryFeeModel:
+          type: string
+          enum: [FLAT, DISTANCE_BASED, FREE, PLATFORM_SUBSIDISED, SURGE]
+          description: >
+            How the delivery fee for this offer is calculated.
+            FLAT: fixed fee regardless of distance.
+            DISTANCE_BASED: fee increases with distance.
+            FREE: no delivery fee (merchant or platform absorbs).
+            PLATFORM_SUBSIDISED: platform subsidises a portion.
+            SURGE: dynamic fee based on demand/supply.
+
+        deliveryFeeAmount:
+          type: number
+          description: Flat delivery fee in IDR. Required when deliveryFeeModel is FLAT.
+          x-ion-condition: Required when deliveryFeeModel is FLAT
+
+        freeDeliveryThreshold:
+          type: number
+          description: >
+            Minimum basket value in IDR above which delivery fee is waived.
+            Displayed as "Free delivery above Rp X" in BAP.
+          x-ion-condition: Required when deliveryFeeModel is FREE or PLATFORM_SUBSIDISED
+
+        packagingFee:
+          type: number
+          description: >
+            Packaging/container fee charged per order in IDR.
+            Common in Indonesia for biodegradable packaging compliance.
+          example: 2000
+
+        packagingFeePerItem:
+          type: boolean
+          description: >
+            If true, packagingFee is multiplied by item count.
+            If false (default), packagingFee is a flat per-order fee.
+          default: false
+
+        surgePricingActive:
+          type: boolean
+          description: >
+            Whether dynamic surge pricing is currently active for this offer.
+            BAP MUST surface surge indicator prominently.
+          default: false
+
+        surgeMultiplier:
+          type: number
+          minimum: 1.0
+          description: Current surge multiplier applied to delivery fee (e.g. 1.5 = 50% surge).
+          x-ion-condition: Required when surgePricingActive is true
+
+        # ── Delivery scheduling ────────────────────────────────────
+        deliveryMode:
+          type: string
+          enum: [IMMEDIATE, SCHEDULED, PRE_ORDER, BOTH]
+          description: >
+            IMMEDIATE: deliver as soon as possible (standard ASAP order).
+            SCHEDULED: consumer selects a delivery slot within today.
+            PRE_ORDER: consumer orders for a future date/time.
+            BOTH: immediate and scheduled both available.
+          default: IMMEDIATE
+
+        scheduledDeliverySlots:
+          type: array
+          description: >
+            Available scheduled delivery windows for today. BPP publishes available slots.
+            Consumer selects one slot at /select time.
+            Slots are 30-60 min windows (e.g. 12:00-12:30, 12:30-13:00).
+          x-ion-condition: Required when deliveryMode is SCHEDULED or BOTH
+          items:
+            type: object
+            additionalProperties: false
+            required: [slotId, slotStart, slotEnd, available]
+            properties:
+              slotId:
+                type: string
+              slotStart:
+                type: string
+                format: date-time
+                description: Slot start in ISO 8601 with timezone (WIB/WITA/WIT)
+              slotEnd:
+                type: string
+                format: date-time
+              available:
+                type: boolean
+                description: Whether this slot still has capacity
+              remainingCapacity:
+                type: integer
+                description: Orders remaining in this slot before it closes
+
+        preOrderLeadTimeMinutes:
+          type: integer
+          description: >
+            Minimum minutes before desired delivery time that a pre-order must be placed.
+            e.g. 120 = order must be placed at least 2 hours in advance.
+          x-ion-condition: Required when deliveryMode includes PRE_ORDER
+
+        preOrderAdvanceDays:
+          type: integer
+          minimum: 1
+          maximum: 30
+          description: How many calendar days ahead a pre-order can be placed.
+          x-ion-condition: Required when deliveryMode includes PRE_ORDER
+
+        estimatedPrepTime:
+          type: string
+          format: duration
+          description: >
+            Current estimated preparation time for this offer.
+            May differ from provider averagePrepTime during peak hours.
+            ISO 8601 duration. BAP uses this for ETA display.
+          example: PT25M
+
+        estimatedDeliveryTime:
+          type: string
+          format: duration
+          description: >
+            Estimated total time from order confirm to delivery at consumer door.
+            Includes prep time + rider pickup + delivery leg.
+            BAP MUST display this prominently on the offer card.
+          example: PT45M
+
+        # ── Promotions and discounts ──────────────────────────────
+        offerType:
+          type: string
+          enum: [REGULAR, PROMO, FLASH_DEAL, BUNDLE, HAPPY_HOUR, NEW_USER,
+                 LOYALTY_REWARD, PLATFORM_SUBSIDY, MERCHANT_DISCOUNT, COMBO]
+          description: >
+            Type of commercial offer.
+            FLASH_DEAL: limited-time heavy discount with countdown timer.
+            HAPPY_HOUR: time-window discount (e.g. 14:00-16:00).
+            NEW_USER: available only to first-time orderers at this outlet.
+            PLATFORM_SUBSIDY: platform funds the discount, not the merchant.
+            COMBO: buy item A + item B at a combined lower price.
+
+        discountType:
+          type: string
+          enum: [PERCENT, FIXED_AMOUNT, BUY_X_GET_Y, FREE_ITEM, FREE_DELIVERY,
+                 CASHBACK, POINTS_MULTIPLIER]
+          description: >
+            Mechanism of the discount.
+            BUY_X_GET_Y: buy 2 get 1 free.
+            FREE_ITEM: free specific item with qualifying purchase.
+            CASHBACK: discount credited to wallet after delivery.
+            POINTS_MULTIPLIER: loyalty points multiplier for this offer.
+          x-ion-condition: Required when offerType is not REGULAR
+
+        discountValue:
+          type: number
+          description: >
+            Value of discount. If discountType=PERCENT, decimal e.g. 0.20 for 20% off.
+            If FIXED_AMOUNT, IDR amount e.g. 10000 for Rp 10,000 off.
+          x-ion-condition: Required when discountType is PERCENT or FIXED_AMOUNT
+
+        maxDiscountAmount:
+          type: number
+          description: >
+            Cap on percentage discounts in IDR. e.g. 20% off max Rp 20,000.
+          x-ion-condition: Required when discountType is PERCENT
+
+        minBasketForDiscount:
+          type: number
+          description: Minimum basket value in IDR required to unlock this promotion.
+
+        freeItemResourceId:
+          type: string
+          description: Resource ID of the free item for FREE_ITEM discount type.
+          x-ion-condition: Required when discountType is FREE_ITEM
+
+        buyXGetYConfig:
+          type: object
+          description: Configuration for buy-X-get-Y promotions.
+          x-ion-condition: Required when discountType is BUY_X_GET_Y
+          additionalProperties: false
+          required: [buyQuantity, getQuantity]
+          properties:
+            buyQuantity:
+              type: integer
+              minimum: 1
+            getQuantity:
+              type: integer
+              minimum: 1
+            getItemResourceId:
+              type: string
+              description: Specific item for the free portion. If absent, any item qualifies.
+
+        subsidyBreakup:
+          type: object
+          description: Who funds the discount. Determines settlement flow.
+          additionalProperties: false
+          properties:
+            merchantFundedPct:
+              type: number
+              description: Percentage of discount funded by merchant (0-100)
+            platformFundedPct:
+              type: number
+              description: Percentage funded by platform
+
+        voucherCode:
+          type: string
+          description: Voucher or promo code consumer must enter to activate offer.
+
+        stackable:
+          type: boolean
+          description: Whether this offer stacks with other active promotions.
+          default: false
+
+        newUserOnly:
+          type: boolean
+          description: Whether this offer is restricted to first-time orderers at this outlet.
+          default: false
+
+        startAt:
+          type: string
+          format: date-time
+          description: When this promotional offer becomes active.
+          x-ion-condition: Required when offerType is not REGULAR
+
+        endAt:
+          type: string
+          format: date-time
+          description: When this promotional offer expires.
+          x-ion-condition: Required when offerType is not REGULAR
+
+        happyHourStart:
+          type: string
+          pattern: '^([01][0-9]|2[0-3]):[0-5][0-9]$'
+          description: Daily happy hour start time HH:MM.
+          x-ion-condition: Required when offerType is HAPPY_HOUR
+
+        happyHourEnd:
+          type: string
+          pattern: '^([01][0-9]|2[0-3]):[0-5][0-9]$'
+          description: Daily happy hour end time HH:MM.
+          x-ion-condition: Required when offerType is HAPPY_HOUR
+
+        isFlashDeal:
+          type: boolean
+          description: >
+            True for flash deals. BAP must render countdown timer and urgency UI.
+          default: false
+
+        flashDealExpiresAt:
+          type: string
+          format: date-time
+          description: When the flash deal expires. BAP renders countdown.
+          x-ion-condition: Required when isFlashDeal is true
+
+        totalQuantityCap:
+          type: integer
+          description: Total units available under this promotional offer.
+          x-ion-condition: Required when isFlashDeal is true
+
+        remainingQuantity:
+          type: integer
+          description: Units remaining. Updated in real-time. 0 = sold out.
+
+        # ── Cancellation and policies ──────────────────────────────
+        cancellationPolicy:
+          type: string
+          format: iri
+          x-ion-policy-registry: https://registry.ion.id/policies
+          description: >
+            Cancellation policy IRI. F&B specific policies:
+            restaurant.cancel.before_accept: free cancellation before kitchen accepts.
+            restaurant.cancel.no_cancel: no cancellation once order placed.
+            restaurant.cancel.platform: platform decides case-by-case.
+
+        cancellationWindowSeconds:
+          type: integer
+          description: >
+            Seconds from order confirm within which consumer can self-cancel.
+            After this window the kitchen has already started preparation.
+          example: 60
+
+        refundPolicy:
+          type: string
+          format: iri
+          x-ion-policy-registry: https://registry.ion.id/policies
+          description: Refund policy IRI for wrong/missing items, poor quality complaints.
+
+        # ── Payment and COD ────────────────────────────────────────
+        availableOnCod:
+          type: boolean
+          description: Whether Cash on Delivery is available for this offer.
+          default: true
+
+        codMaxAmount:
+          type: number
+          description: Maximum order value eligible for COD in IDR.
+          x-ion-condition: Required when availableOnCod is true
+
+        paymentMethodEligibility:
+          type: array
+          description: >
+            Payment methods accepted. If absent, all platform-supported methods accepted.
+          items:
+            type: string
+            enum: [CASH, GOPAY, OVO, DANA, SHOPEEPAY, LINKAJA, QRIS, CREDIT_CARD,
+                   DEBIT_CARD, BANK_TRANSFER, VIRTUAL_ACCOUNT, PAYLATER, POINTS]
+
+        # ── Order constraints ──────────────────────────────────────
+        minOrderAmount:
+          type: number
+          description: Minimum basket value in IDR for this offer. Overrides provider-level minimum.
+
+        maxOrderAmount:
+          type: number
+          description: Maximum order value in IDR accepted by this outlet.
+
+        maxItemsPerOrder:
+          type: integer
+          description: Maximum distinct line items in a single order.
+
+        # ── Contact ────────────────────────────────────────────────
+        contactDetailsConsumerCare:
+          type: string
+          description: Consumer care contact. name, phone format.

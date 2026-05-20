@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schema.ion.id/hospitality/contract/v1/schema.json",
+  "title": "HospitalityContract",
+  "description": "ION Hospitality Restaurant Ordering \u2014 confirmed order, delivery prefs, group order, gifting. Attaches to: Contract.contractAttributes",
+  "type": "object",
+  "additionalProperties": true,
+  "allOf": [
+    {
+      "$ref": "https://schema.beckn.io/core/v2/schema/Attributes.json"
+    }
+  ]
+}

@@ -1,0 +1,75 @@
+iri: ion://policy/finance.ltv-cap.ojk-kpr-rumah-tapak
+
+version: "1.0.0"
+
+versionEffectiveFrom: "2026-05-01"
+
+category: LTV_CAP
+
+subCategory: PROPERTY_MORTGAGE
+
+status: ratified
+
+ratifiedAt: "2026-04-15"
+
+displayText:
+  id: "Batas LTV KPR rumah tapak"
+  en: "LTV cap — landed house mortgage (KPR Rumah Tapak)"
+
+loanType: KPR_RUMAH_TAPAK
+
+ltvCapDefinition:
+  formula: "loanAmount / appraisedPropertyValue × 100"
+  appraisalBasis: LOWER_OF_TRANSACTION_PRICE_OR_APPRAISED_VALUE
+
+ltvTiers:
+  - tier: RUMAH_TAPAK_TIPE_22
+    propertyArea: "≤ 22 sqm"
+    maxLtvFirstProperty: 80
+    maxLtvSecondProperty: 80
+    maxLtvThirdPropertyAndAbove: 80
+    note: "Small type housing; uniform LTV across ownership count"
+  - tier: RUMAH_TAPAK_TIPE_23_TO_70
+    propertyArea: "23–70 sqm"
+    maxLtvFirstProperty: 85
+    maxLtvSecondProperty: 75
+    maxLtvThirdPropertyAndAbove: 65
+  - tier: RUMAH_TAPAK_TIPE_ABOVE_70
+    propertyArea: "> 70 sqm"
+    maxLtvFirstProperty: 80
+    maxLtvSecondProperty: 70
+    maxLtvThirdPropertyAndAbove: 60
+
+minimumDownPayment:
+  firstProperty: 15
+  secondProperty: 25
+  thirdPropertyAndAbove: 35
+  unit: PERCENT_OF_TRANSACTION_VALUE
+
+propertyOwnershipCountDetermination:
+  basis: SELF_DECLARATION_PLUS_SLIK_CHECK
+  note: "Borrower declares number of properties; lender verifies via SLIK collateral data"
+
+ltvRelaxationPrograms:
+  - name: KPR_BERSUBSIDI_FLPP
+    maxLtv: 100
+    condition: "Government FLPP subsidy program; government covers down payment via subsidy"
+  - name: KPR_BP_TAPERA
+    maxLtv: 100
+    condition: "Tapera member KPR benefit"
+
+applicablePatterns:
+  - mortgage
+
+applicableLenderTypes:
+  - BANK_UMUM
+  - MULTIFINANCE
+
+regulatoryBasis:
+  - "Peraturan Bank Indonesia No.20/8/PBI/2018 tentang Rasio Loan to Value untuk Kredit Properti"
+  - "SE BI No.20/5/DKMP tentang Penilaian Kualitas Aset dan LTV"
+  - "OJK POJK 40/2019 tentang Penilaian Kualitas Aset Bank Umum"
+
+supersededBy: null
+
+deprecatedAt: null

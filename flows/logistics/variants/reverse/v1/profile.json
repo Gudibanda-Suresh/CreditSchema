@@ -1,0 +1,11 @@
+{
+  "id": "ion-logistics-variant-reverse-v1",
+  "version": "1.0.0",
+  "status": "ready",
+  "sectorCode": "B",
+  "branchType": "reverse",
+  "maintainer": "ION Council \u2014 Sector B Lead",
+  "type": "Variant",
+  "variantName": "reverse",
+  "sector": "ion:logistics"
+}

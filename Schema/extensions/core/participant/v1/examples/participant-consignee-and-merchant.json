@@ -1,0 +1,58 @@
+{
+  "_comment": "Pack example: contents of Contract.participants[] showing two ION participantAttributes — one CONSIGNEE, one MERCHANT. Each participant carries its own @context/@type because participantAttributes is the bag the pack attaches to.",
+  "_attachesTo": "Contract.participants[]",
+  "participants": [
+    {
+      "role": "CONSIGNEE",
+      "id": "buyer-a1b2c3",
+      "participantAttributes": {
+        "@context": "https://schema.ion.id/core/participant/v1/context.jsonld",
+        "@type": "ion:IONParticipant",
+        "role": "CONSIGNEE",
+        "ktpNumber": "3171234567890001",
+        "addressDetail": {
+          "provinsiCode": "31",
+          "provinsiName": "DKI Jakarta",
+          "kabupatenCode": "3174",
+          "kabupatenName": "Jakarta Selatan",
+          "kabupatenType": "KOTA",
+          "kecamatanCode": "3174010",
+          "kecamatanName": "Gambir",
+          "kelurahanCode": "3174010001",
+          "kelurahanName": "Gambir",
+          "rt": "005",
+          "rw": "002",
+          "patokan": "Sebelah Indomaret, seberang Masjid Al-Ikhlas",
+          "patokanLocationType": "MOSQUE",
+          "areaType": "URBAN_RESIDENTIAL",
+          "remoteAreaClassification": "NOT_REMOTE",
+          "accessibility": {
+            "motorcycleAccessible": true,
+            "carAccessible": true,
+            "smallTruckAccessible": false,
+            "roadCondition": "PAVED_GOOD"
+          }
+        }
+      }
+    },
+    {
+      "role": "MERCHANT",
+      "id": "seller.example.id",
+      "participantAttributes": {
+        "@context": "https://schema.ion.id/core/participant/v1/context.jsonld",
+        "@type": "ion:IONParticipant",
+        "role": "MERCHANT",
+        "subscriberId": "seller.example.id",
+        "npwp": "0123456789012345",
+        "nib": "1234567890123",
+        "pkpStatus": "PKP",
+        "authorisedSignatory": {
+          "name": "Siti Rahayu",
+          "nik": "3171234567890002",
+          "position": "Director",
+          "email": "siti@seller.example.id"
+        }
+      }
+    }
+  ]
+}

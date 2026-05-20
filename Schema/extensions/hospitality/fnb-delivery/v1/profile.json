@@ -1,0 +1,55 @@
+{
+  "id": "ion-hospitality-fnb-delivery-v1",
+  "version": "1.0.0",
+  "domain": "hospitality",
+  "type": "AttributePack",
+  "name": "ION Hospitality F&B Delivery Extension (v1)",
+  "packSchema": "./schema.json",
+  "jsonldContext": "./context.jsonld",
+  "extends": "beckn:Resource",
+  "attachmentPoints": {
+    "resourceAttributes": [
+      "FnbMenuItem"
+    ]
+  },
+  "ionResourceCategory": "HSC-fnb-delivery",
+  "sector": "ion:hospitality",
+  "indexing": {
+    "indexable": [
+      {
+        "path": "$.fnb.classification"
+      },
+      {
+        "path": "$.fnb.cuisineType"
+      },
+      {
+        "path": "$.fnb.spiceLevel"
+      },
+      {
+        "path": "$.menuCategory.id"
+      }
+    ],
+    "filterable": [
+      {
+        "path": "$.fnb.classification"
+      },
+      {
+        "path": "$.fnb.cuisineType"
+      },
+      {
+        "path": "$.fnb.allergens"
+      }
+    ],
+    "sortable": [
+      {
+        "path": "$.itemRating"
+      }
+    ]
+  },
+  "minimalForDiscovery": [
+    "fnb.classification",
+    "fnb.allergens",
+    "preparationTime",
+    "availability.status"
+  ]
+}

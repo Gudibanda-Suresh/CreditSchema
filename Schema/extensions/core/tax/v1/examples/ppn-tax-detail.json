@@ -1,0 +1,8 @@
+{
+  "@context": "https://schema.ion.id/core/tax/v1/context.jsonld",
+  "@type": "ion:IONTaxDetail",
+  "taxRegime": "STANDARD_PPN",
+  "ppnRate": 0.11,
+  "ppnAmount": 16500,
+  "taxableBase": 150000
+}

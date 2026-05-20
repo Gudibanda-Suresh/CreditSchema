@@ -1,0 +1,7 @@
+{
+  "@context": "https://schema.ion.id/logistics/tracking/v1/context.jsonld",
+  "@type": "ion:LogisticsTracking",
+  "trackingType": "LIVE_GPS",
+  "trackingUrl": "https://track.lsp.example/TRK-2026-00001234",
+  "pollingIntervalSeconds": 30
+}

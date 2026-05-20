@@ -1,0 +1,348 @@
+openapi: 3.1.1
+info:
+  title: ION Hospitality Restaurant Ordering Extension (v1)
+  description: >
+    Order status and delivery tracking attributes for food delivery.
+    Covers the full kitchen-to-door lifecycle: kitchen acceptance, preparation states
+    (KDS flow), rider assignment and live GPS, ETA updates, delivery OTP,
+    contactless delivery proof photo, missing/wrong item handling, age verification
+    at door for alcohol orders, and post-delivery quality ratings.
+
+    State machine mirrors Grab Food, GoFood, and Zomato driver tracking UX:
+    PLACED → ACCEPTED → PREPARING → READY_FOR_PICKUP → RIDER_ASSIGNED →
+    PICKED_UP → IN_TRANSIT → ARRIVING → DELIVERED.
+
+    x-beckn-attaches-to: Performance.performanceAttributes
+  version: 1.0.0
+  license:
+    name: Apache-2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+  contact:
+    name: ION Network
+    url: https://schema.ion.id
+
+components:
+  schemas:
+    RestaurantPerformance:
+      type: object
+      title: RestaurantPerformance
+      description: >
+        Kitchen-to-door tracking for online food orders.
+        CRC: HSC-restaurant-ordering
+      additionalProperties: true
+      x-ion-closed-extensions: false
+      x-beckn-attaches-to: Performance.performanceAttributes
+      x-jsonld:
+        '@context': 'https://schema.ion.id/hospitality/performance/v1/context.jsonld'
+        '@type': ion:RestaurantPerformance
+      allOf:
+        - $ref: ../../../../core/v2/api/v2.0.0/beckn.yaml#/components/schemas/Attributes
+
+      properties:
+
+        # ── Order state ────────────────────────────────────────────
+        kitchenState:
+          type: string
+          enum: [PENDING_ACCEPTANCE, ACCEPTED, PREPARING, READY_FOR_PICKUP,
+                 PARTIALLY_READY, CANCELLED_BY_KITCHEN]
+          description: >
+            Current kitchen processing state.
+            PENDING_ACCEPTANCE: order sent to KDS, awaiting merchant acknowledgement.
+            ACCEPTED: kitchen confirmed they will prepare the order.
+            PREPARING: active cooking underway.
+            READY_FOR_PICKUP: all items complete, waiting for rider.
+            PARTIALLY_READY: some items ready — for split-delivery scenarios.
+            CANCELLED_BY_KITCHEN: kitchen unable to fulfil (ingredient unavailable, capacity).
+
+        kitchenAcceptedAt:
+          type: string
+          format: date-time
+          description: When kitchen acknowledged and accepted the order.
+          x-ion-condition: Required when kitchenState is ACCEPTED or later
+
+        kitchenPreparationStartedAt:
+          type: string
+          format: date-time
+          description: When kitchen began active preparation.
+          x-ion-condition: Required when kitchenState is PREPARING or later
+
+        kitchenReadyAt:
+          type: string
+          format: date-time
+          description: When all items were ready for pickup.
+          x-ion-condition: Required when kitchenState is READY_FOR_PICKUP or later
+
+        estimatedReadyAt:
+          type: string
+          format: date-time
+          description: >
+            BPP's real-time estimate of when order will be kitchen-ready.
+            Updated dynamically based on kitchen load.
+
+        kitchenCancellationReason:
+          type: string
+          enum: [INGREDIENT_UNAVAILABLE, KITCHEN_OVERLOADED, OUTLET_CLOSING,
+                 ITEM_NO_LONGER_AVAILABLE, TECHNICAL_ISSUE, OTHER]
+          x-ion-condition: Required when kitchenState is CANCELLED_BY_KITCHEN
+
+        # ── Item-level issues ──────────────────────────────────────
+        itemIssues:
+          type: array
+          description: >
+            Per-item issues reported by kitchen during preparation.
+            Used when one or more items cannot be fulfilled as ordered.
+          items:
+            type: object
+            additionalProperties: false
+            required: [commitmentLineId, issueType]
+            properties:
+              commitmentLineId:
+                type: string
+                description: References RestaurantCommitment.lineId
+              issueType:
+                type: string
+                enum: [ITEM_UNAVAILABLE, CUSTOMISATION_UNAVAILABLE, OUT_OF_STOCK,
+                       INGREDIENT_SUBSTITUTED, QUANTITY_REDUCED]
+              resolution:
+                type: string
+                enum: [ITEM_REMOVED, SUBSTITUTED, QUANTITY_REDUCED, CONSUMER_INFORMED]
+              substituteResourceId:
+                type: string
+                description: Resource ID of the substitute item offered.
+                x-ion-condition: Required when resolution is SUBSTITUTED
+              consumerInformedAt:
+                type: string
+                format: date-time
+
+        # ── Rider / delivery agent ─────────────────────────────────
+        riderState:
+          type: string
+          enum: [NOT_ASSIGNED, SEARCHING, ASSIGNED, HEADING_TO_RESTAURANT,
+                 AT_RESTAURANT, PICKED_UP, IN_TRANSIT, ARRIVING, DELIVERED,
+                 DELIVERY_FAILED, RETURNED_TO_RESTAURANT]
+          description: Current delivery rider state.
+
+        riderId:
+          type: string
+          description: Platform-issued rider ID. Consumer can verify against rider app badge.
+          x-ion-condition: Required when riderState is ASSIGNED or later
+
+        riderName:
+          type: string
+          description: Rider's display name shown to consumer.
+          x-ion-condition: Required when riderState is ASSIGNED or later
+
+        riderPhone:
+          type: string
+          description: >
+            Rider contact number. May be a platform-masked proxy number.
+            Indonesian format: +62 8xx-xxxx-xxxx.
+          x-ion-condition: Required when riderState is ASSIGNED or later
+
+        riderPhoto:
+          type: string
+          format: uri
+          description: >
+            URL to rider profile photo. Consumer verifies at door.
+            Required for consumer safety per platform policy.
+          x-ion-condition: Required when riderState is ASSIGNED or later
+
+        riderVehicleType:
+          type: string
+          enum: [MOTORCYCLE, BICYCLE, CAR, ELECTRIC_MOTORCYCLE, ELECTRIC_BICYCLE, WALKER]
+          description: Rider vehicle type. Affects ETA and consumer identification.
+
+        riderPlateNumber:
+          type: string
+          description: >
+            Vehicle plate number (Nomor Polisi).
+            Shown to consumer for identification at handover.
+          x-ion-condition: Required when riderVehicleType is MOTORCYCLE, CAR, or ELECTRIC_MOTORCYCLE
+
+        riderAssignedAt:
+          type: string
+          format: date-time
+          x-ion-condition: Required when riderState is ASSIGNED or later
+
+        riderPickedUpAt:
+          type: string
+          format: date-time
+          description: When rider collected order from restaurant.
+          x-ion-condition: Required when riderState is PICKED_UP or later
+
+        # ── Live tracking ──────────────────────────────────────────
+        realTimeGps:
+          type: object
+          description: >
+            Current real-time GPS position of the rider.
+            Returned in /on_track responses only — not persisted in contract state.
+            Updated every 5-10 seconds while order is IN_TRANSIT.
+          x-ion-condition: Present only in /on_track responses
+          additionalProperties: false
+          required: [latitude, longitude, updatedAt]
+          properties:
+            latitude:
+              type: number
+              format: double
+            longitude:
+              type: number
+              format: double
+            updatedAt:
+              type: string
+              format: date-time
+            heading:
+              type: number
+              description: Direction of travel in degrees (0=North, 90=East).
+            speedKmh:
+              type: number
+              description: Current speed. Used to refine ETA.
+
+        liveTrackingUrl:
+          type: string
+          format: uri
+          description: >
+            URL for real-time map-based rider tracking.
+            Opened by BAP to display live rider location (Grab tracking link style).
+          x-ion-condition: Present when riderState is PICKED_UP or later
+
+        # ── ETA ────────────────────────────────────────────────────
+        estimatedDeliveryAt:
+          type: string
+          format: date-time
+          description: >
+            Current estimated delivery datetime. Updated dynamically every few minutes.
+            BAP MUST display and refresh this continuously while order is IN_TRANSIT.
+
+        etaWindowMinutes:
+          type: integer
+          description: >
+            Uncertainty window around estimatedDeliveryAt in minutes.
+            BAP displays as "arriving in 5-10 minutes".
+
+        distanceRemainingKm:
+          type: number
+          description: Estimated remaining delivery distance in km.
+          x-ion-condition: Present when riderState is IN_TRANSIT or ARRIVING
+
+        # ── Delivery confirmation ──────────────────────────────────
+        deliveryOtp:
+          type: string
+          description: >
+            One-time password consumer shows rider at handover.
+            Rider enters OTP in rider app to confirm delivery.
+            Generated by BPP — not visible in BAP consumer UI (shared via SMS/push).
+          x-ion-condition: Present when contract.deliveryOtpRequired is true
+
+        deliveryOtpVerifiedAt:
+          type: string
+          format: date-time
+          description: When rider confirmed OTP at delivery.
+          x-ion-condition: Required when deliveryOtp was issued and delivery completed
+
+        deliveryProofPhotoUrl:
+          type: string
+          format: uri
+          description: >
+            Photo taken by rider at delivery point.
+            For contactless: photo of order at door.
+            For standard: photo of consumer receiving order (blurred face).
+          x-ion-condition: Required when riderState transitions to DELIVERED
+
+        deliveredAt:
+          type: string
+          format: date-time
+          description: Confirmed delivery timestamp.
+          x-ion-condition: Required when riderState is DELIVERED
+
+        # ── Delivery failure ───────────────────────────────────────
+        deliveryFailureReason:
+          type: string
+          enum: [CONSUMER_NOT_AVAILABLE, WRONG_ADDRESS, ACCESS_DENIED,
+                 CONSUMER_REFUSED, AGE_VERIFICATION_FAILED, UNSAFE_AREA,
+                 VEHICLE_BREAKDOWN, WEATHER, OTHER]
+          x-ion-condition: Required when riderState is DELIVERY_FAILED
+
+        redeliveryAttempt:
+          type: integer
+          minimum: 1
+          description: Which delivery attempt this is (1 = first, 2 = reattempt).
+          default: 1
+
+        # ── Age verification ────────────────────────────────────────
+        ageVerificationRequired:
+          type: boolean
+          description: >
+            Rider must verify consumer age before handing over order containing alcohol.
+            Auto-derived from order contents.
+          default: false
+          x-ion-regulatory: Permendag 20/M-DAG/PER/4/2014
+
+        ageVerificationMethod:
+          type: string
+          enum: [KTP_SIGHTED, SIM_SIGHTED, PASSPORT_SIGHTED, APP_SELFIE, REFUSED]
+          x-ion-condition: Required when ageVerificationRequired is true
+
+        ageVerifiedAt:
+          type: string
+          format: date-time
+          x-ion-condition: Required when ageVerificationMethod is not REFUSED
+
+        ageVerificationFailedReason:
+          type: string
+          enum: [UNDERAGE, NO_ID_PRESENTED, ID_EXPIRED, INTOXICATED, CONSUMER_REFUSED]
+          x-ion-condition: Required when ageVerificationMethod is REFUSED
+
+        # ── Post-delivery ──────────────────────────────────────────
+        consumerRatingGiven:
+          type: number
+          minimum: 1
+          maximum: 5
+          description: Rating submitted by consumer after delivery. Populated post-delivery.
+
+        consumerFeedback:
+          type: object
+          description: Structured post-delivery feedback.
+          additionalProperties: false
+          properties:
+            foodRating:
+              type: number
+              minimum: 1
+              maximum: 5
+            deliveryRating:
+              type: number
+              minimum: 1
+              maximum: 5
+            packagingRating:
+              type: number
+              minimum: 1
+              maximum: 5
+            tags:
+              type: array
+              description: Quick-select feedback tags (Grab/Gojek style tag-based review).
+              items:
+                type: string
+                enum: [FOOD_TASTY, FOOD_COLD, FOOD_MISSING_ITEM, FOOD_WRONG_ITEM,
+                       FOOD_SPILL, PACKAGING_GOOD, PACKAGING_DAMAGED,
+                       RIDER_FRIENDLY, RIDER_FAST, RIDER_LATE, RIDER_RUDE,
+                       WILL_ORDER_AGAIN]
+            comment:
+              type: string
+              maxLength: 500
+
+        # ── SLA ────────────────────────────────────────────────────
+        slaBreached:
+          type: boolean
+          description: Whether the promised delivery time SLA was breached.
+          default: false
+
+        slaBreachMinutes:
+          type: integer
+          description: Minutes by which delivery exceeded the promised time.
+          x-ion-condition: Required when slaBreached is true
+
+        compensationVoucherIssued:
+          type: boolean
+          description: >
+            Whether a compensation voucher was auto-issued for SLA breach.
+            Platform auto-issues discount on next order for significant delays.
+          default: false

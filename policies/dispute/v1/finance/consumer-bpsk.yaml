@@ -1,0 +1,76 @@
+iri: ion://policy/finance.dispute.consumer-bpsk
+
+version: "1.0.0"
+
+versionEffectiveFrom: "2026-05-01"
+
+category: DISPUTE
+
+subCategory: CONSUMER_MEDIATION
+
+status: ratified
+
+ratifiedAt: "2026-04-15"
+
+displayText:
+  id: "Penyelesaian sengketa konsumen — BPSK"
+  en: "Consumer dispute resolution — BPSK (Consumer Dispute Resolution Body)"
+
+disputeType: CONSUMER_MEDIATION
+
+applicableTo: INDIVIDUAL_RETAIL_BORROWERS
+
+bpskFullName: "Badan Penyelesaian Sengketa Konsumen"
+
+bpskJurisdiction: KABUPATEN_KOTA_WHERE_BORROWER_RESIDES
+
+eligibilityConditions:
+  - borrowerIsIndividualConsumer: true
+  - internalResolutionExhausted: true
+  - claimAmountNoUpperLimit: true
+  - note: "BPSK handles consumer (non-commercial) lending disputes under UU 8/1999"
+
+resolutionMethods:
+  - KONSILIASI
+  - MEDIASI
+  - ARBITRASE
+
+processTimeline:
+  firstHearingSlaDaysFromRegistration: 21
+  resolutionSlaDaysFromFirstHearing: 21
+  totalMaxDays: 42
+
+award:
+  binding: true
+  appealVia: PENGADILAN_NEGERI
+  appealDeadlineDays: 14
+
+costsToConsumer:
+  filingFee: FREE
+  note: "BPSK is free for consumers; lender may be ordered to pay costs if found liable"
+
+relationshipToOjkProcess:
+  canRunInParallel: false
+  note: "Borrower typically chooses either OJK LAPS-SJK or BPSK, not both"
+
+applicablePatterns:
+  - personal-loan
+  - vehicle-loan
+  - revolving-credit
+  - bnpl
+
+applicableLenderTypes:
+  - BANK_UMUM
+  - BPR
+  - MULTIFINANCE
+  - LPBBTI_P2P
+  - LPBBTI_DIGITAL
+
+regulatoryBasis:
+  - "UU 8/1999 tentang Perlindungan Konsumen"
+  - "Kepmenperindag 350/2001 tentang Pelaksanaan Tugas dan Wewenang BPSK"
+  - "OJK POJK 22/2023 tentang Perlindungan Konsumen dan Masyarakat di Sektor Jasa Keuangan"
+
+supersededBy: null
+
+deprecatedAt: null

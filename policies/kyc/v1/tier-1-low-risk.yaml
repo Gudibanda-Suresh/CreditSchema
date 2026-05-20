@@ -1,0 +1,56 @@
+iri: ion://policy/finance.kyc.tier-1-low-risk
+
+version: "1.0.0"
+
+versionEffectiveFrom: "2026-05-01"
+
+category: KYC
+
+subCategory: RISK_BASED_KYC
+
+status: ratified
+
+ratifiedAt: "2026-04-15"
+
+displayText:
+  id: "eKYC Tier 1 — Risiko Rendah"
+  en: "eKYC Tier 1 — Low Risk"
+
+riskTier: 1
+
+maxLoanAmountIDR: 5000000
+
+requiredChecks:
+  - DUKCAPIL_MATCH
+
+livenessCheckRequired: false
+
+faceMatchRequired: false
+
+documentOcrRequired: false
+
+kycExpiryMonths: 12
+
+dukcapilMatchFields:
+  - NIK
+  - FULL_NAME
+  - DATE_OF_BIRTH
+
+reVerificationRequired: false
+
+applicablePatterns:
+  - bnpl
+  - personal-loan
+
+applicableLenderTypes:
+  - LPBBTI_P2P
+  - LPBBTI_DIGITAL
+
+regulatoryBasis:
+  - "OJK POJK 12/2018 tentang Penyelenggaraan Layanan Perbankan Digital oleh Bank Umum"
+  - "OJK POJK 13/2018 tentang Inovasi Keuangan Digital"
+  - "PPATK PER-09/1.02/PPATK/09/14 tentang Penerapan Program APU-PPT"
+
+supersededBy: null
+
+deprecatedAt: null

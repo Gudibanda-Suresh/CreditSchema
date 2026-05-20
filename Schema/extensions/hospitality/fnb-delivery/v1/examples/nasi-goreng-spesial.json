@@ -1,0 +1,203 @@
+{
+  "@context": "https://schema.ion.id/hospitality/fnb-delivery/v1/context.jsonld",
+  "@type": "ion:FnbMenuItem",
+  "_comment": "Example: Nasi Goreng Spesial — COMPOSED resource with customisation (HSC-fnb-delivery)",
+  "quantity": {
+    "value": 1,
+    "unit": "portion"
+  },
+  "resourceStructure": "COMPOSED",
+  "resourceTangibility": "PHYSICAL",
+  "logisticsServiceType": "HYPERLOCAL",
+  "ageRestricted": false,
+  "countryOfOrigin": "IDN",
+  "images": [
+    "https://cdn.warung-bu-tini.id/nasi-goreng-spesial.jpg",
+    "https://cdn.warung-bu-tini.id/nasi-goreng-spesial-2.jpg"
+  ],
+  "availability": {
+    "status": "IN_STOCK",
+    "maxOrderQty": 20
+  },
+  "preparationTime": "PT15M",
+  "fnb": {
+    "classification": "HALAL",
+    "halalCertNumber": "ID38010000105001",
+    "allergens": [
+      "EGGS",
+      "SOY"
+    ],
+    "cuisineType": "Indonesian",
+    "spiceLevel": "MEDIUM",
+    "nutritionalInfo": "Energi 550 kkal, Protein 18g, Lemak 22g, Karbohidrat 68g per porsi"
+  },
+  "menuCategory": {
+    "id": "CAT-NASI",
+    "name": {
+      "id": "Nasi",
+      "en": "Rice"
+    },
+    "sequence": 1
+  },
+  "customisationGroups": [
+    {
+      "id": "CG-SPICE",
+      "name": {
+        "id": "Level Pedas",
+        "en": "Spice Level"
+      },
+      "selectionType": "SINGLE_REQUIRED",
+      "sequence": 1,
+      "options": [
+        {
+          "id": "OPT-MILD",
+          "label": {
+            "id": "Tidak Pedas",
+            "en": "Not Spicy"
+          },
+          "priceDelta": {
+            "type": "FIXED",
+            "value": 0
+          },
+          "available": true
+        },
+        {
+          "id": "OPT-MED",
+          "label": {
+            "id": "Pedas Sedang",
+            "en": "Medium Spicy"
+          },
+          "priceDelta": {
+            "type": "FIXED",
+            "value": 0
+          },
+          "available": true
+        },
+        {
+          "id": "OPT-HOT",
+          "label": {
+            "id": "Pedas",
+            "en": "Spicy"
+          },
+          "priceDelta": {
+            "type": "FIXED",
+            "value": 0
+          },
+          "available": true
+        },
+        {
+          "id": "OPT-XHOT",
+          "label": {
+            "id": "Extra Pedas",
+            "en": "Extra Spicy"
+          },
+          "priceDelta": {
+            "type": "FIXED",
+            "value": 0
+          },
+          "available": true
+        }
+      ]
+    },
+    {
+      "id": "CG-PROTEIN",
+      "name": {
+        "id": "Pilihan Protein",
+        "en": "Protein Choice"
+      },
+      "selectionType": "SINGLE_REQUIRED",
+      "sequence": 2,
+      "options": [
+        {
+          "id": "OPT-CHICKEN",
+          "label": {
+            "id": "Ayam",
+            "en": "Chicken"
+          },
+          "priceDelta": {
+            "type": "FIXED",
+            "value": 0
+          },
+          "available": true
+        },
+        {
+          "id": "OPT-SHRIMP",
+          "label": {
+            "id": "Udang",
+            "en": "Shrimp"
+          },
+          "priceDelta": {
+            "type": "FIXED",
+            "value": 5000
+          },
+          "available": true
+        },
+        {
+          "id": "OPT-EGG",
+          "label": {
+            "id": "Telur",
+            "en": "Egg only"
+          },
+          "priceDelta": {
+            "type": "FIXED",
+            "value": -3000
+          },
+          "available": true
+        }
+      ]
+    },
+    {
+      "id": "CG-EXTRAS",
+      "name": {
+        "id": "Tambahan",
+        "en": "Add-ons"
+      },
+      "selectionType": "MULTIPLE_OPTIONAL",
+      "maxSelections": 3,
+      "sequence": 3,
+      "options": [
+        {
+          "id": "OPT-EKSTRA-TELUR",
+          "label": {
+            "id": "Telur Mata Sapi Extra",
+            "en": "Extra Fried Egg"
+          },
+          "priceDelta": {
+            "type": "FIXED",
+            "value": 5000
+          },
+          "available": true
+        },
+        {
+          "id": "OPT-KERUPUK",
+          "label": {
+            "id": "Kerupuk",
+            "en": "Prawn Crackers"
+          },
+          "priceDelta": {
+            "type": "FIXED",
+            "value": 2000
+          },
+          "available": true
+        },
+        {
+          "id": "OPT-EMPING",
+          "label": {
+            "id": "Emping",
+            "en": "Melinjo Crackers"
+          },
+          "priceDelta": {
+            "type": "FIXED",
+            "value": 3000
+          },
+          "available": true
+        }
+      ]
+    }
+  ],
+  "identity": {
+    "brand": "Warung Bu Tini",
+    "sku": "WBT-NASGOR-SPESIAL"
+  },
+  "itemRating": 4.8
+}

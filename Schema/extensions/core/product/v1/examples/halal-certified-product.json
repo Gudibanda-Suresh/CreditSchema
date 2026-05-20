@@ -1,0 +1,8 @@
+{
+  "@context": "https://schema.ion.id/core/product/v1/context.jsonld",
+  "@type": "ion:IONProductCertifications",
+  "halalStatus": "HALAL_CERTIFIED",
+  "halalCertNumber": "ID-HALAL-2026-000001",
+  "bpomRegistered": true,
+  "bpomRegistrationNumber": "BPOM RI MD 123456789"
+}

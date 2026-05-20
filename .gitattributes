@@ -1,0 +1,14 @@
+# Default: normalize all text files to LF in repo
+* text=auto eol=lf
+
+# Windows-specific scripts
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Shell scripts must stay LF
+*.sh text eol=lf
+
+# JSON, YAML, etc. (explicit for clarity)
+*.json text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf

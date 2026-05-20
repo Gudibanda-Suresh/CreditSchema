@@ -1,0 +1,44 @@
+{
+  "id": "ion-trade-commitment-v1",
+  "version": "1.0.0",
+  "domain": "trade",
+  "name": "ION Trade Commitment Extension (v1)",
+  "description": "Per-line item details — resource, offer, quantity, price, customisations, instructions.",
+  "packSchema": "./schema.json",
+  "jsonldContext": "./context.jsonld",
+  "attachmentPoints": {
+    "commitmentAttributes": [
+      "TradeCommitment"
+    ]
+  },
+  "extends": "beckn:Commitment",
+  "type": "AttributePack",
+  "indexing": {
+    "indexable": [
+      {
+        "path": "$.lineId"
+      },
+      {
+        "path": "$.resourceId"
+      },
+      {
+        "path": "$.offerId"
+      }
+    ],
+    "filterable": [
+      {
+        "path": "$.lineId"
+      },
+      {
+        "path": "$.resourceId"
+      }
+    ],
+    "sortable": []
+  },
+  "minimalForDiscovery": [
+    "lineId",
+    "resourceId",
+    "offerId",
+    "quantity"
+  ]
+}

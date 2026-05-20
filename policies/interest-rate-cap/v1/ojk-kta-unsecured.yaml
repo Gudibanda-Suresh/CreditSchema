@@ -1,0 +1,72 @@
+iri: ion://policy/finance.interest-rate-cap.ojk-kta-unsecured
+
+version: "1.0.0"
+
+versionEffectiveFrom: "2026-05-01"
+
+category: INTEREST_RATE_CAP
+
+subCategory: UNSECURED_PERSONAL_LOAN
+
+status: ratified
+
+ratifiedAt: "2026-04-15"
+
+displayText:
+  id: "Batas suku bunga kredit tanpa agunan (KTA)"
+  en: "Interest rate cap — unsecured personal loan (KTA)"
+
+loanType: KTA_UNSECURED_PERSONAL_LOAN
+
+rateCapType: EFFECTIVE_ANNUAL_RATE
+
+bankLenders:
+  maxEffectiveAnnualRatePercent: null
+  note: >
+    Bank Indonesia does not set a statutory cap for unsecured KTA at bank lenders.
+    Banks must disclose effective rate (SBDK) and are subject to OJK supervision.
+    Market practice: 10–24% per annum effective.
+  sbudkDisclosureRequired: true
+
+p2pLftechLenders:
+  maxEffectiveAnnualRatePercent: null
+  maxDailyRatePercent: 0.3
+  maxTotalCostPercent: 100
+  note: >
+    OJK POJK 10/2022 caps total interest + fee + penalty at 100% of outstanding principal
+    for P2P lending. Daily interest rate of 0.3% is commonly referenced by AFPI code.
+
+bprlenders:
+  maxEffectiveAnnualRatePercent: null
+  note: "BPR rates are supervised by OJK; no statutory national cap; LPS guarantee applies"
+
+disclosureRequirements:
+  - SIMULASI_ANGSURAN_BEFORE_AGREEMENT
+  - EFEKTIF_TAHUNAN_DISCLOSED_IN_OFFER
+  - BIAYA_ADMINISTRASI_DISCLOSED_SEPARATELY
+
+rateAdjustmentAllowed:
+  floatingRate: true
+  maxAdjustmentFrequency: ANNUALLY
+  noticeBeforeAdjustmentDays: 30
+
+applicablePatterns:
+  - personal-loan
+  - bnpl
+
+applicableLenderTypes:
+  - BANK_UMUM
+  - BPR
+  - MULTIFINANCE
+  - LPBBTI_P2P
+  - LPBBTI_DIGITAL
+
+regulatoryBasis:
+  - "OJK POJK 10/2022 tentang Layanan Pendanaan Bersama Berbasis Teknologi Informasi"
+  - "OJK POJK 22/2023 tentang Perlindungan Konsumen dan Masyarakat di Sektor Jasa Keuangan"
+  - "SE BI 15/41/DKMP tentang Perhitungan Giro Wajib Minimum"
+  - "AFPI Kode Etik tentang Batas Bunga P2P Lending"
+
+supersededBy: null
+
+deprecatedAt: null

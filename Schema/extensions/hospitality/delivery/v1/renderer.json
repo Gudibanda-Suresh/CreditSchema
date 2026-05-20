@@ -1,0 +1,65 @@
+{
+  "version": "1.0.0",
+  "fieldGroups": [
+    {
+      "id": "basics",
+      "label": {
+        "id": "Informasi Produk",
+        "en": "Product Info"
+      },
+      "fields": [
+        "classification",
+        "allergens",
+        "cuisineType",
+        "spiceLevel",
+        "preparationTime"
+      ]
+    },
+    {
+      "id": "customisation",
+      "label": {
+        "id": "Pilihan",
+        "en": "Options"
+      },
+      "fields": [
+        "customisationGroups"
+      ]
+    },
+    {
+      "id": "nutrition",
+      "label": {
+        "id": "Informasi Gizi",
+        "en": "Nutritional Info"
+      },
+      "fields": [
+        "nutritionalInfo"
+      ]
+    }
+  ],
+  "badges": [
+    {
+      "condition": "classification == 'HALAL'",
+      "label": {
+        "id": "Halal",
+        "en": "Halal"
+      },
+      "colour": "#2D7D27"
+    },
+    {
+      "condition": "classification == 'VEG'",
+      "label": {
+        "id": "Vegetarian",
+        "en": "Vegetarian"
+      },
+      "colour": "#4CAF50"
+    },
+    {
+      "condition": "isAlcoholic == true",
+      "label": {
+        "id": "Mengandung Alkohol",
+        "en": "Contains Alcohol"
+      },
+      "colour": "#D32F2F"
+    }
+  ]
+}

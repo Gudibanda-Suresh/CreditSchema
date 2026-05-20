@@ -1,0 +1,24 @@
+{
+  "@context": "https://schema.ion.id/logistics/consideration/v1/context.jsonld",
+  "@type": "ion:LogisticsConsideration",
+  "breakup": [
+    {
+      "title": "Base freight",
+      "price": {
+        "value": 25000,
+        "currency": "IDR"
+      }
+    },
+    {
+      "title": "Fuel surcharge",
+      "price": {
+        "value": 2500,
+        "currency": "IDR"
+      }
+    }
+  ],
+  "totalAmount": {
+    "value": 27500,
+    "currency": "IDR"
+  }
+}

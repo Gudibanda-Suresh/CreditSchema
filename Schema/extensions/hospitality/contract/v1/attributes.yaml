@@ -1,0 +1,266 @@
+openapi: 3.1.1
+info:
+  title: ION Hospitality Restaurant Ordering Extension (v1)
+  description: >
+    Confirmed order attributes for restaurant ordering. Captures delivery preferences,
+    scheduled delivery slot, contactless delivery, OTP mode, special order instructions
+    (cutlery, eco-packaging), pre-order details, group order context, gifting details,
+    cancellation reason, refund destination, and live commerce context.
+    x-beckn-attaches-to: Contract.contractAttributes
+  version: 1.0.0
+  license:
+    name: Apache-2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+  contact:
+    name: ION Network
+    url: https://schema.ion.id
+
+components:
+  schemas:
+    HospitalityContract:
+      type: object
+      title: HospitalityContract
+      description: >
+        Confirmed food order contract attributes.
+        CRC: HSC-restaurant-ordering
+      additionalProperties: true
+      x-ion-closed-extensions: false
+      x-beckn-attaches-to: Contract.contractAttributes
+      x-jsonld:
+        '@context': 'https://schema.ion.id/hospitality/contract/v1/context.jsonld'
+        '@type': ion:HospitalityContract
+      allOf:
+        - $ref: ../../../../core/v2/api/v2.0.0/beckn.yaml#/components/schemas/Attributes
+
+      properties:
+
+        # ── Delivery preferences ──────────────────────────────────
+        deliveryInstructions:
+          type: string
+          maxLength: 300
+          description: >
+            Free-text delivery instructions for the rider.
+            e.g. "Building B, 3rd floor, unit 301", "Call before arriving",
+            "Leave with security", "Ring the doorbell twice".
+
+        contactlessDelivery:
+          type: boolean
+          description: >
+            Consumer requests contactless delivery (leave at door without handover).
+            Rider takes a delivery photo instead of consumer signature.
+          default: false
+
+        deliveryAddressNote:
+          type: string
+          description: >
+            Landmark or additional address detail not captured in the structured address.
+            e.g. "Opposite Alfamart", "Yellow gate".
+
+        # ── Scheduled and pre-order ────────────────────────────────
+        scheduledDeliverySlotId:
+          type: string
+          description: >
+            Selected slot ID from RestaurantOffer.scheduledDeliverySlots.
+            Required when offer.deliveryMode is SCHEDULED or PRE_ORDER.
+          x-ion-condition: Required when deliveryMode is SCHEDULED or PRE_ORDER
+
+        scheduledDeliveryTime:
+          type: string
+          format: date-time
+          description: >
+            Consumer's desired delivery datetime for pre-orders.
+            BPP confirms actual slot in on_confirm.
+          x-ion-condition: Required for PRE_ORDER contracts
+
+        preOrderConfirmedSlot:
+          type: object
+          description: BPP-confirmed pre-order delivery window.
+          x-ion-condition: Set by BPP in on_confirm for PRE_ORDER orders
+          additionalProperties: false
+          properties:
+            confirmedStart:
+              type: string
+              format: date-time
+            confirmedEnd:
+              type: string
+              format: date-time
+            kitchenStartTime:
+              type: string
+              format: date-time
+              description: When kitchen will start preparation to meet the slot.
+
+        # ── OTP and verification ──────────────────────────────────
+        deliveryOtpRequired:
+          type: boolean
+          description: >
+            Whether OTP verification is required at handover.
+            BPP sets based on order value, payment method, or outlet policy.
+          default: false
+
+        ageVerificationRequired:
+          type: boolean
+          description: >
+            Whether rider must verify buyer age at door.
+            Auto-set to true when any order line contains alcoholic beverages.
+          default: false
+          x-ion-regulatory: Permendag 20/M-DAG/PER/4/2014 tentang Pengendalian Minuman Beralkohol
+
+        # ── Order preferences ──────────────────────────────────────
+        cutleryRequested:
+          type: boolean
+          description: >
+            Whether consumer requests disposable cutlery.
+            Platforms default to false (opt-in) to reduce plastic waste.
+            Matches GoFood and GrabFood cutlery preference toggle.
+          default: false
+
+        ecoPackagingRequested:
+          type: boolean
+          description: >
+            Consumer opts for eco-friendly packaging where the outlet offers it.
+          default: false
+
+        orderLevelNote:
+          type: string
+          maxLength: 300
+          description: >
+            Order-level note applying to all items (not per-item).
+            e.g. "All in one bag please", "No plastic bags".
+
+        # ── Group order ────────────────────────────────────────────
+        isGroupOrder:
+          type: boolean
+          description: Whether this order was assembled via the group ordering feature.
+          default: false
+
+        groupOrderSessionId:
+          type: string
+          description: Group order session identifier. All participants share this ID.
+          x-ion-condition: Required when isGroupOrder is true
+
+        groupOrderInitiatorId:
+          type: string
+          description: Participant ID of the person who initiated the group order session.
+          x-ion-condition: Required when isGroupOrder is true
+
+        groupOrderParticipants:
+          type: array
+          description: List of participants in this group order.
+          x-ion-condition: Required when isGroupOrder is true
+          items:
+            type: object
+            additionalProperties: false
+            required: [participantId, name]
+            properties:
+              participantId:
+                type: string
+              name:
+                type: string
+              joinedAt:
+                type: string
+                format: date-time
+
+        groupOrderLockedAt:
+          type: string
+          format: date-time
+          description: >
+            When the group order was locked for submission.
+            After this time no new participants can add items.
+          x-ion-condition: Required when isGroupOrder is true
+
+        # ── Gifting ────────────────────────────────────────────────
+        isGiftOrder:
+          type: boolean
+          description: Whether this is a gift order being sent to another person.
+          default: false
+
+        giftDetails:
+          type: object
+          description: Gifting metadata for gift delivery orders.
+          x-ion-condition: Required when isGiftOrder is true
+          additionalProperties: false
+          properties:
+            recipientName:
+              type: string
+            recipientPhone:
+              type: string
+            giftMessage:
+              type: string
+              maxLength: 200
+            hidePrice:
+              type: boolean
+              description: Whether to hide the order total from the recipient.
+              default: true
+            giftWrapRequested:
+              type: boolean
+              default: false
+
+        # ── Cancellation ───────────────────────────────────────────
+        cancellationReasonCode:
+          type: string
+          enum: [CHANGED_MIND, WRONG_ADDRESS, FOUND_BETTER_PRICE, TAKING_TOO_LONG,
+                 RESTAURANT_NOT_RESPONDING, DUPLICATE_ORDER, PAYMENT_ISSUE,
+                 ITEM_UNAVAILABLE, RESTAURANT_CANCELLED, RIDER_CANCELLED,
+                 PLATFORM_CANCELLED, OTHER]
+          description: Standardised reason when order is cancelled.
+          x-ion-condition: Required when contract status is CANCELLED
+
+        cancellationInitiatedBy:
+          type: string
+          enum: [CONSUMER, MERCHANT, RIDER, PLATFORM]
+          description: Who initiated the cancellation.
+          x-ion-condition: Required when contract status is CANCELLED
+
+        refundDestination:
+          type: object
+          description: Where refund will be credited. Default is original payment method.
+          additionalProperties: false
+          properties:
+            method:
+              type: string
+              enum: [ORIGINAL_PAYMENT_METHOD, WALLET_CREDIT, BANK_ACCOUNT, VOUCHER]
+            walletId:
+              type: string
+              x-ion-condition: Required when method is WALLET_CREDIT
+
+        # ── Subscription meal plan ─────────────────────────────────
+        isSubscriptionOrder:
+          type: boolean
+          description: Whether this order is part of a subscription meal plan.
+          default: false
+
+        subscriptionPlanId:
+          type: string
+          description: Meal plan subscription ID.
+          x-ion-condition: Required when isSubscriptionOrder is true
+
+        subscriptionDeliveryDay:
+          type: integer
+          description: Sequential delivery day number in the subscription (1 = first delivery).
+          x-ion-condition: Required when isSubscriptionOrder is true
+
+        # ── Live commerce ─────────────────────────────────────────
+        liveCommerceContext:
+          type: object
+          description: >
+            Context for orders placed via live streaming commerce.
+          x-ion-condition: Required for live-commerce pattern orders
+          additionalProperties: false
+          properties:
+            streamId:
+              type: string
+            streamPlatform:
+              type: string
+              enum: [TIKTOK_SHOP, SHOPEE_LIVE, TOKOPEDIA_PLAY, INSTAGRAM_LIVE, OTHER]
+            streamerId:
+              type: string
+            promoCodeFromStream:
+              type: string
+
+        # ── Dispute ────────────────────────────────────────────────
+        disputeWindowHours:
+          type: integer
+          description: >
+            Hours after delivery within which consumer may raise a complaint
+            (wrong item, missing item, quality issue).
+          default: 24

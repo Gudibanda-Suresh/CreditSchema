@@ -1,0 +1,12 @@
+{
+  "@context": "https://schema.ion.id/core/reconcile/v1/context.jsonld",
+  "@type": "ion:IONReconciliation",
+  "reconId": "RECON-2026-00001234",
+  "contractId": "ORD-2026-00012345",
+  "settlementBasis": "AFTER_DELIVERY",
+  "amounts": {
+    "baseContractAmount": 150000,
+    "netSettlementAmount": 142500
+  },
+  "reconStatus": "PENDING"
+}

@@ -1,0 +1,9 @@
+{
+  "@context": "https://schema.ion.id/core/support/v1/context.jsonld",
+  "@type": "ion:IONSupportTicket",
+  "sessionId": "SUP-2026-00001234",
+  "contractId": "ORD-2026-00012345",
+  "channel": "CHAT",
+  "status": "OPEN",
+  "openedAt": "2026-05-15T10:00:00Z"
+}

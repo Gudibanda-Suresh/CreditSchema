@@ -1,0 +1,281 @@
+# ION Trade Pattern — storefront (storefront)
+# NOT OAS. ION pattern specification document.
+# Defines the API sequence for the most common B2C commerce pattern.
+
+id: ion-trade-pattern-storefront-v1
+version: "1.0.0"
+patternName: storefront
+sector: ion:trade
+status: ready
+description: >
+  Consumer discovers, selects, and purchases a physical product.
+  Covers: Packaged Food (FMCG, grocery), Fashion, Electronics, Beauty, Home & Kitchen.
+  NOTE: Restaurant and cloud kitchen food ordering → Hospitality sector.
+  This pattern covers packaged food products sold from warehouse/store stock.
+
+participants:
+  BAP: Buyer App Platform
+  BPP: Buyer Price Provider (seller-facing)
+  ION_CATALOG: ION Catalogue Service (Phase 1 only)
+
+phases:
+  phase1:
+    name: Catalog
+    communication: async pub/sub
+    steps:
+      - step: publish_catalog
+        from: BPP
+        to: ION_CATALOG
+        direction: publish
+        requiredFields:
+          - context.domain
+          - context.bppId
+          - context.timestamp
+          - message.catalog.provider.id
+          - message.catalog.provider.descriptor.name
+          - message.catalog.provider.providerAttributes.storeStatus
+          - message.catalog.provider.providerAttributes.operatingHours[]
+          - message.catalog.provider.providerAttributes.providerCategory
+          - message.catalog.provider.providerAttributes.nibRegistered
+          - message.catalog.provider.providerAttributes.invoicingModel
+          - message.catalog.provider.availableAt[].gps
+          - message.catalog.resources[].id
+          - message.catalog.resources[].resourceAttributes.name.id
+          - message.catalog.resources[].resourceAttributes.shortDesc.id
+          - message.catalog.resources[].resourceAttributes.resourceStructure
+          - message.catalog.resources[].resourceAttributes.availability.status
+          - message.catalog.resources[].resourceAttributes.images[]
+          - message.catalog.resources[].resourceAttributes.countryOfOrigin
+          - message.catalog.resources[].resourceAttributes.ageRestricted
+          - message.catalog.resources[].resourceAttributes.logisticsServiceType
+          - message.catalog.offers[].id
+          - message.catalog.offers[].price
+          - message.catalog.offers[].offerAttributes.cancellationPolicy
+          - message.catalog.offers[].offerAttributes.returnable
+          - message.catalog.offers[].offerAttributes.returnPolicy
+          - message.catalog.offers[].offerAttributes.warrantyPolicy
+          - message.catalog.offers[].offerAttributes.disputePolicy
+          - message.catalog.offers[].offerAttributes.timeToShip
+          - message.catalog.offers[].offerAttributes.availableOnCod
+          - message.catalog.offers[].offerAttributes.contactDetailsConsumerCare
+          - message.catalog.offers[].offerAttributes.displayLanguage[]
+        conditionalFields:
+          - field: message.catalog.provider.providerAttributes.averagePreparationTime
+            condition: required for food/grocery and quick-commerce providers (packaged food only)
+          - field: message.catalog.resources[].resourceAttributes.food
+            condition: required for packaged food and beverage items (FMCG/grocery — not restaurant meals)
+          - field: message.catalog.resources[].resourceAttributes.packaged
+            condition: required for packaged goods
+          - field: message.catalog.resources[].resourceAttributes.customisationGroups[]
+            condition: required for COMPOSED and WITH_EXTRAS resource types
+          - field: message.catalog.resources[].resourceAttributes.regulatory
+            condition: required for regulated product categories
+        schemaPacks:
+          core: [localization/v1, identity/v1, address/v1, product/v1]
+          trade: [provider/v1, resource/v1, offer/v1]
+
+      - step: on_discover
+        from: ION_CATALOG
+        to: BAP
+        direction: push
+        description: Catalog pushed to BAP subscription. Incremental on updates.
+
+  phase2:
+    name: Transaction
+    communication: direct BAP-BPP
+    steps:
+      - step: select
+        from: BAP
+        to: BPP
+        direction: request
+        description: BAP sends selected items with quantities and performance preference.
+        requiredFields:
+          - context.transactionId
+          - context.messageId
+          - context.domain
+          - context.bapId
+          - context.bapUri
+          - context.bppId
+          - context.bppUri
+          - context.timestamp
+          - context.ttl
+          - context.location.city.code
+          - message.contract.participants[role=PROVIDER].id
+          - message.contract.commitments[].id
+          - message.contract.commitments[].resources[].quantity.count
+          - message.contract.performance[].performanceAttributes.performanceMode
+        conditionalFields:
+          - field: message.contract.commitments[].commitmentAttributes.customisationSelections
+            condition: required for COMPOSED and WITH_EXTRAS resources
+
+      - step: on_select
+        from: BPP
+        to: BAP
+        direction: callback
+        description: BPP validates availability, computes quote, returns supported modes and SLA.
+        requiredFields:
+          - message.contract.participants[role=PROVIDER].id
+          - message.contract.commitments[].id
+          - message.contract.consideration.considerationAttributes.breakup[]
+          - message.contract.consideration.considerationAttributes.totalAmount
+          - message.contract.performance[].performanceAttributes.performanceMode
+          - message.contract.performance[].performanceAttributes.sla
+        conditionalFields:
+          - field: message.contract.consideration.considerationAttributes.breakup[].considerationAttributes.ppnRate
+            condition: required on TAX breakup lines
+          - field: message.contract.performance[].performanceAttributes.handling[]
+            condition: required for cold-chain or fragile items
+        schemaPacks:
+          trade: [consideration/v1, performance/v1]
+          core: [tax/v1]
+
+      - step: init
+        from: BAP
+        to: BPP
+        direction: request
+        description: BAP provides delivery address, payment method, and performance mode.
+        requiredFields:
+          - message.contract.participants[role=PROVIDER].id
+          - message.contract.commitments[].id
+          - message.contract.participants[role=BUYER].person.name
+          - message.contract.participants[role=BUYER].contact.phone
+          - message.contract.participants[role=BUYER].address
+          - message.contract.performance[].id
+          - message.contract.performance[].performanceAttributes.performanceMode
+          - message.contract.performance[].stops[].location.address
+          - message.contract.performance[].stops[].location.gps
+          - message.contract.performance[].stops[].location.area_code
+          - message.contract.performance[].stops[].location.ionAddressAttributes.provinsiCode
+          - message.contract.settlements[].settlementAttributes.method
+          - message.contract.settlements[].settlementAttributes.paymentRail
+          - message.contract.settlements[].settlementAttributes.collectedBy
+        conditionalFields:
+          - field: message.contract.contractAttributes.invoicePreferences
+            condition: if buyer wants tax invoice
+          - field: message.contract.contractAttributes.deliveryPreferences
+            condition: if buyer has time preference
+          - field: message.contract.contractAttributes.gift
+            condition: if gifting is declared
+        schemaPacks:
+          core: [address/v1, payment/v1]
+          trade: [contract/v1]
+
+      - step: on_init
+        from: BPP
+        to: BAP
+        direction: callback
+        description: BPP returns payment instructions. Final quote confirmed.
+        requiredFields:
+          - message.contract.settlements[].settlementAttributes.methodDetail[]
+          - message.contract.consideration.considerationAttributes.breakup[]
+          - message.contract.consideration.considerationAttributes.totalAmount
+        conditionalFields:
+          - field: message.contract.settlements[].settlementAttributes.methodDetail.qrisString
+            condition: for QRIS method
+          - field: message.contract.settlements[].settlementAttributes.methodDetail.vaNumber
+            condition: for VIRTUAL_ACCOUNT method
+          - field: message.contract.settlements[].settlementAttributes.methodDetail.deepLink
+            condition: for EWALLET method
+        schemaPacks:
+          core: [payment/v1]
+
+      - step: confirm
+        from: BAP
+        to: BPP
+        direction: request
+        description: BAP confirms order. Binding commit. Payment status declared.
+        requiredFields:
+          - message.contract.participants[role=PROVIDER].id
+          - message.contract.commitments[]
+          - message.contract.participants[role=BUYER]
+          - message.contract.performance[]
+          - message.contract.settlements[].settlementAttributes.status
+          - message.contract.settlements[].settlementAttributes.method
+          - message.contract.contractAttributes.npwp
+          - message.contract.contractAttributes.nib
+
+      - step: on_confirm
+        from: BPP
+        to: BAP
+        direction: callback
+        description: BPP creates order. Returns contract ID, performance ID.
+        requiredFields:
+          - message.contract.id
+          - message.contract.status
+          - message.contract.performance[].id
+          - message.contract.performance[].status.descriptor.code
+          - message.contract.settlements[].settlementAttributes.status
+          - message.contract.contractAttributes.fulfillingLocationId
+        conditionalFields:
+          - field: message.contract.performance[].performanceAttributes.deliveryOtp
+            condition: if proofOfDeliveryType=OTP
+          - field: message.contract.performance[].performanceAttributes.selfPickupCode
+            condition: if performanceMode=SELF_PICKUP
+          - field: message.contract.contractAttributes.subscriptionBillingCycle
+            condition: for B2C-SUB commerce pattern
+        schemaPacks:
+          core: [payment/v1, reconcile/v1]
+          trade: [performance/v1, contract/v1]
+
+  phase3:
+    name: Fulfilment
+    communication: BPP pushes unsolicited, BAP polls optionally
+    stateMachine: schema/extensions/trade/performance-states/v1/states.yaml#standard
+    steps:
+      - step: on_status
+        trigger: PACKED
+        from: BPP
+        to: BAP
+        direction: unsolicited
+        description: Order packed and ready for logistics pickup.
+
+      - step: on_status
+        trigger: DISPATCHED
+        from: BPP
+        to: BAP
+        direction: unsolicited
+        description: Package picked up by logistics. AWB number and tracking URL added.
+        requiredFields:
+          - message.contract.performance[].status.descriptor.code
+          - message.contract.performance[].performanceAttributes.awbNumber
+          - message.contract.performance[].performanceAttributes.trackingUrl
+          - message.contract.performance[].performanceAttributes.estimatedDeliveryTime
+
+      - step: on_status
+        trigger: OUT_FOR_DELIVERY
+        from: BPP
+        to: BAP
+        direction: unsolicited
+
+      - step: on_status
+        trigger: DELIVERED
+        from: BPP
+        to: BAP
+        direction: unsolicited
+        description: Package delivered. Contract COMPLETE. Rating window opens.
+        requiredFields:
+          - message.contract.performance[].status.descriptor.code
+          - message.contract.status
+        conditionalFields:
+          - field: message.contract.performance[].performanceAttributes.deliveryProofUrl
+            condition: if proofOfDeliveryType=PHOTO
+
+variantWindows:
+  during-transaction:
+    earliest: select
+    latest: on_confirm
+  cancellation:
+    earliest: on_confirm
+    latest: "on_status[DISPATCHED]"
+  returns:
+    earliest: "on_status[DELIVERED]"
+    latest: returnWindow_expiry
+  RTO:
+    earliest: "on_status[DISPATCHED]"
+    latest: "on_status[DELIVERED]"
+  updates:
+    earliest: on_confirm
+    latest: "on_status[DELIVERED]"
+  cross-cutting:
+    earliest: on_confirm
+    latest: contract_COMPLETE

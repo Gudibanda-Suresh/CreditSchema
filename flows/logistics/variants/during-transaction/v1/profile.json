@@ -1,0 +1,11 @@
+{
+  "id": "ion-logistics-variant-during-transaction-v1",
+  "version": "1.0.0",
+  "status": "ready",
+  "sectorCode": "B",
+  "branchType": "during-transaction",
+  "maintainer": "ION Council \u2014 Sector B Lead",
+  "type": "Variant",
+  "variantName": "during-transaction",
+  "sector": "ion:logistics"
+}

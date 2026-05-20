@@ -1,0 +1,314 @@
+# ION Trade Flow — made-to-order (B2C-MTO) Spine v1
+# NOT OAS. ION pattern specification document.
+# Complete spine for made-to-order commerce.
+# Differences from storefront are annotated inline.
+
+id: ion-trade-pattern-made-to-order-v1
+version: "1.0.0"
+patternName: made-to-order
+sector: ion:trade
+status: ready
+description: >
+  Consumer orders a product that is prepared or assembled after order confirm.
+  Covers: custom bakery (packaged cakes/cookies to spec), meal kits (cold/frozen),
+  tailoring, custom-built furniture, bespoke gifts.
+  NOTE: Restaurant meals and cloud kitchen orders are Hospitality sector.
+  See flows/hospitality/patterns/delivery-order/v1 for restaurant food ordering.
+  Key differences from storefront:
+  (1) MTO performance state machine — PREPARING not PLANNED.
+  (2) Cancellation window closes when PREPARING state fires.
+  (3) averagePreparationTime required on provider.
+  (4) preparationTime required per resource.
+  (5) cancellationPolicy must be cancel.mto.nofee.before_prepare.
+
+applicableCategories:
+  - custom-bakery        # packaged cakes, cookies ordered to spec — NOT restaurant meals
+  - meal-kits            # packaged meal kit delivered cold/frozen — NOT restaurant delivery
+  - tailoring
+  - custom-furniture
+  - made-to-order-fmcg
+  # NOTE: food-qsr (restaurants, cloud kitchens) → Hospitality sector
+  # See: flows/hospitality/patterns/delivery-order/v1
+
+# Performance state machine: PLACED → ACCEPTED → PREPARING → READY → DISPATCHED → DELIVERED
+
+phases:
+  phase1:
+    name: Catalog
+    communication: async pub/sub
+    description: >
+      Same structure as storefront catalog. Two additional required fields
+      that are mandatory for MTO providers.
+    steps:
+      - step: publish_catalog
+        from: BPP
+        to: ION_CATALOG
+        requiredFields:
+          - context.domain
+          - context.bppId
+          - context.timestamp
+          - message.catalog.provider.id
+          - message.catalog.provider.descriptor.name
+          - message.catalog.provider.providerAttributes.storeStatus
+          - message.catalog.provider.providerAttributes.operatingHours[]
+          - message.catalog.provider.providerAttributes.providerCategory
+          - message.catalog.provider.providerAttributes.nibRegistered
+          - message.catalog.provider.providerAttributes.invoicingModel
+          - message.catalog.provider.providerAttributes.averagePreparationTime
+          - message.catalog.provider.availableAt[].gps
+          - message.catalog.resources[].id
+          - message.catalog.resources[].resourceAttributes.name.id
+          - message.catalog.resources[].resourceAttributes.shortDesc.id
+          - message.catalog.resources[].resourceAttributes.resourceStructure
+          - message.catalog.resources[].resourceAttributes.availability.status
+          - message.catalog.resources[].resourceAttributes.images[]
+          - message.catalog.resources[].resourceAttributes.countryOfOrigin
+          - message.catalog.resources[].resourceAttributes.ageRestricted
+          - message.catalog.resources[].resourceAttributes.logisticsServiceType
+          - message.catalog.resources[].resourceAttributes.preparationTime
+          - message.catalog.resources[].resourceAttributes.food.classification  # packaged food classification — NOT restaurant fnb
+          - message.catalog.offers[].id
+          - message.catalog.offers[].price
+          - message.catalog.offers[].offerAttributes.cancellationPolicy
+          - message.catalog.offers[].offerAttributes.cancellationPolicy
+          - message.catalog.offers[].offerAttributes.returnable
+          - message.catalog.offers[].offerAttributes.returnPolicy
+          - message.catalog.offers[].offerAttributes.warrantyPolicy
+          - message.catalog.offers[].offerAttributes.disputePolicy
+          - message.catalog.offers[].offerAttributes.timeToShip
+          - message.catalog.offers[].offerAttributes.availableOnCod
+          - message.catalog.offers[].offerAttributes.contactDetailsConsumerCare
+          - message.catalog.offers[].offerAttributes.displayLanguage[]
+        conditionalFields:
+          - field: message.catalog.resources[].resourceAttributes.customisationGroups[]
+          - field: message.catalog.resources[].resourceAttributes.food.allergens[]  # packaged food allergens
+          - field: message.catalog.resources[].resourceAttributes.food.spiceLevel   # packaged food spice level
+        schemaPacks:
+          core: [localization/v1, identity/v1, address/v1, product/v1]
+          trade: [provider/v1, resource/v1, offer/v1]
+
+      - step: on_discover
+        from: ION_CATALOG
+        to: BAP
+        direction: push
+
+  phase2:
+    name: Transaction
+    communication: direct BAP-BPP
+    steps:
+      - step: select
+        from: BAP
+        to: BPP
+        direction: request
+        description: >
+          Consumer selects food item(s) and customisations.
+          Same as storefront select. Customisation selections are mandatory
+          for COMPOSED items (e.g. choosing pizza size is SINGLE_REQUIRED).
+        requiredFields:
+          - context.transactionId
+          - context.messageId
+          - context.domain
+          - context.bapId
+          - context.bapUri
+          - context.bppId
+          - context.bppUri
+          - context.timestamp
+          - context.ttl
+          - context.location.city.code
+          - message.contract.participants[role=PROVIDER].id
+          - message.contract.commitments[].id
+          - message.contract.commitments[].resources[].quantity.count
+          - message.contract.performance[].performanceAttributes.performanceMode
+        conditionalFields:
+          - field: message.contract.commitments[].commitmentAttributes.customisationSelections[]
+
+      - step: on_select
+        from: BPP
+        to: BAP
+        direction: callback
+        description: >
+          BPP returns quote and preparation SLA. The SLA is based on
+          averagePreparationTime + per-item preparationTime.
+          BPP may adjust preparation time for high-volume periods.
+        requiredFields:
+          - message.contract.participants[role=PROVIDER].id
+          - message.contract.commitments[].id
+          - message.contract.consideration.considerationAttributes.breakup[]
+          - message.contract.consideration.considerationAttributes.totalAmount
+          - message.contract.performance[].performanceAttributes.performanceMode
+          - message.contract.performance[].performanceAttributes.sla
+        conditionalFields:
+          - field: message.contract.consideration.considerationAttributes.breakup[].considerationAttributes.ppnRate
+        schemaPacks:
+          trade: [consideration/v1, performance/v1]
+          core: [tax/v1]
+
+      - step: init
+        from: BAP
+        to: BPP
+        direction: request
+        description: >
+          Consumer provides delivery address (or self-pickup indication)
+          and payment method. Same as storefront init.
+        requiredFields:
+          - message.contract.participants[role=PROVIDER].id
+          - message.contract.commitments[].id
+          - message.contract.participants[role=BUYER].person.name
+          - message.contract.participants[role=BUYER].contact.phone
+          - message.contract.participants[role=BUYER].address
+          - message.contract.performance[].id
+          - message.contract.performance[].performanceAttributes.performanceMode
+          - message.contract.settlements[].settlementAttributes.method
+          - message.contract.settlements[].settlementAttributes.paymentRail
+          - message.contract.settlements[].settlementAttributes.collectedBy
+        conditionalFields:
+          - field: message.contract.performance[].stops[].location.address
+          - field: message.contract.performance[].stops[].location.gps
+          - field: message.contract.performance[].stops[].location.area_code
+          - field: message.contract.performance[].stops[].location.ionAddressAttributes.provinsiCode
+        schemaPacks:
+          core: [address/v1, payment/v1]
+          trade: [contract/v1]
+
+      - step: on_init
+        from: BPP
+        to: BAP
+        direction: callback
+        description: Payment instructions returned. Quote confirmed.
+        requiredFields:
+          - message.contract.settlements[].settlementAttributes.methodDetail[]
+          - message.contract.consideration.considerationAttributes.breakup[]
+          - message.contract.consideration.considerationAttributes.totalAmount
+        schemaPacks:
+          core: [payment/v1]
+
+      - step: confirm
+        from: BAP
+        to: BPP
+        direction: request
+        description: Consumer confirms. Kitchen starts preparation immediately.
+        requiredFields:
+          - message.contract.participants[role=PROVIDER].id
+          - message.contract.commitments[]
+          - message.contract.participants[role=BUYER]
+          - message.contract.performance[]
+          - message.contract.settlements[].settlementAttributes.status
+          - message.contract.contractAttributes.npwp
+          - message.contract.contractAttributes.nib
+
+      - step: on_confirm
+        from: BPP
+        to: BAP
+        direction: callback
+        description: >
+          BPP confirms order and immediately begins preparation.
+          on_confirm signals that the kitchen is preparing — consumer
+          cannot cancel after this point without violating policy.
+        requiredFields:
+          - message.contract.id
+          - message.contract.status
+          - message.contract.performance[].id
+          - message.contract.performance[].status.descriptor.code
+          - message.contract.settlements[].settlementAttributes.status
+        conditionalFields:
+          - field: message.contract.performance[].performanceAttributes.selfPickupCode
+        schemaPacks:
+          trade: [performance/v1, contract/v1]
+          core: [payment/v1]
+
+  phase3:
+    name: Preparation and Fulfilment
+    description: >
+      MTO performance states replace the standard PLANNED/PACKED sequence.
+      PREPARING fires immediately at on_confirm. READY signals the order
+      is done and awaiting logistics pickup or consumer collection.
+    stateMachine: schema/extensions/trade/performance-states/v1/states.yaml#mto
+    steps:
+      - step: on_status
+        trigger: PREPARING
+        from: BPP
+        to: BAP
+        direction: unsolicited
+        description: >
+          Kitchen actively preparing. Cancellation window is now CLOSED.
+          BAP must update consumer UI — cancel button removed.
+        requiredFields:
+          - message.contract.performance[].status.descriptor.code
+          - message.contract.performance[].performanceAttributes.estimatedDeliveryTime
+
+      - step: on_status
+        trigger: READY
+        from: BPP
+        to: BAP
+        direction: unsolicited
+        description: >
+          Order ready. For DELIVERY, logistics agent is being assigned.
+          For SELF_PICKUP, consumer is notified to collect.
+        requiredFields:
+          - message.contract.performance[].status.descriptor.code
+        conditionalFields:
+          - field: message.contract.performance[].performanceAttributes.selfPickupCode
+
+      - step: on_status
+        trigger: DISPATCHED
+        from: BPP
+        to: BAP
+        direction: unsolicited
+        description: Logistics agent picked up the order.
+        requiredFields:
+          - message.contract.performance[].status.descriptor.code
+          - message.contract.performance[].performanceAttributes.awbNumber
+          - message.contract.performance[].performanceAttributes.estimatedDeliveryTime
+          - message.contract.performance[].performanceAttributes.agentName
+          - message.contract.performance[].performanceAttributes.agentPhone
+        conditionalFields:
+          - field: message.contract.performance[].performanceAttributes.trackingUrl
+          - field: message.contract.performance[].performanceAttributes.agentPhoto
+
+      - step: on_status
+        trigger: OUT_FOR_DELIVERY
+        from: BPP
+        to: BAP
+        direction: unsolicited
+        requiredFields:
+          - message.contract.performance[].status.descriptor.code
+
+      - step: on_status
+        trigger: DELIVERED
+        from: BPP
+        to: BAP
+        direction: unsolicited
+        description: Delivered. Contract COMPLETE.
+        requiredFields:
+          - message.contract.performance[].status.descriptor.code
+          - message.contract.status
+        conditionalFields:
+          - field: message.contract.performance[].performanceAttributes.deliveryProofUrl
+          - field: message.contract.performance[].performanceAttributes.deliveryOtp
+
+cancellationPolicy:
+  note: >
+    MTO cancellation differs from storefront.
+    Before PREPARING state: free cancellation, no fee, order is accepted.
+    After PREPARING state fires: cancellation not permitted.
+    The consumer must be clearly informed of this at checkout.
+  policyIRI: ion://policy/cancel.mto.nofee-before-prepare
+  windowClose: on_status[PREPARING]
+
+variantWindows:
+  during-transaction:
+    earliest: select
+    latest: on_confirm
+  cancellation:
+    earliest: on_confirm
+    latest: on_status[PREPARING]
+    note: "Window is very short — cancellation closes when kitchen starts"
+  returns:
+    earliest: on_status[DELIVERED]
+    latest: returnWindow expiry
+  updates:
+    earliest: on_confirm
+    latest: on_status[DELIVERED]
+  cross-cutting:
+    earliest: on_confirm
+    latest: contract_COMPLETE

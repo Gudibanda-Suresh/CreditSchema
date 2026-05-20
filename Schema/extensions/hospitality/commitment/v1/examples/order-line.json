@@ -1,0 +1,54 @@
+{
+  "@context": "https://schema.ion.id/hospitality/commitment/v1/context.jsonld",
+  "@type": "ion:RestaurantCommitment",
+  "lineId": "LINE-001",
+  "resourceId": "ITEM-NASI-GORENG-SPESIAL",
+  "offerId": "OFFER-REGULAR-001",
+  "quantity": {
+    "value": 2,
+    "unit": "portion"
+  },
+  "lockedPrice": {
+    "value": 35000,
+    "currency": "IDR"
+  },
+  "customisationSelections": [
+    {
+      "groupId": "spice-level",
+      "selectedOptions": [
+        {
+          "optionId": "level-medium"
+        }
+      ]
+    },
+    {
+      "groupId": "protein-choice",
+      "selectedOptions": [
+        {
+          "optionId": "chicken-and-egg"
+        }
+      ]
+    },
+    {
+      "groupId": "extras",
+      "selectedOptions": [
+        {
+          "optionId": "extra-kerupuk",
+          "quantity": 2
+        },
+        {
+          "optionId": "extra-sambal",
+          "quantity": 1
+        }
+      ]
+    }
+  ],
+  "specialInstructions": "Tidak pakai bawang merah. Nasinya jangan terlalu matang.",
+  "dietaryRequest": [
+    "NO_MSG",
+    "NO_ONION"
+  ],
+  "substitutionPreference": "CONTACT_ME",
+  "isGift": false,
+  "addedAt": "2026-05-16T12:05:00+07:00"
+}

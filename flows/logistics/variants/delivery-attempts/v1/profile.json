@@ -1,0 +1,11 @@
+{
+  "id": "ion-logistics-variant-delivery-attempts-v1",
+  "version": "1.0.0",
+  "status": "ready",
+  "sectorCode": "B",
+  "branchType": "attempts",
+  "maintainer": "ION Council \u2014 Sector B Lead",
+  "type": "Variant",
+  "variantName": "delivery-attempts",
+  "sector": "ion:logistics"
+}

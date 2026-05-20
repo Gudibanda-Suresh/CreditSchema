@@ -1,0 +1,74 @@
+iri: ion://policy/finance.interest-rate-cap.ojk-kpr-property
+
+version: "1.0.0"
+
+versionEffectiveFrom: "2026-05-01"
+
+category: INTEREST_RATE_CAP
+
+subCategory: MORTGAGE
+
+status: ratified
+
+ratifiedAt: "2026-04-15"
+
+displayText:
+  id: "Batas suku bunga KPR/KPA"
+  en: "Interest rate cap — mortgage (KPR/KPA)"
+
+loanType: KPR_KPA_MORTGAGE
+
+rateCapType: EFFECTIVE_ANNUAL_RATE
+
+generalMortgage:
+  staticCap: null
+  note: >
+    No statutory interest rate cap for commercial KPR. Banks compete on market rates.
+    OJK requires disclosure of effective rate and all-in cost. Market practice: 7–12% p.a.
+  fixedPeriodDisclosureRequired: true
+  adjustableRateRulesApply: true
+
+fixedRatePeriod:
+  common: 1_TO_3_YEARS
+  afterFixedPeriod: FLOATING_BASED_ON_COST_OF_FUNDS_PLUS_SPREAD
+
+subsidizedMortgage:
+  name: KPR_SEJAHTERA_FLPP
+  maxRatePercent: 5.0
+  rateType: FIXED_FOR_LOAN_LIFETIME
+  government: PUPR_KEMENTERIAN
+  targetGroup: MBR_MASYARAKAT_BERPENGHASILAN_RENDAH
+  maxHousePrice: 350000000
+  note: "FLPP rate fixed at 5% p.a. for life of loan; government subsidizes difference"
+
+kprBpjs:
+  name: KPR_BP_TAPERA
+  note: "BP Tapera (formerly BPJS Ketenagakerjaan MLT) provides subsidized KPR for members"
+  maxRatePercent: 5.0
+
+disclosureRequirements:
+  - EFEKTIF_ANNUAL_RATE_AT_ORIGINATION
+  - RATE_CHANGE_MECHANISM_EXPLAINED
+  - PROJECTED_INSTALLMENT_UNDER_RATE_SCENARIOS
+  - SBDK_BANK_DISCLOSED_MONTHLY
+
+rateChangeNotice:
+  requiredDaysBeforeChange: 30
+  channelRequired: WRITTEN_OR_DIGITAL_NOTIFICATION
+
+applicablePatterns:
+  - mortgage
+
+applicableLenderTypes:
+  - BANK_UMUM
+  - MULTIFINANCE
+
+regulatoryBasis:
+  - "OJK POJK 12/2021 tentang Bank Umum (pasal keterbukaan suku bunga)"
+  - "OJK POJK 22/2023 tentang Perlindungan Konsumen dan Masyarakat di Sektor Jasa Keuangan"
+  - "SE BI No.15/1/DPNP tentang Suku Bunga Dasar Kredit"
+  - "Permenpupr tentang KPR FLPP"
+
+supersededBy: null
+
+deprecatedAt: null

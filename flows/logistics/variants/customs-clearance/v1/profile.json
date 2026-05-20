@@ -1,0 +1,11 @@
+{
+  "id": "ion-logistics-variant-customs-clearance-v1",
+  "version": "1.0.0",
+  "status": "ready",
+  "sectorCode": "B",
+  "branchType": "customs",
+  "maintainer": "ION Council \u2014 Sector B Lead",
+  "type": "Variant",
+  "variantName": "customs-clearance",
+  "sector": "ion:logistics"
+}

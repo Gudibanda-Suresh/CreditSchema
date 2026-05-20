@@ -1,0 +1,282 @@
+openapi: 3.1.1
+info:
+  title: ION Hospitality F&B Delivery Extension (v1)
+  description: >
+    ION extension for the Hospitality sector, Food & Beverage Delivery category (HSC-fnb-delivery).
+
+    Covers restaurant meals and beverages ordered for delivery or self-pickup.
+    The resource is a prepared food item — made after order placement.
+    This is distinct from Trade food (TRC-food-bev) which covers packaged physical goods.
+
+    Classification rule: if the buyer ends up owning a physical packaged product → Trade.
+    If the item is prepared fresh after the order and consumed within hours → Hospitality.
+
+    x-beckn-attaches-to: Resource.resourceAttributes
+  version: 1.0.0
+  license:
+    name: Apache-2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+  contact:
+    name: ION Network
+    url: https://schema.ion.id
+
+components:
+  schemas:
+    FnbMenuItem:
+      type: object
+      title: FnbMenuItem
+      description: >
+        Resource attributes for prepared food and beverage items available for delivery
+        or self-pickup. Governed by Hospitality Sector Working Group.
+        CRC: HSC-fnb-delivery
+      additionalProperties: true
+      x-ion-closed-extensions: false
+      x-beckn-attaches-to: Resource.resourceAttributes
+      x-jsonld:
+        '@context': 'https://schema.ion.id/hospitality/fnb-delivery/v1/context.jsonld'
+        '@type': ion:FnbMenuItem
+      allOf:
+        - $ref: ../../../../core/v2/api/v2.0.0/beckn.yaml#/components/schemas/Attributes
+      properties:
+        quantity:
+          type: object
+          description: Quantity sold per order line (typically 1 portion/serving)
+          additionalProperties: false
+          required: [value, unit]
+          properties:
+            value:
+              type: number
+              minimum: 1
+            unit:
+              type: string
+              enum: [portion, piece, cup, bowl, plate, set, litre, millilitre]
+          example:
+            value: 1
+            unit: portion
+
+        resourceStructure:
+          type: string
+          enum: [PLAIN, WITH_EXTRAS, COMPOSED, BUNDLE]
+          description: >
+            PLAIN: single item, no choices (e.g. a soft drink).
+            WITH_EXTRAS: base item with optional add-ons (e.g. burger + optional extra patty).
+            COMPOSED: base item with mandatory + optional customisation groups (e.g. pizza with mandatory size + optional toppings).
+            BUNDLE: set meal combining multiple items (e.g. value meal).
+
+        resourceTangibility:
+          type: string
+          const: PHYSICAL
+          description: Always PHYSICAL for F&B delivery — item requires physical fulfilment.
+
+        logisticsServiceType:
+          type: string
+          enum: [HYPERLOCAL, DOMESTIC_SURFACE]
+          description: Typically HYPERLOCAL (same-day, radius delivery). DOMESTIC_SURFACE for catering or inter-city food shipment.
+          default: HYPERLOCAL
+
+        ageRestricted:
+          type: boolean
+          description: True for alcoholic beverages and tobacco products.
+          default: false
+
+        countryOfOrigin:
+          type: string
+          pattern: '^[A-Z]{3}$'
+          description: ISO 3166-1 alpha-3. Typically IDN for restaurant-prepared food.
+          example: IDN
+
+        images:
+          type: array
+          items:
+            type: string
+            format: uri
+          description: Food photography. First image is primary. Minimum 1 required.
+          minItems: 1
+
+        availability:
+          type: object
+          additionalProperties: false
+          required: [status]
+          properties:
+            status:
+              type: string
+              enum: [IN_STOCK, OUT_OF_STOCK, PREORDER]
+              description: IN_STOCK = available now. OUT_OF_STOCK = sold out (daily specials). PREORDER = accept order for later preparation.
+            maxOrderQty:
+              type: integer
+              minimum: 1
+              description: Per-order cap. Common for limited daily specials.
+            nextAvailableAt:
+              type: string
+              format: date-time
+              description: When this item will be available again. For daily specials that sell out.
+
+        preparationTime:
+          type: string
+          format: duration
+          description: Time from order confirm to item ready for pickup/dispatch. ISO 8601 duration.
+          example: PT20M
+          x-ion-regulatory: Used for SLA computation and ETA display to consumer.
+
+        fnb:
+          type: object
+          title: FnbMenuItem
+          description: Food and beverage attributes required for all HSC-fnb-delivery resources.
+          additionalProperties: false
+          required: [classification, allergens]
+          properties:
+            classification:
+              type: string
+              enum: [HALAL, NON_HALAL, VEG, NON_VEG, HALAL_PENDING, NOT_APPLICABLE]
+              description: >
+                Dietary classification. MANDATORY for all F&B resources.
+                HALAL requires halalCertNumber to be declared.
+              x-ion-regulatory: UU 33/2014 tentang Jaminan Produk Halal
+            halalCertNumber:
+              type: string
+              description: MUI/BPJPH halal certificate number. Required when classification=HALAL.
+              x-ion-condition: Required when classification=HALAL
+            allergens:
+              type: array
+              description: Allergens present. Empty array = none. MANDATORY declaration.
+              items:
+                type: string
+                enum: [GLUTEN, NUTS, DAIRY, EGGS, SOY, SHELLFISH, FISH, SESAME, SULPHITES, CELERY, MUSTARD, LUPIN]
+            cuisineType:
+              type: string
+              description: Cuisine type for discovery and filtering.
+              example: Indonesian
+            spiceLevel:
+              type: string
+              enum: [NONE, LOW, MEDIUM, HIGH, EXTRA_HOT]
+            isAlcoholic:
+              type: boolean
+              description: True for alcoholic beverages. Requires ageRestricted=true on the resource.
+              default: false
+              x-ion-regulatory: Permendag 20/M-DAG/PER/4/2014 tentang Pengendalian dan Pengawasan Minuman Beralkohol
+            bpomRegistration:
+              type: string
+              description: BPOM MD/ML number if the item uses pre-packaged licensed ingredients (e.g. imported sauce). Optional.
+            nutritionalInfo:
+              type: string
+              description: Per-serving nutritional summary. Recommended for health-focused items.
+              example: Energi 450 kkal, Protein 25g, Lemak 18g, Karbohidrat 45g
+
+        menuCategory:
+          type: object
+          description: Menu section this item belongs to. Drives display order and grouping in BAP.
+          additionalProperties: false
+          required: [id, name]
+          properties:
+            id:
+              type: string
+            name:
+              type: object
+              required: [id]
+              properties:
+                id:
+                  type: string
+                  description: Bahasa Indonesia
+                en:
+                  type: string
+                  description: English
+            sequence:
+              type: integer
+              description: Display order of this menu category
+            imageUrl:
+              type: string
+              format: uri
+
+        customisationGroups:
+          type: array
+          description: >
+            Customisation groups for COMPOSED and WITH_EXTRAS resources.
+            Each group defines a set of choices the buyer makes at order time.
+          x-ion-condition: Required when resourceStructure IN [COMPOSED, WITH_EXTRAS]
+          items:
+            type: object
+            additionalProperties: false
+            required: [id, name, selectionType, options]
+            properties:
+              id:
+                type: string
+              name:
+                type: object
+                required: [id]
+                properties:
+                  id:
+                    type: string
+                  en:
+                    type: string
+              selectionType:
+                type: string
+                enum: [SINGLE_REQUIRED, SINGLE_OPTIONAL, MULTIPLE_OPTIONAL, FIXED]
+              minSelections:
+                type: integer
+                minimum: 0
+              maxSelections:
+                type: integer
+                minimum: 1
+              sequence:
+                type: integer
+              options:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: false
+                  required: [id, label]
+                  properties:
+                    id:
+                      type: string
+                    label:
+                      type: object
+                      required: [id]
+                      properties:
+                        id:
+                          type: string
+                        en:
+                          type: string
+                    priceDelta:
+                      type: object
+                      additionalProperties: false
+                      required: [type, value]
+                      properties:
+                        type:
+                          type: string
+                          enum: [FIXED, PERCENT]
+                        value:
+                          type: number
+                    available:
+                      type: boolean
+                      default: true
+
+        identity:
+          type: object
+          description: Brand and SKU information.
+          additionalProperties: false
+          properties:
+            brand:
+              type: string
+              description: Restaurant or brand name
+            sku:
+              type: string
+              description: Internal SKU or POS item code
+
+        itemRating:
+          type: number
+          minimum: 1
+          maximum: 5
+          description: Aggregate rating 1-5. Maintained by the BPP.
+
+      if:
+        properties:
+          fnb:
+            properties:
+              classification:
+                const: HALAL
+            required: [classification]
+        required: [fnb]
+      then:
+        properties:
+          fnb:
+            required: [halalCertNumber]

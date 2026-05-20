@@ -1,23 +1,25 @@
-# Finance Sector — Flow Index
+# ION Finance Sector Flows
 
-**Sector:** `finance`  
-**ION Reference Path:** `finance / {category-code} / {crc-code} / {pattern} / {variant}`
+**Sector:** `ion:finance`
+
+---
 
 ## Categories
 
-| Code | Name | CRC | Status |
-|---|---|---|---|
-| [FIN-02](FIN-02/README.md) | Lending & Consumer Credit | `FNC-lending` | Active |
+| Code | Name | Status |
+|---|---|---|
+| [FIN-02](FIN-02/README.md) | Lending & Consumer Credit | Active |
 
-## Reference Path Examples
+---
 
-```
-finance / FIN-02 / FNC-lending / loan-application / credit-assessment
-finance / FIN-02 / FNC-lending / loan-application / collateral
-finance / FIN-02 / FNC-lending / loan-application / guarantor
-finance / FIN-02 / FNC-lending / loan-application / disbursement
-finance / FIN-02 / FNC-lending / loan-application / early-settlement
-finance / FIN-02 / FNC-lending / loan-application / delinquency
-```
+## Schema packs used by this sector
 
-Product type is declared on the resource (`resourceAttributes.productType`), not in the path.
+| Beckn slot | Pack | Class |
+|---|---|---|
+| Resource | `schema/extensions/finance/resource/v1` | `CreditProduct` |
+| Offer | `schema/extensions/finance/offer/v1` | `CreditApproval` |
+| Contract | `schema/extensions/finance/contract/v1` | `LoanAgreement` |
+| Participant | `schema/extensions/finance/participant/v1` | `Borrower` / `Lender` |
+| Settlement | `schema/extensions/finance/settlement/v1` | `AmortisationRow` |
+| Performance | `schema/extensions/finance/performance/v1` | `DisbursementPerformance` |
+| Consideration | `schema/extensions/finance/consideration/v1` | `LoanConsideration` |

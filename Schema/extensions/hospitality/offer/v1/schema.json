@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schema.ion.id/hospitality/offer/v1/schema.json",
+  "title": "RestaurantOffer",
+  "description": "ION Hospitality Restaurant Ordering \u2014 delivery offer, pricing, scheduling, promotions. Attaches to: Offer.offerAttributes",
+  "type": "object",
+  "additionalProperties": true,
+  "allOf": [
+    {
+      "$ref": "https://schema.beckn.io/core/v2/schema/Attributes.json"
+    }
+  ]
+}

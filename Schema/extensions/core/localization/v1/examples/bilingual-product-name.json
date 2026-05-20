@@ -1,0 +1,6 @@
+{
+  "@context": "https://schema.ion.id/core/localization/v1/context.jsonld",
+  "@type": "ion:LocalisedText",
+  "id": "Nasi Goreng Spesial",
+  "en": "Special Fried Rice"
+}

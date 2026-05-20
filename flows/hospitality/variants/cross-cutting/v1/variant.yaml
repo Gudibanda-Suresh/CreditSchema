@@ -1,0 +1,117 @@
+# ION Hospitality Variant — cross-cutting v1
+# Applies to: all hospitality patterns once a contract is ACTIVE
+
+id: ion-hospitality-variant-cross-cutting-v1
+version: "1.0.0"
+variantName: cross-cutting
+sector: ion:hospitality
+appliesTo:
+  - delivery-order
+status: ready
+description: >
+  Cross-cutting actions available on any active hospitality contract.
+  Covers live order tracking, consumer support, post-delivery rating,
+  and settlement reconciliation. These endpoints are always available
+  once a contract reaches ACTIVE state.
+
+phases:
+  track:
+    name: Live Tracking
+    trigger: Consumer requests live rider location
+    steps:
+      - step: track
+        from: BAP
+        to: BPP
+        direction: request
+        description: BAP polls for live rider GPS and ETA
+        requiredFields:
+          - context.transactionId
+          - message.contract.id
+
+      - step: on_track
+        from: BPP
+        to: BAP
+        direction: callback
+        requiredFields:
+          - message.contract.performance[].performanceAttributes.realTimeGps.latitude
+          - message.contract.performance[].performanceAttributes.realTimeGps.longitude
+          - message.contract.performance[].performanceAttributes.realTimeGps.updatedAt
+          - message.contract.performance[].performanceAttributes.estimatedDeliveryAt
+        conditionalFields:
+          - field: message.contract.performance[].performanceAttributes.etaWindowMinutes
+            condition: recommended when ETA uncertainty is significant
+          - field: message.contract.performance[].performanceAttributes.distanceRemainingKm
+            condition: present when riderState is IN_TRANSIT or ARRIVING
+
+  support:
+    name: Consumer Support
+    trigger: Consumer raises a support query
+    steps:
+      - step: support
+        from: BAP
+        to: BPP
+        direction: request
+        requiredFields:
+          - message.support.phone
+          - message.support.email
+
+      - step: on_support
+        from: BPP
+        to: BAP
+        direction: callback
+        requiredFields:
+          - message.support.supportAttributes.sessionId
+          - message.support.supportAttributes.channel
+          - message.support.supportAttributes.status
+
+  rate:
+    name: Post-Delivery Rating
+    trigger: Consumer submits rating after DELIVERED state
+    steps:
+      - step: rate
+        from: BAP
+        to: BPP
+        direction: request
+        requiredFields:
+          - message.ratingInput.id
+          - message.ratingInput.ratingInputAttributes.ratingCategory  # RESOURCE
+          - message.ratingInput.ratingInputAttributes.ratingValue
+        conditionalFields:
+          - field: message.ratingInput.ratingInputAttributes.consumerFeedback.tags[]
+            condition: recommended for structured tag-based review (Grab/Gojek style)
+          - field: message.ratingInput.ratingInputAttributes.consumerFeedback.comment
+            condition: optional free-text review
+
+      - step: on_rate
+        from: BPP
+        to: BAP
+        direction: callback
+        requiredFields:
+          - message.ratingInput.id
+
+  reconcile:
+    name: Settlement Reconciliation
+    trigger: Post-delivery settlement between BAP and BPP
+    steps:
+      - step: reconcile
+        from: BAP
+        to: BPP
+        direction: request
+        requiredFields:
+          - message.contract.settlements[].settlementAttributes.reconId
+          - message.contract.settlements[].settlementAttributes.contractId
+          - message.contract.settlements[].settlementAttributes.amounts.baseContractAmount
+          - message.contract.settlements[].settlementAttributes.amounts.netSettlementAmount
+
+      - step: on_reconcile
+        from: BPP
+        to: BAP
+        direction: callback
+        requiredFields:
+          - message.contract.settlements[].settlementAttributes.reconStatus
+
+businessRules:
+  - track is available from riderState=ASSIGNED onwards
+  - rate is available only after performanceState=DELIVERED
+  - reconcile runs after the dispute window (default 24h post-delivery) closes
+  - support is available throughout the lifecycle (pre-confirm to post-delivery)

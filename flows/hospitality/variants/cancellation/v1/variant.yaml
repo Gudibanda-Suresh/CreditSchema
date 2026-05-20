@@ -1,0 +1,68 @@
+# ION Hospitality Variant — cancellation v1
+
+id: ion-hospitality-variant-cancellation-v1
+version: "1.0.0"
+variantName: cancellation
+sector: ion:hospitality
+appliesTo:
+  - delivery-order
+status: ready
+description: >
+  Cancellation flow for restaurant food orders. The cancellation window
+  is extremely tight — typically 60-90 seconds after confirm, or until
+  kitchenState transitions to PREPARING, whichever comes first.
+  Once the kitchen starts preparing, cancellation is not possible
+  without merchant approval.
+
+activationCondition: >
+  Always available. Effective cancellation depends on kitchenState
+  and the cancellationWindowSeconds declared in RestaurantOffer.
+
+phases:
+  cancel:
+    name: Cancellation
+    steps:
+      - step: cancel
+        from: BAP
+        to: BPP
+        direction: request
+        description: >
+          Consumer initiates cancellation. BPP checks if within
+          cancellation window and kitchenState < PREPARING.
+        requiredFields:
+          - context.transactionId
+          - message.contract.id
+          - message.contract.contractAttributes.cancellationReasonCode
+          - message.contract.contractAttributes.cancellationInitiatedBy  # CONSUMER
+
+      - step: on_cancel
+        from: BPP
+        to: BAP
+        direction: callback
+        description: >
+          BPP confirms cancellation or rejects with reason.
+          If accepted: contract status → CANCELLED, refund initiated.
+          If rejected: contract remains ACTIVE (kitchen already started).
+        requiredFields:
+          - message.contract.id
+          - message.contract.status   # CANCELLED or ACTIVE (if rejected)
+        conditionalFields:
+          - field: message.contract.contractAttributes.refundDestination
+            condition: present when cancellation accepted and payment was collected
+        businessRules:
+          - Cancellation accepted only when kitchenState is PENDING_ACCEPTANCE
+          - After PREPARING state cancellation requires merchant approval
+          - Platform-initiated cancellation (PLATFORM) bypasses window check
+          - Full refund to original payment method within 1 business day
+
+stateChanges:
+  onAccepted:
+    contract.status: CANCELLED
+    performance.kitchenState: CANCELLED_BY_KITCHEN
+  onRejected:
+    contract.status: ACTIVE  # unchanged
+
+businessRules:
+  - cancellationWindowSeconds from RestaurantOffer governs auto-approval
+  - NPWP-related tax reversal handled by ION Central if PPN was collected
+  - Rider compensation handled by platform policy if already assigned

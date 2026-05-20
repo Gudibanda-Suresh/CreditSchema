@@ -1,0 +1,144 @@
+openapi: 3.1.1
+info:
+  title: ION Hospitality Restaurant Ordering Extension (v1)
+  description: >
+    Price breakdown and tax attributes for food delivery orders.
+    Covers food subtotal, delivery fee, platform fee, packaging fee,
+    promo discount lines, cashback, PPN/tax treatment for restaurant meals,
+    COD cash amount, and tip.
+    x-beckn-attaches-to: Consideration.considerationAttributes
+  version: 1.0.0
+  license:
+    name: Apache-2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+  contact:
+    name: ION Network
+    url: https://schema.ion.id
+
+components:
+  schemas:
+    HospitalityConsideration:
+      type: object
+      title: HospitalityConsideration
+      description: >
+        Price breakdown for an online food order.
+        CRC: HSC-restaurant-ordering
+      additionalProperties: true
+      x-ion-closed-extensions: false
+      x-beckn-attaches-to: Consideration.considerationAttributes
+      x-jsonld:
+        '@context': 'https://schema.ion.id/hospitality/consideration/v1/context.jsonld'
+        '@type': ion:HospitalityConsideration
+      allOf:
+        - $ref: ../../../../core/v2/api/v2.0.0/beckn.yaml#/components/schemas/Attributes
+
+      properties:
+
+        breakupLineType:
+          type: string
+          enum: [FOOD_SUBTOTAL, DELIVERY_FEE, PACKAGING_FEE, PLATFORM_FEE,
+                 SERVICE_FEE, PROMO_DISCOUNT, VOUCHER_DISCOUNT, DELIVERY_SUBSIDY,
+                 CASHBACK, PPN_TAX, PPH_TAX, TIP, ROUNDING, GRAND_TOTAL, REFUND,
+                 POINTS_EARNED, COD_FEE]
+          description: >
+            Canonical type for this consideration breakup line.
+            FOOD_SUBTOTAL: sum of all item prices before fees.
+            DELIVERY_FEE: fee charged for delivery.
+            PACKAGING_FEE: container/packaging charge.
+            PLATFORM_FEE: marketplace service fee.
+            PROMO_DISCOUNT: merchant-funded discount.
+            DELIVERY_SUBSIDY: platform absorbs part of delivery fee.
+            CASHBACK: credited to wallet post-delivery (negative line).
+            PPN_TAX: 11% on restaurant meals from PKP outlets.
+            PPH_TAX: WHT applicable per tax regime.
+            TIP: optional consumer tip to rider.
+            ROUNDING: cents rounding adjustment.
+            COD_FEE: fee for cash on delivery service.
+
+        amount:
+          type: number
+          description: >
+            Line amount in IDR. Negative for discounts and cashback.
+
+        currency:
+          type: string
+          const: IDR
+
+        totalAmount:
+          type: number
+          description: >
+            Grand total for the order in IDR. Declared on the GRAND_TOTAL line.
+          x-ion-condition: Required on GRAND_TOTAL breakup line
+
+        ppnRate:
+          type: number
+          description: >
+            PPN rate applied to restaurant meals from PKP-registered outlets.
+            11% for standard restaurant meals (KBLI 56xxx).
+            0% for basic food ingredients and small UMKM outlets (non-PKP).
+          x-ion-regulatory: PMK 168/PMK.03/2023; UU 42/2009 PPN; UU 7/2021 HPP
+          x-ion-condition: Required on PPN_TAX lines for PKP outlets
+
+        ppnAmount:
+          type: number
+          description: Computed PPN amount in IDR.
+          x-ion-condition: Required on PPN_TAX lines
+
+        ppnBasis:
+          type: string
+          enum: [FOOD_SUBTOTAL, FOOD_AND_SERVICE, FULL_ORDER]
+          description: >
+            What amount PPN is applied to.
+            FOOD_SUBTOTAL: PPN on food items only (common).
+            FOOD_AND_SERVICE: PPN on food + service fee.
+            FULL_ORDER: PPN on total including delivery.
+          x-ion-condition: Required on PPN_TAX lines
+
+        deliveryFeeBreakup:
+          type: object
+          description: >
+            Breakdown of the delivery fee line showing merchant, platform,
+            and subsidy components.
+          additionalProperties: false
+          properties:
+            grossDeliveryFee:
+              type: number
+              description: Full delivery fee before any subsidy
+            platformSubsidy:
+              type: number
+              description: Amount platform absorbs (shown to consumer as "delivery discount")
+            merchantSubsidy:
+              type: number
+              description: Amount merchant absorbs
+            consumerPays:
+              type: number
+              description: Net amount consumer pays
+
+        codAmount:
+          type: number
+          description: >
+            Cash amount rider will collect at delivery. Equals totalAmount for full COD.
+            May be partial if consumer paid some online.
+          x-ion-condition: Required when payment method includes COD
+
+        tipAmount:
+          type: number
+          description: Optional tip consumer adds for the delivery rider.
+          minimum: 0
+
+        pointsEarned:
+          type: integer
+          description: Loyalty points earned from this order. Shown as a positive line item.
+          x-ion-condition: Required on POINTS_EARNED lines when loyalty program active
+
+        cashbackAmount:
+          type: number
+          description: Cashback credited to consumer wallet after delivery confirmation.
+          x-ion-condition: Required on CASHBACK lines
+
+        cashbackCreditAfterHours:
+          type: integer
+          description: >
+            Hours after delivery before cashback is credited to wallet.
+            Platform holds during dispute window.
+          x-ion-condition: Required on CASHBACK lines

@@ -1,0 +1,34 @@
+{
+  "id": "ion-logistics-provider-v1",
+  "version": "1.0.0",
+  "status": "ready",
+  "sectorCode": "B",
+  "attaches-to": "beckn:provider Attributes",
+  "maintainer": "ION Council \u2014 Sector B Lead",
+  "specVersion": "0.5.1-draft",
+  "type": "AttributePack",
+  "indexing": {
+    "indexable": [
+      {
+        "path": "$.nibRegistered"
+      },
+      {
+        "path": "$.providerCategory"
+      }
+    ],
+    "filterable": [
+      {
+        "path": "$.nibRegistered"
+      },
+      {
+        "path": "$.providerCategory"
+      }
+    ],
+    "sortable": []
+  },
+  "minimalForDiscovery": [
+    "nibRegistered",
+    "providerCategory"
+  ],
+  "packSchema": "./schema.json"
+}

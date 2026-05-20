@@ -1,0 +1,11 @@
+{
+  "id": "ion-logistics-variant-cash-on-delivery-v1",
+  "version": "1.0.0",
+  "status": "ready",
+  "sectorCode": "B",
+  "branchType": "cod",
+  "maintainer": "ION Council \u2014 Sector B Lead",
+  "type": "Variant",
+  "variantName": "cash-on-delivery",
+  "sector": "ion:logistics"
+}

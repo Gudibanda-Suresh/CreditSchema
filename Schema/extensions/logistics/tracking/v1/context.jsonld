@@ -1,0 +1,24 @@
+{
+  "@context": {
+    "@version": 1.1,
+    "ion": "https://schema.ion.id/logistics/v1/",
+    "beckn": "https://spec.beckn.io/vocab/v2.0.0#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "agentDetails": "ion:agentDetails",
+    "carrierTrackingUrlPattern": "ion:carrierTrackingUrlPattern",
+    "credentials": "ion:credentials",
+    "currentLocation": "ion:currentLocation",
+    "etaMinutes": "ion:etaMinutes",
+    "refreshIntervalSeconds": "ion:refreshIntervalSeconds",
+    "routePolyline": "ion:routePolyline",
+    "trackingHandoffToCarrier": "ion:trackingHandoffToCarrier",
+    "trackingType": "ion:trackingType",
+    "webhookEvents": "ion:webhookEvents",
+    "@protected": true,
+    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "skos": "http://www.w3.org/2004/02/skos/core#",
+    "owl": "http://www.w3.org/2002/07/owl#",
+    "schema": "https://schema.org/"
+  }
+}

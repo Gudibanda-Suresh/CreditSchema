@@ -1,0 +1,72 @@
+iri: ion://policy/finance.disbursement.merchant-direct
+
+version: "1.0.0"
+
+versionEffectiveFrom: "2026-05-01"
+
+category: DISBURSEMENT
+
+subCategory: MERCHANT_DISBURSEMENT
+
+status: ratified
+
+ratifiedAt: "2026-04-15"
+
+displayText:
+  id: "Pencairan langsung ke merchant — BNPL"
+  en: "Direct disbursement to merchant — BNPL"
+
+disbursementMethod: MERCHANT_DIRECT
+
+disbursementContext: BNPL_POINT_OF_SALE
+
+fundsDisbursedTo: MERCHANT
+
+disbursementTrigger: BORROWER_CHECKOUT_CONFIRMED_AND_BNPL_APPROVED
+
+limitCheckSlaSec: 2
+
+merchantOnboardingRequired: true
+
+merchantChecks:
+  - MERCHANT_REGISTERED_WITH_BNPL_PROVIDER
+  - MERCHANT_ACTIVE_NIB
+  - MDR_AGREEMENT_SIGNED
+
+mdrApplicable: true
+
+mdrRange:
+  minPercent: 1.5
+  maxPercent: 3.0
+  note: "MDR charged to merchant; borrower receives full purchase amount as loan"
+
+disbursementAmountBasis: TRANSACTION_AMOUNT_AT_CHECKOUT
+
+settlementCycle: T_PLUS_1_OR_T_PLUS_2
+
+disbursementSlaMinutes: 5
+
+refundPolicy:
+  merchantRefundTrigger: BORROWER_RETURNS_GOODS
+  refundHandledBy: MERCHANT
+  loanCancellationRequired: true
+  refundSlaHours: 48
+
+transactionCapIDR: 20000000
+
+applicablePatterns:
+  - bnpl
+
+applicableLenderTypes:
+  - LPBBTI_P2P
+  - LPBBTI_DIGITAL
+  - MULTIFINANCE
+
+regulatoryBasis:
+  - "OJK POJK 10/2022 tentang Layanan Pendanaan Bersama Berbasis Teknologi Informasi"
+  - "OJK POJK 13/2018 tentang Inovasi Keuangan Digital"
+  - "Peraturan BI tentang Penyelenggaraan Pemrosesan Transaksi Pembayaran"
+
+supersededBy: null
+
+deprecatedAt: null

@@ -1,0 +1,46 @@
+{
+  "id": "ion-trade-resource-v1",
+  "version": "1.0.0",
+  "domain": "trade",
+  "name": "ION Trade Resource Extension (v1)",
+  "description": "Physical product attributes — all categories. Availability signal only, no stock count.",
+  "packSchema": "./schema.json",
+  "jsonldContext": "./context.jsonld",
+  "attachmentPoints": {
+    "resourceAttributes": [
+      "TradeResource"
+    ]
+  },
+  "extends": "beckn:Resource",
+  "type": "AttributePack",
+  "indexing": {
+    "indexable": [
+      {
+        "path": "$.resourceStructure"
+      },
+      {
+        "path": "$.resourceTangibility"
+      },
+      {
+        "path": "$.availability"
+      }
+    ],
+    "filterable": [
+      {
+        "path": "$.resourceStructure"
+      },
+      {
+        "path": "$.resourceTangibility"
+      }
+    ],
+    "sortable": []
+  },
+  "minimalForDiscovery": [
+    "resourceStructure",
+    "resourceTangibility",
+    "images",
+    "availability",
+    "ageRestricted",
+    "countryOfOrigin"
+  ]
+}

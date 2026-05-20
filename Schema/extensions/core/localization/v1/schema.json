@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schema.ion.id/core/localization/v1",
+  "title": "IONCatalogLocalization",
+  "type": "object",
+  "description": "Localised text fields for catalog content — name, short description, long description. All three use the LocalisedText pattern. These extend beckn:descriptor fields with proper multilingual support.\n",
+  "properties": {
+    "name": {
+      "$ref": "#/components/schemas/LocalisedText",
+      "description": "Product or service name as a language object. Supplements Beckn `Descriptor.name` (which carries the default-locale text, normally `id`). Consumers that read only Beckn-native fields see Indonesian; ION-aware consumers read the multilingual map here. \"id\" always mandatory.\n",
+      "x-ion-regulatory": "ION Network Policy — Bahasa Indonesia localisation requirement"
+    },
+    "shortDesc": {
+      "$ref": "#/components/schemas/LocalisedText",
+      "description": "Short description for catalog listings and search results. Max 150 characters per language. Supplements Beckn `Descriptor.shortDesc`. \"id\" mandatory.\n",
+      "x-ion-regulatory": "ION Network Policy — bilingual catalog requirement"
+    },
+    "longDesc": {
+      "$ref": "#/components/schemas/LocalisedText",
+      "description": "Full product description for product detail page. Supplements Beckn `Descriptor.longDesc`. \"id\" mandatory. \"en\" mandatory for cross-border pattern.\n",
+      "x-ion-regulatory": "ION Network Policy — Bahasa Indonesia localisation requirement"
+    }
+  },
+  "required": [
+    "name",
+    "shortDesc"
+  ],
+  "additionalProperties": false
+}

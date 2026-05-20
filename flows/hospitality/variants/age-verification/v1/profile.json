@@ -1,0 +1,10 @@
+{
+  "id": "ion-hospitality-variant-age-verification-v1",
+  "version": "1.0.0",
+  "sector": "ion:hospitality",
+  "variantName": "age-verification",
+  "crc": "HSC-restaurant-ordering",
+  "applicablePatterns": [
+    "delivery-order"
+  ]
+}

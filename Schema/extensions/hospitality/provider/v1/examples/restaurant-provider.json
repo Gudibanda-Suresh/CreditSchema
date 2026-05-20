@@ -1,0 +1,151 @@
+{
+  "@context": "https://schema.ion.id/hospitality/provider/v1/context.jsonld",
+  "@type": "ion:RestaurantProvider",
+  "outletType": "RESTAURANT",
+  "cuisineTypes": [
+    "INDONESIAN",
+    "CHINESE"
+  ],
+  "primaryCuisine": "INDONESIAN",
+  "brandName": "Warung Bu Sari",
+  "outletStatus": "OPEN",
+  "operatingHours": [
+    {
+      "dayOfWeek": "MONDAY",
+      "opens": "09:00",
+      "closes": "21:30",
+      "type": "ALL",
+      "acceptsOrdersUntil": "21:00"
+    },
+    {
+      "dayOfWeek": "TUESDAY",
+      "opens": "09:00",
+      "closes": "21:30",
+      "type": "ALL",
+      "acceptsOrdersUntil": "21:00"
+    },
+    {
+      "dayOfWeek": "WEDNESDAY",
+      "opens": "09:00",
+      "closes": "21:30",
+      "type": "ALL",
+      "acceptsOrdersUntil": "21:00"
+    },
+    {
+      "dayOfWeek": "THURSDAY",
+      "opens": "09:00",
+      "closes": "21:30",
+      "type": "ALL",
+      "acceptsOrdersUntil": "21:00"
+    },
+    {
+      "dayOfWeek": "FRIDAY",
+      "opens": "09:00",
+      "closes": "22:00",
+      "type": "ALL",
+      "acceptsOrdersUntil": "21:30"
+    },
+    {
+      "dayOfWeek": "SATURDAY",
+      "opens": "09:00",
+      "closes": "22:00",
+      "type": "ALL",
+      "acceptsOrdersUntil": "21:30"
+    },
+    {
+      "dayOfWeek": "SUNDAY",
+      "opens": "10:00",
+      "closes": "21:00",
+      "type": "ALL",
+      "acceptsOrdersUntil": "20:30"
+    }
+  ],
+  "holidayHours": [
+    {
+      "date": "2026-04-10",
+      "closed": true,
+      "note": {
+        "id": "Libur Lebaran Hari Raya Idul Fitri",
+        "en": "Eid al-Fitr public holiday"
+      }
+    },
+    {
+      "date": "2026-04-11",
+      "closed": true,
+      "note": {
+        "id": "Cuti Bersama Lebaran",
+        "en": "Joint leave Eid"
+      }
+    },
+    {
+      "date": "2026-12-25",
+      "closed": false,
+      "opens": "11:00",
+      "closes": "20:00",
+      "note": {
+        "id": "Jam operasional terbatas Natal",
+        "en": "Limited hours Christmas"
+      }
+    }
+  ],
+  "menuSchedule": [
+    {
+      "menuCategoryId": "sarapan",
+      "availableFrom": "07:00",
+      "availableTo": "10:30"
+    },
+    {
+      "menuCategoryId": "makan-siang",
+      "availableFrom": "11:00",
+      "availableTo": "15:00"
+    },
+    {
+      "menuCategoryId": "makan-malam",
+      "availableFrom": "17:00",
+      "availableTo": "21:00"
+    },
+    {
+      "menuCategoryId": "minuman",
+      "availableFrom": "09:00",
+      "availableTo": "21:00"
+    }
+  ],
+  "averagePrepTime": "PT18M",
+  "busyPrepTime": "PT30M",
+  "maxConcurrentOrders": 25,
+  "preOrderEnabled": true,
+  "preOrderWindowDays": 7,
+  "preOrderLeadTimeHours": 2,
+  "fulfilmentModes": [
+    "DELIVERY",
+    "SELF_PICKUP"
+  ],
+  "deliveryRadius": {
+    "radiusKm": 5.0,
+    "maxDeliveryDistanceKm": 7.0
+  },
+  "minOrderAmount": 20000,
+  "minOrderAmountSelfPickup": 10000,
+  "outletRating": 4.7,
+  "totalReviews": 2341,
+  "badges": [
+    "TOP_RATED",
+    "HALAL_CERTIFIED",
+    "POPULAR"
+  ],
+  "outletHalalStatus": "HALAL_CERTIFIED",
+  "outletHalalCertNumber": "MUI-ID-2025-00012345",
+  "hygieneRating": "A",
+  "tdupNumber": "TDUP-JKT-2024-001234",
+  "nibRegistered": true,
+  "nibNumber": "1234567890123",
+  "npwp": "0123456789012345",
+  "pkpStatus": "PKP",
+  "cutleryOptIn": false,
+  "averageDeliveryTime": "PT32M",
+  "contactlessDeliveryAvailable": true,
+  "packagingType": "ECO_FRIENDLY",
+  "kycStatus": "APPROVED",
+  "catalogVersion": "v20260515-001",
+  "catalogPublishedAt": "2026-05-15T08:00:00+07:00"
+}

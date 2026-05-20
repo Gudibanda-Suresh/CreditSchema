@@ -1,0 +1,144 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schema.ion.id/logistics/tracking/v1",
+  "title": "LogisticsTracking",
+  "type": "object",
+  "properties": {
+    "trackingType": {
+      "type": "string",
+      "enum": [
+        "LIVE_GPS",
+        "AWB_URL",
+        "WEBHOOK",
+        "WEBSOCKET",
+        "POLLING_API"
+      ],
+      "description": "Mode of tracking offered. LIVE_GPS for hyperlocal real-time position. AWB_URL for parcel tracking on carrier's own website. WEBHOOK for event-driven push. WEBSOCKET for bidirectional streaming. POLLING_API for request/response status queries.\n"
+    },
+    "refreshIntervalSeconds": {
+      "type": "integer",
+      "description": "Recommended polling interval for LIVE_GPS and POLLING_API modes. Typical: 5-15 seconds for hyperlocal, 60+ for parcel.\n",
+      "x-ion-conditional": true
+    },
+    "credentials": {
+      "type": "object",
+      "description": "Authentication for WEBSOCKET or authenticated webhook",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "BEARER_TOKEN",
+            "API_KEY",
+            "SIGNED_URL_PARAM"
+          ]
+        },
+        "value": {
+          "type": "string"
+        },
+        "validUntil": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "x-ion-conditional": true
+    },
+    "webhookEvents": {
+      "type": "array",
+      "description": "Events the BPP will push to webhook (if trackingType=WEBHOOK)",
+      "items": {
+        "type": "string",
+        "enum": [
+          "STATE_CHANGE",
+          "LOCATION_UPDATE",
+          "SLA_BREACH_IMMINENT",
+          "EXCEPTION",
+          "DELIVERY_COMPLETE"
+        ]
+      },
+      "x-ion-conditional": true
+    },
+    "currentLocation": {
+      "type": "object",
+      "description": "Last known location snapshot at time of /on_track response. Primarily for LIVE_GPS.\n",
+      "properties": {
+        "latitude": {
+          "type": "number"
+        },
+        "longitude": {
+          "type": "number"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "accuracyMeters": {
+          "type": "number"
+        },
+        "heading": {
+          "type": "number",
+          "description": "Degrees from true north"
+        },
+        "speedKmh": {
+          "type": "number"
+        }
+      },
+      "x-ion-conditional": true
+    },
+    "etaMinutes": {
+      "type": "integer",
+      "description": "Current ETA to next waypoint or destination",
+      "x-ion-conditional": true
+    },
+    "routePolyline": {
+      "type": "string",
+      "description": "Encoded polyline of planned route (Google-style encoding)"
+    },
+    "agentDetails": {
+      "type": "object",
+      "description": "Agent details exposed based on offer.agentAssignmentModel and current performance state.\n",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "phone": {
+          "type": "string",
+          "description": "Masked proxy phone, never real number"
+        },
+        "vehicleType": {
+          "type": "string"
+        },
+        "vehiclePlate": {
+          "type": "string"
+        },
+        "photoUrl": {
+          "type": "string",
+          "format": "uri"
+        },
+        "languagesSpoken": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "x-ion-conditional": true
+    },
+    "trackingHandoffToCarrier": {
+      "type": "boolean",
+      "description": "True if tracking URL redirects to carrier's own tracking page (common for parcel where AWB is carrier-native).\n"
+    },
+    "carrierTrackingUrlPattern": {
+      "type": "string",
+      "description": "URL template for AWB_URL tracking. E.g. \"https://jne.co.id/tracking?awb={awbNumber}\"\n"
+    }
+  },
+  "required": [
+    "trackingType"
+  ],
+  "additionalProperties": true,
+  "allOf": [
+    {
+      "$ref": "../../../../core/v2/api/v2.0.0/beckn.yaml#/components/schemas/Attributes"
+    }
+  ]
+}

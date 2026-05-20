@@ -1,0 +1,12 @@
+{
+  "profileVersion": "0.6.0-draft",
+  "networkId": "ion.id",
+  "crc": "HSC-restaurant-ordering",
+  "sector": "hospitality",
+  "attachmentPoints": [
+    "Provider.providerAttributes"
+  ],
+  "className": "RestaurantProvider",
+  "schemaUri": "https://schema.ion.id/hospitality/provider/v1/schema.json",
+  "contextUri": "https://schema.ion.id/hospitality/provider/v1/context.jsonld"
+}

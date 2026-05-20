@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schema.ion.id/hospitality/consideration/v1/schema.json",
+  "title": "HospitalityConsideration",
+  "description": "ION Hospitality Restaurant Ordering \u2014 price breakdown, fees, tax, cashback. Attaches to: Consideration.considerationAttributes",
+  "type": "object",
+  "additionalProperties": true,
+  "allOf": [
+    {
+      "$ref": "https://schema.beckn.io/core/v2/schema/Attributes.json"
+    }
+  ]
+}

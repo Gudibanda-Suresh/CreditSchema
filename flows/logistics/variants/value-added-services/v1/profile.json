@@ -1,0 +1,11 @@
+{
+  "id": "ion-logistics-variant-value-added-services-v1",
+  "version": "1.0.0",
+  "status": "ready",
+  "sectorCode": "B",
+  "branchType": "value-added",
+  "maintainer": "ION Council \u2014 Sector B Lead",
+  "type": "Variant",
+  "variantName": "value-added-services",
+  "sector": "ion:logistics"
+}

@@ -1,0 +1,10 @@
+{
+  "id": "ion-hospitality-variant-cash-on-delivery-v1",
+  "version": "1.0.0",
+  "sector": "ion:hospitality",
+  "variantName": "cash-on-delivery",
+  "crc": "HSC-restaurant-ordering",
+  "applicablePatterns": [
+    "delivery-order"
+  ]
+}

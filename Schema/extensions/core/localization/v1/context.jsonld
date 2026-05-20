@@ -1,0 +1,27 @@
+{
+  "@context": {
+    "@version": 1.1,
+    "ion": "https://schema.ion.id/core/localization/v1#",
+    "beckn": "https://spec.beckn.io/vocab/v2.0.0#",
+    "schema": "https://schema.org/",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "id": "@id",
+    "en": "ion:en",
+    "ms": "ion:ms",
+    "zh": "ion:zh",
+    "ar": "ion:ar",
+    "ta": "ion:ta",
+    "ko": "ion:ko",
+    "ja": "ion:ja",
+    "name": "beckn:name",
+    "shortDesc": "ion:shortDesc",
+    "longDesc": "ion:longDesc",
+    "LocalisedText": "ion:LocalisedText",
+    "IONCatalogLocalization": "ion:IONCatalogLocalization",
+    "@protected": true,
+    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "skos": "http://www.w3.org/2004/02/skos/core#",
+    "owl": "http://www.w3.org/2002/07/owl#"
+  }
+}

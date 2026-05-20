@@ -1,0 +1,55 @@
+{
+  "@context": "https://schema.ion.id/hospitality/offer/v1/context.jsonld",
+  "@type": "ion:RestaurantOffer",
+  "priceModel": "FIXED",
+  "deliveryFeeModel": "DISTANCE_BASED",
+  "freeDeliveryThreshold": 50000,
+  "packagingFee": 2000,
+  "packagingFeePerItem": false,
+  "surgePricingActive": false,
+  "deliveryMode": "BOTH",
+  "scheduledDeliverySlots": [
+    {
+      "slotId": "slot-12-00",
+      "slotStart": "2026-05-16T12:00:00+07:00",
+      "slotEnd": "2026-05-16T12:30:00+07:00",
+      "available": true,
+      "remainingCapacity": 8
+    },
+    {
+      "slotId": "slot-12-30",
+      "slotStart": "2026-05-16T12:30:00+07:00",
+      "slotEnd": "2026-05-16T13:00:00+07:00",
+      "available": true,
+      "remainingCapacity": 5
+    },
+    {
+      "slotId": "slot-13-00",
+      "slotStart": "2026-05-16T13:00:00+07:00",
+      "slotEnd": "2026-05-16T13:30:00+07:00",
+      "available": false,
+      "remainingCapacity": 0
+    }
+  ],
+  "preOrderLeadTimeMinutes": 60,
+  "preOrderAdvanceDays": 3,
+  "estimatedPrepTime": "PT18M",
+  "estimatedDeliveryTime": "PT35M",
+  "offerType": "REGULAR",
+  "cancellationPolicy": "https://registry.ion.id/policies/restaurant/cancel/before-accept",
+  "cancellationWindowSeconds": 90,
+  "refundPolicy": "https://registry.ion.id/policies/restaurant/refund/wrong-item",
+  "availableOnCod": true,
+  "codMaxAmount": 500000,
+  "paymentMethodEligibility": [
+    "CASH",
+    "GOPAY",
+    "OVO",
+    "DANA",
+    "SHOPEEPAY",
+    "QRIS",
+    "CREDIT_CARD"
+  ],
+  "minOrderAmount": 20000,
+  "contactDetailsConsumerCare": "Warung Bu Sari, +62-812-3456-7890"
+}

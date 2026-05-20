@@ -1,0 +1,84 @@
+iri: ion://policy/finance.kyc.tier-3-high-risk
+
+version: "1.0.0"
+
+versionEffectiveFrom: "2026-05-01"
+
+category: KYC
+
+subCategory: RISK_BASED_KYC
+
+status: ratified
+
+ratifiedAt: "2026-04-15"
+
+displayText:
+  id: "eKYC Tier 3 — Risiko Tinggi"
+  en: "eKYC Tier 3 — High Risk (Full Verification)"
+
+riskTier: 3
+
+maxLoanAmountIDR: null
+
+note: "No upper limit — applies to all loan amounts above IDR 50 juta"
+
+requiredChecks:
+  - DUKCAPIL_MATCH
+  - LIVENESS_DETECTION
+  - FACE_MATCH_KTP
+  - DOCUMENT_OCR_KTP
+  - NPWP_VALIDATION
+
+livenessCheckRequired: true
+
+livenessProvider: OJK_APPROVED_LIVENESS_VENDOR
+
+faceMatchRequired: true
+
+faceMatchMinScore: 0.90
+
+documentOcrRequired: true
+
+documentOcrTypes:
+  - KTP
+  - NPWP
+
+kycExpiryMonths: 36
+
+dukcapilMatchFields:
+  - NIK
+  - FULL_NAME
+  - DATE_OF_BIRTH
+  - ADDRESS
+
+manualReviewTrigger:
+  faceMatchScore: "<0.75"
+  action: ESCALATE_TO_MANUAL_REVIEW
+  maxManualReviewHours: 24
+
+enhancedDueDiligenceRequired: true
+
+pepScreeningRequired: true
+
+amlScreeningRequired: true
+
+applicablePatterns:
+  - personal-loan
+  - mortgage
+  - vehicle-loan
+  - business-loan
+  - revolving-credit
+
+applicableLenderTypes:
+  - BANK_UMUM
+  - MULTIFINANCE
+
+regulatoryBasis:
+  - "OJK POJK 12/2018 tentang Layanan Perbankan Digital"
+  - "OJK POJK 18/2016 tentang Penerapan Manajemen Risiko dan Tata Kelola KYC"
+  - "PPATK PER-09/1.02/PPATK/09/14 tentang Penerapan Program APU-PPT"
+  - "UU 8/2010 tentang Pencegahan dan Pemberantasan Tindak Pidana Pencucian Uang"
+
+supersededBy: null
+
+deprecatedAt: null

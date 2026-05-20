@@ -1,0 +1,68 @@
+iri: ion://policy/finance.disbursement.dealer-direct
+
+version: "1.0.0"
+
+versionEffectiveFrom: "2026-05-01"
+
+category: DISBURSEMENT
+
+subCategory: DEALER_DISBURSEMENT
+
+status: ratified
+
+ratifiedAt: "2026-04-15"
+
+displayText:
+  id: "Pencairan langsung ke dealer kendaraan"
+  en: "Direct disbursement to vehicle dealer"
+
+disbursementMethod: DEALER_DIRECT
+
+fundsDisbursedTo: VEHICLE_DEALER
+
+disbursementTrigger: LOAN_AGREEMENT_SIGNED_AND_DP_CONFIRMED
+
+dealerAccreditationRequired: true
+
+dealerAccreditationChecks:
+  - DEALER_REGISTERED_WITH_LENDER
+  - DEALER_ACTIVE_SIUP_NIB
+  - NO_ADVERSE_DEALER_HISTORY
+
+disbursementAmountBasis: OTR_PRICE_MINUS_BORROWER_DOWN_PAYMENT
+
+downPaymentConfirmation:
+  required: true
+  verifiedBy: DEALER_RECEIPT_OR_BANK_TRANSFER_PROOF
+  minimumDpPolicyRef: ion://policy/finance.ltv-cap.bi-kkb-motor-mobil
+
+bpkbDelivery:
+  from: DEALER
+  to: LENDER
+  maxDeliveryDays: 30
+  documentRequired: BPKB_ORIGINAL_WITH_FAKTUR
+
+vehicleHandoverConfirmation:
+  required: true
+  documentRequired: BERITA_ACARA_SERAH_TERIMA_KENDARAAN
+  confirmedBy: BORROWER
+
+disbursementSlaHours: 4
+
+dealerPaymentRail: BI_FAST_OR_RTGS
+
+applicablePatterns:
+  - vehicle-loan
+
+applicableLenderTypes:
+  - BANK_UMUM
+  - MULTIFINANCE
+
+regulatoryBasis:
+  - "OJK POJK 35/2018 tentang Penyelenggaraan Usaha Perusahaan Pembiayaan"
+  - "Peraturan BI tentang Loan to Value Kredit Kendaraan Bermotor"
+  - "OJK POJK 40/2019 tentang Penilaian Kualitas Aset Bank Umum"
+
+supersededBy: null
+
+deprecatedAt: null

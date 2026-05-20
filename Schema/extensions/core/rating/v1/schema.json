@@ -1,0 +1,133 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schema.ion.id/core/rating/v1",
+  "title": "IONRating",
+  "type": "object",
+  "properties": {
+    "ratingCategory": {
+      "type": "string",
+      "enum": [
+        "PROVIDER",
+        "ITEM",
+        "FULFILLMENT",
+        "AGENT"
+      ],
+      "description": "PROVIDER: overall seller/provider rating. ITEM: specific product quality rating. FULFILLMENT: delivery experience rating. AGENT: delivery agent rating.\n",
+      "example": "PROVIDER"
+    },
+    "ratingValue": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 5,
+      "description": "Rating on a 1-5 scale. Can be decimal to one place e.g. 4.5. BPP stores and aggregates ratings.\n",
+      "example": 4
+    },
+    "feedbackText": {
+      "type": "string",
+      "description": "Optional free-text feedback accompanying the rating.",
+      "maxLength": 1000,
+      "example": "Makanan enak, pengiriman cepat, sangat memuaskan!"
+    },
+    "feedbackUrl": {
+      "type": "string",
+      "format": "uri",
+      "description": "URL returned by BPP in on_rate for consumer to provide extended feedback via seller's own feedback form.\n",
+      "example": "https://sellerapp.ion.id/feedback/ORD-2026-001"
+    },
+    "ratingWindowDays": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Number of days after DELIVERED state during which rating can be submitted. Declared by BPP in on_confirm.\n",
+      "example": 7
+    },
+    "contractId": {
+      "type": "string",
+      "description": "Contract this rating applies to.",
+      "example": "ORD-2026-00012345"
+    },
+    "ratedEntityId": {
+      "type": "string",
+      "description": "ID of the entity being rated. For PROVIDER: provider ID. For ITEM: resource ID. For AGENT: agent identifier.\n",
+      "example": "PROV-001"
+    },
+    "ratingSubCategory": {
+      "type": "string",
+      "description": "Category-specific rating dimension. Enables granular seller insights and more informative reviews. Examples by category:\n  Food: freshness, taste, packaging, temperature_on_arrival\n  Fashion: fit, fabric_quality, size_accuracy, color_accuracy\n  Electronics: battery_life, performance, build_quality, authenticity\n  Grocery: freshness, expiry_date, cold_chain, substitution\n  Beauty: effectiveness, skin_reaction, scent, texture\n",
+      "example": "fit"
+    },
+    "ratingImages": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "uri"
+      },
+      "description": "Photo URLs attached to the review. Subject to BAP/BPP moderation. Photo reviews drive significant conversion on all major marketplaces.\n",
+      "maxItems": 10
+    },
+    "ratingVideos": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "durationSeconds": {
+            "type": "integer"
+          },
+          "thumbnailUrl": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "required": [
+          "url"
+        ]
+      },
+      "description": "Video reviews for product feedback. Moderated.",
+      "maxItems": 3
+    },
+    "verifiedPurchase": {
+      "type": "boolean",
+      "description": "Whether this rating is from a verified purchase on ION. True by default — all ION ratings are verified purchases by design.\n",
+      "default": true
+    },
+    "helpfulCount": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of users who marked this review as helpful",
+      "default": 0
+    },
+    "sellerResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Seller's public response to the review",
+      "properties": {
+        "responseText": {
+          "type": "string",
+          "maxLength": 1000
+        },
+        "respondedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "respondedBy": {
+          "type": "string",
+          "description": "Name of seller representative"
+        }
+      }
+    }
+  },
+  "required": [
+    "ratingCategory",
+    "ratingValue"
+  ],
+  "additionalProperties": true,
+  "allOf": [
+    {
+      "$ref": "../../../../core/v2/api/v2.0.0/beckn.yaml#/components/schemas/Attributes"
+    }
+  ]
+}

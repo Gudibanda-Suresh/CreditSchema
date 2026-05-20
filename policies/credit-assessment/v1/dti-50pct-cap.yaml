@@ -1,0 +1,52 @@
+iri: ion://policy/finance.credit-assessment.dti-50pct-cap
+
+version: "1.0.0"
+
+versionEffectiveFrom: "2026-05-01"
+
+category: CREDIT_ASSESSMENT
+
+subCategory: DTI_COMPUTATION
+
+status: ratified
+
+ratifiedAt: "2026-04-15"
+
+displayText:
+  id: "Batas rasio utang terhadap pendapatan 50%"
+  en: "Debt-to-income ratio cap at 50%"
+
+maxDtiPercent: 50
+
+incomeBase: GROSS_MONTHLY_INCOME
+
+existingObligationsIncluded: true
+
+proposedInstallmentIncluded: true
+
+incomeVerificationRequired: true
+
+applicableIncomeTier:
+  monthlyIncomeMax: 8000000
+  currency: IDR
+  note: >
+    OJK recommends 50% DTI cap for borrowers with monthly gross income
+    up to IDR 8 juta. Lenders may apply stricter thresholds.
+
+dtiFormula: "(totalExistingMonthlyObligations + proposedMonthlyInstallment) / grossMonthlyIncome × 100"
+
+applicablePatterns:
+  - personal-loan
+  - mortgage
+  - vehicle-loan
+  - business-loan
+  - revolving-credit
+  - bnpl
+
+regulatoryBasis:
+  - "OJK POJK 40/2019 tentang Penilaian Kualitas Aset Bank Umum"
+  - "OJK Surat Edaran tentang Batas Angsuran Kredit Konsumtif"
+
+supersededBy: null
+
+deprecatedAt: null

@@ -1,0 +1,12 @@
+{
+  "@context": "https://schema.ion.id/core/payment/v1/context.jsonld",
+  "@type": "ion:PaymentDeclaration",
+  "method": "EWALLET",
+  "eWallet": {
+    "provider": "GOPAY",
+    "accountRef": "+62812xxxxxxxx"
+  },
+  "status": "PAID",
+  "transactionId": "TXN-2026-00001234",
+  "paidAt": "2026-05-15T10:00:00Z"
+}

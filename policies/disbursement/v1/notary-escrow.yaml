@@ -1,0 +1,67 @@
+iri: ion://policy/finance.disbursement.notary-escrow
+
+version: "1.0.0"
+
+versionEffectiveFrom: "2026-05-01"
+
+category: DISBURSEMENT
+
+subCategory: ESCROW_DISBURSEMENT
+
+status: ratified
+
+ratifiedAt: "2026-04-15"
+
+displayText:
+  id: "Pencairan melalui rekening penampungan notaris"
+  en: "Disbursement via notary escrow account"
+
+disbursementMethod: NOTARY_ESCROW
+
+escrowAccountHolder: NOTARY_PPAT
+
+fundsHeldInEscrowUntil:
+  - condition: AJB_SIGNED
+    description: "Akta Jual Beli signed by buyer, seller, and notary"
+  - condition: APHT_REGISTERED
+    description: "Hak Tanggungan registered at BPN (land office)"
+
+escrowTrigger: LOAN_AGREEMENT_EXECUTED_AND_SKMHT_SIGNED
+
+escrowReleaseTrigger: AJB_AND_APHT_BOTH_COMPLETED
+
+escrowReleaseSlaHours: 24
+
+fundsDisbursedTo: PROPERTY_SELLER
+
+partialReleaseAllowed: false
+
+escrowFeeResponsibility: BORROWER
+
+escrowAccountRequirements:
+  - DEDICATED_CLIENT_FUND_ACCOUNT
+  - SEGREGATED_FROM_NOTARY_OWN_FUNDS
+  - OJK_REGISTERED_NOTARY
+
+failsafeConditions:
+  - condition: AJB_NOT_SIGNED_WITHIN_30_DAYS
+    action: RETURN_FUNDS_TO_LENDER
+  - condition: BORROWER_WITHDRAWS_BEFORE_AJB
+    action: RETURN_FUNDS_TO_LENDER_MINUS_PROCESSING_FEE
+
+applicablePatterns:
+  - mortgage
+
+applicableLenderTypes:
+  - BANK_UMUM
+  - MULTIFINANCE
+
+regulatoryBasis:
+  - "UU 4/1996 tentang Hak Tanggungan"
+  - "UU 30/2004 tentang Jabatan Notaris sebagaimana diubah UU 2/2014"
+  - "PP 24/1997 tentang Pendaftaran Tanah"
+  - "OJK POJK 40/2019 tentang Penilaian Kualitas Aset Bank Umum"
+
+supersededBy: null
+
+deprecatedAt: null

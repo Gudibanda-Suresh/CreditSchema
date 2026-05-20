@@ -1,0 +1,16 @@
+{
+  "@context": "https://schema.ion.id/hospitality/consideration/v1/context.jsonld",
+  "@type": "ion:HospitalityConsideration",
+  "breakupLineType": "GRAND_TOTAL",
+  "amount": 95500,
+  "currency": "IDR",
+  "totalAmount": 95500,
+  "deliveryFeeBreakup": {
+    "grossDeliveryFee": 18000,
+    "platformSubsidy": 10000,
+    "merchantSubsidy": 0,
+    "consumerPays": 8000
+  },
+  "tipAmount": 5000,
+  "cashbackAmount": 0
+}

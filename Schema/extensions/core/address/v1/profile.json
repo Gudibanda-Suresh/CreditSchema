@@ -1,0 +1,43 @@
+{
+  "id": "ion-core-address-v1",
+  "version": "1.0.0",
+  "domain": "ion-core",
+  "name": "ION Address Extension (v1)",
+  "description": "Indonesian address subdivisions — provinsiCode, kabupatenCode, kelurahan, kecamatan, RT, RW.",
+  "packSchema": "./schema.json",
+  "jsonldContext": "./context.jsonld",
+  "attachmentPoints": {
+    "ionAddressAttributes": [
+      "IONAddressSubdivisions"
+    ],
+    "providerAttributes": [
+      "IONAddressSubdivisions"
+    ]
+  },
+  "regulatory": [
+    "Permendagri 72/2019"
+  ],
+  "type": "AttributePack",
+  "indexing": {
+    "indexable": [
+      {
+        "path": "$.provinsiCode"
+      },
+      {
+        "path": "$.postalCode"
+      }
+    ],
+    "filterable": [
+      {
+        "path": "$.provinsiCode"
+      },
+      {
+        "path": "$.postalCode"
+      }
+    ],
+    "sortable": []
+  },
+  "minimalForDiscovery": [
+    "provinsiCode"
+  ]
+}

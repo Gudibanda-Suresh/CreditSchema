@@ -1,0 +1,16 @@
+{
+  "@context": "https://schema.ion.id/logistics/provider/v1/context.jsonld",
+  "@type": "ion:LogisticsProvider",
+  "nibRegistered": true,
+  "nibNumber": "1234567890123",
+  "providerCategory": "EXPRESS",
+  "modesSupported": [
+    "MOTORCYCLE",
+    "CAR",
+    "VAN"
+  ],
+  "spinesSupported": [
+    "parcel",
+    "hyperlocal"
+  ]
+}

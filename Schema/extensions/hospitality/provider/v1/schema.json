@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schema.ion.id/hospitality/provider/v1/schema.json",
+  "title": "RestaurantProvider",
+  "description": "ION Hospitality Restaurant Ordering \u2014 restaurant and cloud kitchen provider profile. Attaches to: Provider.providerAttributes",
+  "type": "object",
+  "additionalProperties": true,
+  "allOf": [
+    {
+      "$ref": "https://schema.beckn.io/core/v2/schema/Attributes.json"
+    }
+  ]
+}

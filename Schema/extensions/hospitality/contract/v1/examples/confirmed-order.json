@@ -1,0 +1,15 @@
+{
+  "@context": "https://schema.ion.id/hospitality/contract/v1/context.jsonld",
+  "@type": "ion:HospitalityContract",
+  "deliveryInstructions": "Gedung B, lantai 3, unit 301. Hubungi dulu sebelum tiba.",
+  "contactlessDelivery": false,
+  "deliveryAddressNote": "Seberang Alfamart, gerbang kuning",
+  "deliveryOtpRequired": true,
+  "ageVerificationRequired": false,
+  "cutleryRequested": false,
+  "ecoPackagingRequested": true,
+  "orderLevelNote": "Semua dalam satu kantong plastik ya",
+  "isGroupOrder": false,
+  "isGiftOrder": false,
+  "disputeWindowHours": 24
+}

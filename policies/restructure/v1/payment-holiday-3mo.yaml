@@ -1,0 +1,72 @@
+iri: ion://policy/finance.restructure.payment-holiday-3mo
+
+version: "1.0.0"
+
+versionEffectiveFrom: "2026-05-01"
+
+category: RESTRUCTURE
+
+subCategory: PAYMENT_HOLIDAY
+
+status: ratified
+
+ratifiedAt: "2026-04-15"
+
+displayText:
+  id: "Keringanan pembayaran — penangguhan 3 bulan"
+  en: "Payment holiday — 3-month deferral"
+
+restructureType: PAYMENT_HOLIDAY
+
+holidayDurationMonths: 3
+
+holidayTypes:
+  - type: PRINCIPAL_ONLY
+    description: "Interest still due monthly; principal payments deferred"
+  - type: FULL
+    description: "Both principal and interest deferred; interest capitalized to outstanding balance"
+
+interestTreatmentDuringHoliday:
+  PRINCIPAL_ONLY: ACCRUES_AND_MUST_BE_PAID_MONTHLY
+  FULL: CAPITALIZED_TO_OUTSTANDING_BALANCE
+
+tenureExtensionAfterHoliday: EXTENDED_BY_HOLIDAY_DURATION_MONTHS
+
+eligibilityCriteria:
+  - borrowerExperiencingTemporaryHardship: true
+  - maxDpdAtApplication: 30
+  - maxHolidayGrantedInLoanLifetime: 1
+  - requiresLenderApproval: true
+
+applicationProcess:
+  borrowerRequestRequired: true
+  supportingDocumentsRequired:
+    - SURAT_PERMOHONAN
+    - BUKTI_KESULITAN_SEMENTARA
+  approvalSlaDays: 7
+
+creditQualityImpact:
+  qualityDuringHoliday: MAINTAINED_AT_PRE_HOLIDAY_CLASSIFICATION
+  note: "Lender may maintain current classification if holiday is formally documented per POJK 40/2019"
+
+processingFee:
+  applicable: false
+
+applicablePatterns:
+  - personal-loan
+  - vehicle-loan
+  - business-loan
+
+applicableLenderTypes:
+  - BANK_UMUM
+  - BPR
+  - MULTIFINANCE
+  - LPBBTI_P2P
+
+regulatoryBasis:
+  - "OJK POJK 40/2019 tentang Penilaian Kualitas Aset Bank Umum"
+  - "OJK POJK 22/2023 tentang Perlindungan Konsumen dan Masyarakat di Sektor Jasa Keuangan"
+
+supersededBy: null
+
+deprecatedAt: null

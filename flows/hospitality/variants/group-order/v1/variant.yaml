@@ -1,0 +1,89 @@
+# ION Hospitality Variant — group-order v1
+
+id: ion-hospitality-variant-group-order-v1
+version: "1.0.0"
+variantName: group-order
+sector: ion:hospitality
+appliesTo:
+  - delivery-order
+status: ready
+description: >
+  Multi-participant group ordering variant. One person (initiator) starts
+  a group order session and shares a link. Participants join and add their
+  own items to the shared cart. When the initiator locks the session,
+  the combined order is submitted as a single contract.
+  Covers: Grab Group Order, GoFood Pesan Bareng.
+
+activationCondition: >
+  Activates when RestaurantProvider.groupOrderEnabled is true
+  AND contract.contractAttributes.isGroupOrder is true.
+
+phases:
+  session:
+    name: Group Session Assembly
+    steps:
+      - step: group_session_create
+        from: BAP
+        to: BPP
+        direction: request
+        description: Initiator starts a group order session
+        requiredFields:
+          - message.contract.contractAttributes.isGroupOrder  # true
+          - message.contract.contractAttributes.groupOrderInitiatorId
+        conditionalFields:
+          - field: message.contract.contractAttributes.groupOrderMaxParticipants
+            condition: optional — defaults to RestaurantProvider.groupOrderMaxParticipants
+
+      - step: on_group_session_create
+        from: BPP
+        to: BAP
+        direction: callback
+        requiredFields:
+          - message.contract.contractAttributes.groupOrderSessionId
+        description: BPP returns session ID. BAP generates sharable link.
+
+      - step: participant_join
+        from: BAP
+        to: BPP
+        direction: request
+        description: Each participant joins and adds their items
+        requiredFields:
+          - message.contract.contractAttributes.groupOrderSessionId
+          - message.contract.commitments[].commitmentAttributes.addedByParticipantId
+          - message.contract.commitments[].commitmentAttributes.lineId
+
+  lock_and_submit:
+    name: Session Lock and Order Submission
+    steps:
+      - step: group_order_lock
+        from: BAP
+        to: BPP
+        direction: request
+        description: Initiator locks the session — no more item additions accepted
+        requiredFields:
+          - message.contract.contractAttributes.groupOrderSessionId
+          - message.contract.contractAttributes.groupOrderLockedAt
+          - message.contract.commitments[]  # full combined item list
+
+      - step: select (combined cart)
+        from: BAP
+        to: BPP
+        direction: request
+        description: Standard /select with all participants' items combined
+        requiredFields:
+          - message.contract.commitments[].commitmentAttributes.lineId
+          - message.contract.commitments[].commitmentAttributes.resourceId
+          - message.contract.commitments[].commitmentAttributes.quantity
+
+      - step: on_select
+        from: BPP
+        to: BAP
+        direction: callback
+        description: BPP quotes combined price. Flow continues as standard delivery-order.
+
+businessRules:
+  - All items in group order delivered together in one delivery
+  - Initiator is responsible for full payment (split payment handled by BAP, not BPP)
+  - If any item becomes unavailable BPP notifies BAP before on_select
+  - Session expires after RestaurantProvider.groupOrderSessionTimeoutMinutes (default 30)
+  - Once locked no participant can add or modify items

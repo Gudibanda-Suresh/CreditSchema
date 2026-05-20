@@ -1,0 +1,73 @@
+iri: ion://policy/finance.ltv-cap.ojk-kpr-apartemen
+
+version: "1.0.0"
+
+versionEffectiveFrom: "2026-05-01"
+
+category: LTV_CAP
+
+subCategory: APARTMENT_MORTGAGE
+
+status: ratified
+
+ratifiedAt: "2026-04-15"
+
+displayText:
+  id: "Batas LTV KPA apartemen/rumah susun"
+  en: "LTV cap — apartment/flat mortgage (KPA Apartemen)"
+
+loanType: KPA_APARTEMEN_RUSUN
+
+ltvCapDefinition:
+  formula: "loanAmount / appraisedPropertyValue × 100"
+  appraisalBasis: LOWER_OF_TRANSACTION_PRICE_OR_APPRAISED_VALUE
+
+ltvTiers:
+  - tier: APARTEMEN_TIPE_22
+    propertyArea: "≤ 22 sqm"
+    maxLtvFirstProperty: 80
+    maxLtvSecondProperty: 80
+    maxLtvThirdPropertyAndAbove: 80
+    note: "Studio/micro apartment; uniform LTV"
+  - tier: APARTEMEN_TIPE_23_TO_70
+    propertyArea: "23–70 sqm"
+    maxLtvFirstProperty: 85
+    maxLtvSecondProperty: 75
+    maxLtvThirdPropertyAndAbove: 65
+  - tier: APARTEMEN_TIPE_ABOVE_70
+    propertyArea: "> 70 sqm"
+    maxLtvFirstProperty: 75
+    maxLtvSecondProperty: 65
+    maxLtvThirdPropertyAndAbove: 55
+
+minimumDownPayment:
+  firstApartment: 15
+  secondApartment: 25
+  thirdApartmentAndAbove: 35
+  unit: PERCENT_OF_TRANSACTION_VALUE
+
+acceptedTitleTypes:
+  - SHSRS
+  - SHGB_ATAS_SATUAN_RUSUN
+
+inden:
+  ltvAllowedForUnderConstruction: true
+  indentMaxLtvPercent: 80
+  constructionProgressPayoutRequired: true
+  note: "Disbursement tied to construction progress milestones per developer draw schedule"
+
+applicablePatterns:
+  - mortgage
+
+applicableLenderTypes:
+  - BANK_UMUM
+  - MULTIFINANCE
+
+regulatoryBasis:
+  - "Peraturan Bank Indonesia No.20/8/PBI/2018 tentang Rasio Loan to Value untuk Kredit Properti"
+  - "SE BI No.20/5/DKMP tentang Penilaian Kualitas Aset dan LTV"
+  - "UU 20/2011 tentang Rumah Susun"
+
+supersededBy: null
+
+deprecatedAt: null

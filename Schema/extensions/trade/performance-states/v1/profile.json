@@ -1,0 +1,10 @@
+{
+  "id": "ion-trade-performance-states-v1",
+  "version": "1.0.0",
+  "type": "StateMachine",
+  "name": "ION Trade Performance State Machines (v1)",
+  "sector": "ion:trade",
+  "description": "Canonical state machine definitions for all ION Trade patterns. Referenced by pattern definitions via stateMachine: field. Not an attribute pack \u2014 has no Beckn attachment point.",
+  "stateDefinitions": "./states.yaml",
+  "status": "ready"
+}

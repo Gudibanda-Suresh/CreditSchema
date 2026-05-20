@@ -1,0 +1,50 @@
+iri: ion://policy/finance.prepayment.zero-penalty-kur
+
+version: "1.0.0"
+
+versionEffectiveFrom: "2026-05-01"
+
+category: PREPAYMENT
+
+status: ratified
+
+ratifiedAt: "2026-04-15"
+
+displayText:
+  id: "Pelunasan dipercepat tanpa penalti — KUR"
+  en: "Zero-penalty early settlement — KUR government credit"
+
+prepaymentPenaltyRate: 0.00
+
+penaltyBasis: NONE
+
+penaltyFreeAfterMonths: 0
+
+partialPrepaymentAllowed: true
+
+fullPrepaymentAllowed: true
+
+quoteValidityDays: 3
+
+mandatoryFor: KUR_MIKRO, KUR_KECIL, KUR_TKI
+
+note: >
+  Government-subsidised KUR products are prohibited from charging
+  prepayment penalties per Permenko Bidang Perekonomian No. 1/2023
+  tentang Program KUR. Zero-penalty applies from day 1 of disbursement.
+
+applicablePatterns:
+  - business-loan
+
+applicableLenderTypes:
+  - BANK_UMUM
+  - BPR
+  - MULTIFINANCE
+
+regulatoryBasis:
+  - "Permenko Bidang Perekonomian No. 1/2023 tentang Program KUR"
+  - "PMK 189/2023 tentang Petunjuk Pelaksanaan KUR"
+
+supersededBy: null
+
+deprecatedAt: null

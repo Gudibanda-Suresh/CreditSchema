@@ -1,0 +1,84 @@
+# ION Hospitality Variant — pre-order v1
+
+id: ion-hospitality-variant-pre-order-v1
+version: "1.0.0"
+variantName: pre-order
+sector: ion:hospitality
+appliesTo:
+  - delivery-order
+status: ready
+description: >
+  Scheduled advance delivery variant. Consumer places an order now for
+  delivery at a specific future time slot. Restaurant prepares the order
+  to be ready at the correct time — not immediately after confirm.
+  Covers: Grab Food scheduled delivery, GoFood Pre-order,
+  meal plan delivery, catering advance booking.
+
+activationCondition: >
+  Activates when RestaurantOffer.deliveryMode is SCHEDULED or PRE_ORDER
+  AND consumer selects a scheduledDeliverySlotId at /select or /init.
+
+phases:
+  select_slot:
+    name: Slot Selection
+    steps:
+      - step: select (slot)
+        from: BAP
+        to: BPP
+        direction: request
+        description: Consumer selects a delivery slot from RestaurantOffer.scheduledDeliverySlots
+        requiredFields:
+          - message.contract.contractAttributes.scheduledDeliverySlotId
+          - message.contract.contractAttributes.scheduledDeliveryTime
+
+      - step: on_select (slot confirmed)
+        from: BPP
+        to: BAP
+        direction: callback
+        description: BPP confirms slot availability and locks it
+        requiredFields:
+          - message.contract.contractAttributes.preOrderConfirmedSlot.confirmedStart
+          - message.contract.contractAttributes.preOrderConfirmedSlot.confirmedEnd
+          - message.contract.contractAttributes.preOrderConfirmedSlot.kitchenStartTime
+
+  pre_order_confirm:
+    name: Advance Confirmation
+    steps:
+      - step: confirm (pre-order)
+        from: BAP
+        to: BPP
+        direction: request
+        description: >
+          Same as standard confirm. Payment collected now.
+          Kitchen will start at preOrderConfirmedSlot.kitchenStartTime.
+        requiredFields:
+          - message.contract.id
+
+      - step: on_confirm (pre-order)
+        from: BPP
+        to: BAP
+        direction: callback
+        description: BPP acknowledges. Contract is ACTIVE but kitchen state stays PENDING until slot.
+        requiredFields:
+          - message.contract.status  # ACTIVE
+          - message.contract.performance[].performanceAttributes.estimatedDeliveryAt
+
+  pre_order_activation:
+    name: Kitchen Activation at Slot Time
+    steps:
+      - step: on_status [PREPARING] (at slot time)
+        from: BPP
+        to: BAP
+        direction: unsolicited callback
+        description: >
+          BPP sends this update when kitchen starts preparing at the scheduled time.
+          From this point the flow is identical to the standard delivery-order pattern.
+        requiredFields:
+          - message.contract.performance[].performanceAttributes.kitchenState  # PREPARING
+          - message.contract.performance[].performanceAttributes.estimatedDeliveryAt
+
+businessRules:
+  - preOrderLeadTimeMinutes from RestaurantOffer governs minimum advance booking
+  - Consumer may cancel up to preOrderCancellationWindowHours before slot (platform policy)
+  - If slot becomes unavailable BPP must notify BAP and offer alternative slot or full refund
+  - Payment collected at confirm time regardless of slot date

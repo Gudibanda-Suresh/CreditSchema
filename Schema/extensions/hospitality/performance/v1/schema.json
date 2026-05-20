@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schema.ion.id/hospitality/performance/v1/schema.json",
+  "title": "RestaurantPerformance",
+  "description": "ION Hospitality Restaurant Ordering \u2014 kitchen state, rider tracking, live GPS, delivery proof. Attaches to: Performance.performanceAttributes",
+  "type": "object",
+  "additionalProperties": true,
+  "allOf": [
+    {
+      "$ref": "https://schema.beckn.io/core/v2/schema/Attributes.json"
+    }
+  ]
+}

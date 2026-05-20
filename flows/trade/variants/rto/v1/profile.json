@@ -1,0 +1,39 @@
+{
+  "id": "ion-trade-variant-rto-v1",
+  "version": "1.0.0",
+  "branchName": "RTO",
+  "status": "ready",
+  "description": "Return to Origin flows. Delivery failed. Three outcomes: delivered back, disposed, or re-attempt.",
+  "branchFile": "./branch.yaml",
+  "applicableSpines": [
+    "B2C-SF",
+    "B2C-MTO",
+    "MP-IH",
+    "MP-IL"
+  ],
+  "subBranches": [
+    {
+      "id": "RTO-initiated",
+      "window": {
+        "earliest": "on_status[DISPATCHED]",
+        "latest": "on_status[DELIVERED]"
+      }
+    },
+    {
+      "id": "RTO-disposed",
+      "window": {
+        "earliest": "after RTO-initiated"
+      }
+    },
+    {
+      "id": "RTO-delivered",
+      "window": {
+        "earliest": "after RTO-initiated"
+      },
+      "triggers": "refund sub-step"
+    }
+  ],
+  "type": "Variant",
+  "variantName": "rto",
+  "sector": "ion:trade"
+}

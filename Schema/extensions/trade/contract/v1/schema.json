@@ -1,0 +1,533 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schema.ion.id/trade/contract/v1",
+  "title": "TradeContract",
+  "type": "object",
+  "properties": {
+    "fulfillingLocationId": {
+      "type": "string",
+      "description": "ID of the specific fulfilment centre that will fulfil this order. Populated by BPP at on_confirm after internal FC selection. Present when provider has multiple FC locations.\n",
+      "example": "FC-SBY-01",
+      "x-ion-conditional": true,
+      "x-ion-condition": "Present when provider has multiple fulfilment centres"
+    },
+    "buyerInstructions": {
+      "type": "string",
+      "description": "Free-text delivery instructions from buyer. e.g. \"Leave at door\", \"Call before arriving\", \"Do not ring bell after 9pm\".\n",
+      "example": "Titipkan ke satpam jika tidak ada di rumah."
+    },
+    "deliveryPreferences": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "preferredTimeSlot": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Buyer's preferred delivery time window.",
+          "properties": {
+            "start": {
+              "type": "string",
+              "format": "date-time",
+              "example": "2026-04-03 09:00:00+07:00"
+            },
+            "end": {
+              "type": "string",
+              "format": "date-time",
+              "example": "2026-04-03 13:00:00+07:00"
+            }
+          },
+          "required": [
+            "start",
+            "end"
+          ]
+        },
+        "preferredPerformanceMode": {
+          "type": "string",
+          "enum": [
+            "DELIVERY",
+            "SELF_PICKUP",
+            "DINE_IN",
+            "CURBSIDE"
+          ]
+        }
+      }
+    },
+    "invoicePreferences": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Buyer's invoice type and tax identity declaration.",
+      "properties": {
+        "taxId": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "scheme": {
+              "type": "string",
+              "enum": [
+                "NPWP",
+                "NIK"
+              ],
+              "description": "NPWP for businesses, NIK for individuals"
+            },
+            "value": {
+              "type": "string",
+              "description": "Tax ID number",
+              "example": 1234567890123456
+            }
+          },
+          "required": [
+            "scheme",
+            "value"
+          ]
+        },
+        "invoiceType": {
+          "type": "string",
+          "enum": [
+            "RECEIPT",
+            "TAX_INVOICE",
+            "EINVOICE",
+            "SURAT_TAGIHAN",
+            "KOMERSIAL_INVOICE"
+          ],
+          "description": "RECEIPT: simple receipt, no tax identity required. TAX_INVOICE: Faktur Pajak, requires PKP seller and NPWP buyer. EINVOICE: e-Faktur via DJP system. SURAT_TAGIHAN: PKP seller to non-PKP buyer — commercial invoice, no input-tax claim rights. KOMERSIAL_INVOICE: cross-border commercial invoice, bilingual layout.\n",
+          "example": "TAX_INVOICE"
+        }
+      }
+    },
+    "fakturPajakReference": {
+      "type": "string",
+      "description": "Faktur Pajak (e-Invoice) reference number assigned by BPP after contract confirm for PKP sellers. 16-digit DJP format.\n",
+      "example": "010.000-26.00000001",
+      "x-ion-regulatory": "PMK 168/PMK.010/2023 tentang Faktur Pajak",
+      "x-ion-conditional-cross-schema": true,
+      "x-ion-condition": "Required for PKP sellers (identity.pkpStatus=PKP) when invoiceType=TAX_INVOICE"
+    },
+    "purchaseOrderReference": {
+      "type": "string",
+      "description": "Buyer's Purchase Order number for B2B wholesale transactions. Allows buyer to link ION contract to their internal PO system.\n",
+      "example": "PO-2026-00456",
+      "x-ion-conditional": true,
+      "x-ion-condition": "Required for B2B wholesale commerce patterns"
+    },
+    "cancellationReasonCode": {
+      "type": "string",
+      "description": "Standardised cancellation reason code when contract is cancelled. Set by BPP on contract at time of cancellation.\n",
+      "enum": [
+        "BUYER_REQUESTED",
+        "SELLER_INITIATED",
+        "ITEM_UNAVAILABLE",
+        "PAYMENT_FAILED",
+        "FRAUD_SUSPECTED",
+        "REGULATORY_HOLD",
+        "LOGISTICS_FAILURE",
+        "FORCE_CANCEL_TAT_BREACH"
+      ],
+      "x-ion-conditional": true,
+      "x-ion-condition": "Required when contract status is CANCELLED"
+    },
+    "quoteTrail": {
+      "type": "array",
+      "description": "Trail of quote changes for mid-transaction-changes variant. Each entry records a delta to the original confirmed quote.\n",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "item",
+              "tax",
+              "delivery",
+              "discount",
+              "refund",
+              "adjustment"
+            ]
+          },
+          "id": {
+            "type": "string",
+            "description": "Item ID or consideration ID this adjustment applies to"
+          },
+          "currency": {
+            "type": "string",
+            "const": "IDR"
+          },
+          "value": {
+            "type": "string",
+            "description": "Signed IDR amount. Negative for deductions, positive for additions.",
+            "example": "-5000"
+          },
+          "reason": {
+            "type": "string",
+            "description": "Human-readable reason for this adjustment"
+          }
+        },
+        "required": [
+          "type",
+          "id",
+          "currency",
+          "value"
+        ]
+      }
+    },
+    "partialCancellationAllowed": {
+      "type": "boolean",
+      "description": "Whether individual items in a multi-item order can be cancelled.",
+      "default": false
+    },
+    "replacementPreferred": {
+      "type": "boolean",
+      "description": "Whether buyer prefers replacement over refund in case of defective or wrong item. Declared at confirm.\n",
+      "default": false
+    },
+    "disputeWindowDays": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of days after delivery within which buyer may raise a dispute. Defaults to ION network policy if not declared.\n",
+      "example": 7
+    },
+    "creditTermsDays": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of days credit extended to the buyer from delivery date. 0 = prepaid. Common values: 7, 14, 30, 45, 60, 90.\n",
+      "example": 30,
+      "x-ion-conditional": true,
+      "x-ion-condition": "Required for business-procurement (business-credit variant) commerce pattern"
+    },
+    "paymentDueDate": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Absolute datetime by which payment must be made for credit orders. Computed from delivery date + creditTermsDays.\n",
+      "example": "2026-05-19 23:59:59+07:00",
+      "x-ion-conditional": true,
+      "x-ion-condition": "Required when creditTermsDays > 0"
+    },
+    "subscriptionBillingCycle": {
+      "type": "string",
+      "enum": [
+        "WEEKLY",
+        "FORTNIGHTLY",
+        "MONTHLY",
+        "QUARTERLY",
+        "ANNUAL"
+      ],
+      "description": "Billing cycle for subscription commerce pattern.",
+      "example": "MONTHLY",
+      "x-ion-conditional": true,
+      "x-ion-condition": "Required for subscription commerce pattern"
+    },
+    "subscriptionNextBillingDate": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date-time of next billing event. Updated by BPP after each successful billing.\n",
+      "example": "2026-05-19 00:00:00+07:00",
+      "x-ion-conditional": true,
+      "x-ion-condition": "Required for subscription commerce pattern"
+    },
+    "linkedContractId": {
+      "type": "string",
+      "description": "Reference to the Trade Contract this Logistics Contract serves. Enables ION Central to trace causal relationship between trade and logistics transactions.\n",
+      "example": "TRD-2026-00012345",
+      "x-ion-conditional": true,
+      "x-ion-condition": "Required on all Logistics Contracts linked to a Trade fulfilment"
+    },
+    "codAmount": {
+      "type": "string",
+      "description": "Total cash amount to be collected from consumer at delivery for COD orders. String decimal in IDR.\n",
+      "example": "150000",
+      "x-ion-conditional-cross-schema": true,
+      "x-ion-condition": "Required when paymentRail=COD"
+    },
+    "beaCukaiReference": {
+      "type": "string",
+      "description": "Indonesian Customs (Bea Cukai) clearance reference number. Required for all international inbound shipments.\n",
+      "example": "BC-2026-001234567",
+      "x-ion-regulatory": "UU 17/2006 tentang Kepabeanan; PMK 199/PMK.010/2019",
+      "x-ion-conditional": true,
+      "x-ion-condition": "Required for INTERNATIONAL_AIR and INTERNATIONAL_OCEAN logistics"
+    },
+    "liveCommerceContext": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Context for orders placed via live commerce or social commerce (TikTok Shop, Shopee Live, Tokopedia Play, OTT-embedded commerce). Required for live-commerce pattern. Enables revenue attribution to streamer/affiliate and platform-specific settlement.\n",
+      "properties": {
+        "sourceChannel": {
+          "type": "string",
+          "enum": [
+            "LIVE_STREAM",
+            "SHORT_VIDEO",
+            "OTT_EMBEDDED",
+            "SOCIAL_POST",
+            "AFFILIATE_LINK",
+            "GROUP_BUY",
+            "SHOPPABLE_AD"
+          ],
+          "description": "Entry point for the order. OTT_EMBEDDED = order placed from within video streaming app (Netflix, Vidio, Disney+ Hotstar shoppable content).\n"
+        },
+        "liveSessionId": {
+          "type": "string",
+          "description": "Live session identifier when sourceChannel=LIVE_STREAM",
+          "example": "SHP-LIVE-2026-0419-8837"
+        },
+        "streamerId": {
+          "type": "string",
+          "description": "Creator/streamer subscriber ID for revenue attribution. Streamer may earn commission separately from BPP/BAP.\n",
+          "example": "streamer.ion.id/budi-gadget"
+        },
+        "streamerCommissionPercent": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Streamer's commission as fraction of item value",
+          "example": 0.05
+        },
+        "productPinnedAtMinute": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Minutes into the live session when this product was pinned/featured"
+        },
+        "ottPlatform": {
+          "type": "string",
+          "enum": [
+            "VIDIO",
+            "NETFLIX",
+            "DISNEY_PLUS_HOTSTAR",
+            "IFLIX",
+            "VIU",
+            "GENFLIX",
+            "WETV",
+            "YOUTUBE",
+            "OTHER"
+          ],
+          "description": "OTT platform where shoppable content was served (for OTT_EMBEDDED)"
+        },
+        "ottContentId": {
+          "type": "string",
+          "description": "OTT platform's content ID (movie, episode, match) where item was shown",
+          "example": "VIDIO-MATCH-PERSIJA-PERSIB-2026-04-19"
+        },
+        "ottTimestampSeconds": {
+          "type": "integer",
+          "description": "Playback position in seconds when product was presented"
+        },
+        "shortVideoId": {
+          "type": "string",
+          "description": "Short-video/reel ID when sourceChannel=SHORT_VIDEO"
+        },
+        "affiliateId": {
+          "type": "string",
+          "description": "Affiliate subscriber ID when sourceChannel=AFFILIATE_LINK"
+        },
+        "groupBuyId": {
+          "type": "string",
+          "description": "Group-buy session ID when sourceChannel=GROUP_BUY"
+        },
+        "groupBuyMinParticipants": {
+          "type": "integer",
+          "description": "Minimum participants needed for group discount to activate"
+        },
+        "groupBuyActivated": {
+          "type": "boolean",
+          "description": "Whether group-buy discount has been unlocked"
+        }
+      },
+      "x-ion-conditional": true,
+      "x-ion-condition": "Required for live-commerce pattern; optional otherwise"
+    },
+    "refundDestination": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Where refund will be credited. When buyer does not specify, default is ORIGINAL_PAYMENT_METHOD. Platform wallets often faster; store credit used for partial refunds and goodwill.\n",
+      "required": [
+        "method"
+      ],
+      "properties": {
+        "method": {
+          "type": "string",
+          "enum": [
+            "ORIGINAL_PAYMENT_METHOD",
+            "PLATFORM_WALLET",
+            "BANK_TRANSFER",
+            "LOYALTY_POINTS",
+            "STORE_CREDIT",
+            "VOUCHER"
+          ]
+        },
+        "walletId": {
+          "type": "string",
+          "description": "Required when method=PLATFORM_WALLET"
+        },
+        "bankAccount": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "bankCode": {
+              "type": "string"
+            },
+            "accountNumber": {
+              "type": "string"
+            },
+            "accountName": {
+              "type": "string"
+            }
+          },
+          "description": "Required when method=BANK_TRANSFER"
+        },
+        "loyaltyMultiplier": {
+          "type": "number",
+          "description": "Bonus multiplier when redeeming to loyalty points e.g. 1.1 = 10% bonus"
+        }
+      }
+    },
+    "subscriptionTrialDays": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "First N days free. Billing starts on day N+1."
+    },
+    "subscriptionPauseType": {
+      "type": "string",
+      "enum": [
+        "ACTIVE",
+        "PAUSED_UNTIL_DATE",
+        "PAUSED_INDEFINITE"
+      ],
+      "description": "Current pause state for subscription orders"
+    },
+    "subscriptionPauseUntil": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date to automatically resume. Required when pauseType=PAUSED_UNTIL_DATE"
+    },
+    "giftingDetails": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Structured gifting details replacing the simple gift flag.",
+      "properties": {
+        "isGift": {
+          "type": "boolean"
+        },
+        "recipientName": {
+          "type": "string"
+        },
+        "recipientPhone": {
+          "type": "string"
+        },
+        "giftMessage": {
+          "type": "string",
+          "maxLength": 280,
+          "description": "Message printed on gift card / packing slip"
+        },
+        "hideSenderInfo": {
+          "type": "boolean",
+          "default": false,
+          "description": "Anonymous gift — omit buyer details from all visible surfaces"
+        },
+        "priceDisplayOnPackage": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to show prices on packing slip"
+        },
+        "giftWrapOfferId": {
+          "type": "string",
+          "description": "Reference to the gift-wrap offer in consideration breakup"
+        }
+      }
+    },
+    "paymentSchedule": {
+      "type": "array",
+      "description": "Multi-milestone payment schedule for partial-payment offers (down-payment + balance, milestone-based for services, etc.). Used when paymentTermsPolicy references a schedule-based IRI. Single-payment orders do not require this field. Contract moves to COMPLETE only when all milestones are PAID.\n",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "milestone": {
+            "type": "string",
+            "enum": [
+              "AT_CONFIRM",
+              "ON_DISPATCH",
+              "ON_DELIVERY",
+              "POST_DELIVERY",
+              "ON_MILESTONE_EVENT"
+            ],
+            "description": "Event that triggers this payment"
+          },
+          "milestoneLabel": {
+            "type": "string",
+            "description": "Human-readable milestone label (e.g. \"30% down-payment\")"
+          },
+          "amount": {
+            "type": "number",
+            "description": "IDR amount due at this milestone"
+          },
+          "currency": {
+            "type": "string",
+            "const": "IDR",
+            "default": "IDR"
+          },
+          "dueAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Absolute datetime when payment is due"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "PAID",
+              "OVERDUE",
+              "WAIVED",
+              "FAILED"
+            ]
+          },
+          "paidAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "paymentMethod": {
+            "type": "string",
+            "description": "Method used for this specific milestone (may differ across milestones)"
+          },
+          "gatewayRef": {
+            "type": "string",
+            "description": "Gateway transaction reference for this milestone"
+          },
+          "graceDays": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Grace period before status becomes OVERDUE"
+          }
+        },
+        "required": [
+          "milestone",
+          "amount",
+          "dueAt",
+          "status"
+        ]
+      },
+      "x-ion-conditional": true,
+      "x-ion-condition": "Required when paymentTermsPolicy is schedule-based"
+    }
+  },
+  "additionalProperties": true,
+  "allOf": [
+    {
+      "$ref": "../../../../core/v2/api/v2.0.0/beckn.yaml#/components/schemas/Attributes"
+    },
+    {
+      "if": {
+        "properties": {
+          "subscriptionPauseType": {
+            "const": "PAUSED_UNTIL_DATE"
+          }
+        },
+        "required": [
+          "subscriptionPauseType"
+        ]
+      },
+      "then": {
+        "required": [
+          "subscriptionPauseUntil"
+        ]
+      }
+    }
+  ]
+}

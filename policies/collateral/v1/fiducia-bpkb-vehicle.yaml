@@ -1,0 +1,85 @@
+iri: ion://policy/finance.collateral.fiducia-bpkb-vehicle
+
+version: "1.0.0"
+
+versionEffectiveFrom: "2026-05-01"
+
+category: COLLATERAL
+
+subCategory: VEHICLE_COLLATERAL
+
+status: ratified
+
+ratifiedAt: "2026-04-15"
+
+displayText:
+  id: "Jaminan kendaraan — fidusia BPKB"
+  en: "Vehicle collateral — BPKB fiducia registration"
+
+collateralType: VEHICLE
+
+vehicleTypes:
+  - MOTOR
+  - MOBIL_PENUMPANG
+  - MOBIL_NIAGA
+  - ALAT_BERAT
+
+registrationPath:
+  - step: FIDUCIA_DEED
+    description: "Akta Jaminan Fidusia — notarized fiducia security agreement"
+    executedBy: NOTARY
+    mustRegisterWithinDays: 30
+    note: "Per UU 42/1999, fiducia registration at KEMENKUMHAM is mandatory"
+  - step: KEMENKUMHAM_REGISTRATION
+    description: "Online registration of fiducia at Ministry of Law and Human Rights"
+    executedBy: NOTARY
+    maxProcessingDays: 3
+    resultDocument: SERTIFIKAT_JAMINAN_FIDUSIA
+  - step: BPKB_CUSTODY
+    description: "Original BPKB (vehicle ownership book) held by lender until full repayment"
+    heldBy: LENDER
+
+minimumAppraisalRequired: true
+
+appraisalBasis: OTR_MARKET_PRICE_OR_NADA_GUIDE
+
+appraisalValidityMonths: 3
+
+downPaymentRequired: true
+
+minimumDpPolicyRef: ion://policy/finance.ltv-cap.bi-kkb-motor-mobil
+
+insuranceRequired:
+  - type: VEHICLE_ALL_RISK
+    policyRef: ion://policy/finance.insurance.vehicle-allrisk-standard
+  - type: TOTAL_LOSS_ONLY
+    applicableFor: vehicles older than 3 years
+
+lienReleaseProcess:
+  trigger: FULLY_REPAID
+  documentRequired: FIDUCIA_DELETION_CERTIFICATE
+  processedBy: NOTARY
+  kemenkumhamDeletionRequired: true
+  bpkbReturnedToBorrower: true
+  maxProcessingDays: 7
+
+vehicleAgeMaxYears: 10
+
+vehicleCondition: BARU_ATAU_BEKAS
+
+applicablePatterns:
+  - vehicle-loan
+
+applicableLenderTypes:
+  - BANK_UMUM
+  - MULTIFINANCE
+
+regulatoryBasis:
+  - "UU 42/1999 tentang Jaminan Fidusia"
+  - "PP 21/2015 tentang Tata Cara Pendaftaran Jaminan Fidusia dan Biaya Pembuatan Akta Jaminan Fidusia"
+  - "Permenkumham 9/2013 tentang Pendaftaran Jaminan Fidusia secara Elektronik"
+  - "Peraturan BI tentang Loan to Value Kredit Kendaraan Bermotor"
+
+supersededBy: null
+
+deprecatedAt: null

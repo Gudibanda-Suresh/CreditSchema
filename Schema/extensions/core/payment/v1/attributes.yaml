@@ -1,0 +1,606 @@
+openapi: 3.1.1
+info:
+  title: ION Payment Extension (v1)
+  description: "Indonesian payment method objects. Covers all Bank Indonesia regulated payment rails (QRIS, Virtual\
+    \ Account, EWallet, BI-FAST, COD, BNPL, BankTransfer, Credit/Debit Card, BISettlement).\nIn Beckn v2.0 there\
+    \ is no Payment schema; payment state is expressed via `Contract.settlements[]`. Each Settlement has a `settlementAttributes`\
+    \ bag. ION attaches this extension's `PaymentDeclaration` schema as the contents of `settlementAttributes` on\
+    \ every Settlement that represents a buyer-facing payment event.\nWire placement:\n  message.contract.settlements[].settlementAttributes:\
+    \ {\n    \"@context\": \"https://ion.id/vocab/payment/v1/context.jsonld\",\n    \"@type\": \"ion:PaymentDeclaration\"\
+    ,\n    ...PaymentDeclaration fields...\n  }\n\nFor settlement reconciliation (BAP↔BPP financial true-up), see\
+    \ the separate reconcile/v1 pack — that attaches alongside PaymentDeclaration on the same settlementAttributes\
+    \ bag, using @type: ion:IONReconciliation.\n"
+  version: 1.0.0
+  license:
+    name: Apache-2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+  contact:
+    name: ION Network
+    url: https://schema.ion.id
+components:
+  schemas:
+    PaymentDeclaration:
+      type: object
+      title: Payment Declaration
+      description: 'Contents of a Beckn Settlement''s settlementAttributes bag for a buyer-facing payment event.
+        Binds a payment method to a transaction and carries method-specific instrument details in methodDetail.
+
+        '
+      additionalProperties: true
+      x-jsonld:
+        '@context': 'https://schema.ion.id/core/payment/v1/context.jsonld'
+        '@type': ion:PaymentDeclaration
+      x-beckn-attaches-to: Settlement.settlementAttributes
+      properties:
+        method:
+          type: string
+          enum:
+          - QRIS
+          - VIRTUAL_ACCOUNT
+          - EWALLET
+          - COD
+          - BANK_TRANSFER
+          - BI_FAST
+          - RTGS
+          - SKN
+          - BNPL
+          - CREDIT_CARD
+          - DEBIT_CARD
+          - DIRECT_DEBIT
+          - CREDIT_FACILITY
+          - ESCROW
+        collectedBy:
+          type: string
+          enum:
+          - BAP
+          - BPP
+          - LSP
+          description: Which network participant collects payment from consumer.
+        timing:
+          type: string
+          enum:
+          - ON_ORDER
+          - PRE_FULFILLMENT
+          - ON_FULFILLMENT
+          - POST_FULFILLMENT
+          description: When payment is collected relative to fulfilment.
+        status:
+          type: string
+          enum:
+          - PENDING
+          - PAID
+          - FAILED
+          - REFUNDED
+          - PARTIALLY_REFUNDED
+        amount:
+          type: number
+          description: Payment amount in IDR
+          x-ion-condition: Required when payment is confirmed
+        currency:
+          type: string
+          const: IDR
+          default: IDR
+        paidAt:
+          type: string
+          format: date-time
+          description: Timestamp of successful payment confirmation
+          x-ion-condition: Required after payment is confirmed
+        gatewayRef:
+          type: string
+          description: Payment gateway transaction reference ID
+          x-ion-condition: Required when payment gateway is used
+        methodDetail:
+          oneOf:
+          - $ref: '#/components/schemas/QRIS'
+          - $ref: '#/components/schemas/VirtualAccount'
+          - $ref: '#/components/schemas/EWallet'
+          - $ref: '#/components/schemas/CashOnDelivery'
+          - $ref: '#/components/schemas/BankTransfer'
+          - $ref: '#/components/schemas/BISettlement'
+          - $ref: '#/components/schemas/BNPL'
+          - $ref: '#/components/schemas/CardPayment'
+          x-ion-condition: Required when method requires instrument-specific fields
+        paymentRail:
+          type: string
+          description: 'Specific rail used for this payment. Enables downstream routing and reconciliation regardless
+            of higher-level method. Example: method=BANK_TRANSFER with paymentRail=BI_FAST.
+
+            '
+          enum:
+          - QRIS
+          - BI_FAST
+          - RTGS
+          - SKN
+          - VIRTUAL_ACCOUNT
+          - EWALLET_OVO
+          - EWALLET_DANA
+          - EWALLET_GOPAY
+          - EWALLET_SHOPEEPAY
+          - EWALLET_LINKAJA
+          - EWALLET_ASTRAPAY
+          - CARD_VISA
+          - CARD_MASTERCARD
+          - CARD_JCB
+          - CARD_AMEX
+          - CARD_UNIONPAY
+          - BILYET_GIRO
+          - DIRECT_DEBIT
+          - SWIFT_TT
+          - LETTER_OF_CREDIT
+          - COD_CASH
+          - COD_CARD_TAP
+        paymentGatewayProvider:
+          type: string
+          description: 'Payment gateway aggregator used to route this payment. Declared per transaction. Implementations
+            may use one or more of these aggregators or direct bank/ewallet APIs.
+
+            '
+          enum:
+          - DOKU
+          - XENDIT
+          - MIDTRANS
+          - FINPAY
+          - FASPAY
+          - ESPAY
+          - IPAY88
+          - FINNET
+          - LINKQU
+          - DIRECT
+          - OTHER
+        creditTerms:
+          $ref: '#/components/schemas/CreditTerms'
+        refund:
+          $ref: '#/components/schemas/Refund'
+        invoice:
+          $ref: '#/components/schemas/InvoiceReference'
+        processingFee:
+          $ref: '#/components/schemas/ProcessingFee'
+      # ION network mandatory: Payment settlement fields required for BI regulatory compliance
+      required:
+      - method
+      - collectedBy
+      - timing
+      - status
+      - currency
+      allOf:
+      - $ref: ../../../../core/v2/api/v2.0.0/beckn.yaml#/components/schemas/Attributes
+      - if:
+          properties:
+            method:
+              const: CREDIT_FACILITY
+          required:
+          - method
+        then:
+          required:
+          - creditTerms
+      - if:
+          properties:
+            status:
+              const: REFUNDED
+          required:
+          - status
+        then:
+          required:
+          - refund
+      x-ion-closed-extensions: false
+    QRIS:
+      type: object
+      title: QRIS Payment
+      description: Quick Response Code Indonesian Standard payment
+      additionalProperties: false
+      properties:
+        qrisType:
+          type: string
+          enum:
+          - STATIC
+          - DYNAMIC
+          description: 'STATIC: single fixed QR, same for all transactions. DYNAMIC: per-transaction QR with embedded
+            amount.
+
+            '
+        merchantId:
+          type: string
+          description: QRIS merchant identifier from acquiring bank
+          example: ID1023456789012345678
+        nmid:
+          type: string
+          description: National Merchant ID assigned by Bank Indonesia
+        terminalId:
+          type: string
+          description: Terminal/POS identifier for multi-terminal merchants
+        qrisString:
+          type: string
+          description: Full QRIS string for QR code rendering
+          x-ion-condition: Required for DYNAMIC QRIS returned at on_init
+        expiresAt:
+          type: string
+          format: date-time
+          description: Expiry for DYNAMIC QRIS. UTC (ISO 8601).
+      x-ion-regulatory: PBI 21/18/PBI/2019 tentang Implementasi Standar Nasional Quick Response Code
+      required:
+      - qrisType
+      - merchantId
+    VirtualAccount:
+      type: object
+      title: Bank Virtual Account
+      additionalProperties: false
+      properties:
+        bankCode:
+          type: string
+          enum:
+          - BCA
+          - BRI
+          - MANDIRI
+          - BNI
+          - CIMB
+          - PERMATA
+          - BTN
+          - DANAMON
+          - MAYBANK
+          - BSI
+          description: Bank issuing the virtual account
+        vaNumber:
+          type: string
+          description: Virtual account number to be paid to
+        amount:
+          type: number
+          description: Amount encoded in VA (for fixed-amount VA)
+        currency:
+          type: string
+          const: IDR
+        expiresAt:
+          type: string
+          format: date-time
+          description: VA expiry timestamp in UTC
+      required:
+      - bankCode
+      - vaNumber
+    EWallet:
+      type: object
+      title: Indonesia E-Wallet
+      additionalProperties: false
+      properties:
+        provider:
+          type: string
+          x-ion-vocab: https://schema.ion.id/core/payment/v1/vocab.jsonld#EWalletProvider
+          description: E-wallet provider identifier
+        accountRef:
+          type: string
+          description: Consumer's wallet account reference (phone or wallet ID)
+        amount:
+          type: number
+        currency:
+          type: string
+          const: IDR
+        expiresAt:
+          type: string
+          format: date-time
+        deepLink:
+          type: string
+          format: uri
+          description: Deep link to open wallet app for payment
+      x-ion-regulatory: PBI 23/6/PBI/2021 tentang Penyedia Jasa Pembayaran
+      required:
+      - provider
+    CashOnDelivery:
+      type: object
+      title: Cash On Delivery
+      description: 'Runtime COD collection state. Offer-level COD policy fields (OTP required, denominations accepted,
+        buyer daily limit, hold period, reconciliation variance) are declared per-offer in schema/extensions/logistics/offer/v1
+        — they govern how COD is accepted, not the per-transaction collection record.
+
+        '
+      additionalProperties: false
+      properties:
+        collectionAmount:
+          type: number
+          description: Expected cash amount to collect from consumer
+        collectionAmountCollected:
+          type: number
+          description: Actual cash amount the carrier collected
+          x-ion-condition: Required after handover — actual amount collected
+        collectionTimestamp:
+          type: string
+          format: date-time
+          description: UTC timestamp of cash handover at delivery
+          x-ion-condition: Required after handover
+        collectionReceiptRef:
+          type: string
+          description: Receipt reference for the collected cash (scan, photo URL, or receipt ID)
+        currency:
+          type: string
+          const: IDR
+        changeIssuedBy:
+          type: string
+          enum:
+          - PROVIDER
+          - COURIER
+          description: Who provides change to consumer
+        maxCodAmount:
+          type: number
+          description: Maximum COD value allowed per ION network policy
+        partialCollectionReason:
+          type: string
+          enum:
+          - CONSUMER_SHORT_ON_CASH
+          - DENOMINATION_UNAVAILABLE
+          - CONSUMER_NEGOTIATED
+          - CONSUMER_DISPUTED_AMOUNT
+          - OTHER
+          x-ion-condition: Required when collectionAmountCollected < collectionAmount
+    BankTransfer:
+      type: object
+      title: Bank Transfer
+      additionalProperties: false
+      properties:
+        bankCode:
+          type: string
+          description: Recipient bank code
+        accountNumber:
+          type: string
+          description: Recipient bank account number
+        accountName:
+          type: string
+          description: Recipient account holder name
+        transferType:
+          type: string
+          enum:
+          - ATM
+          - INTERNET_BANKING
+          - MOBILE_BANKING
+          - TELLER
+      required:
+      - bankCode
+      - accountNumber
+    BISettlement:
+      type: object
+      title: Bank Indonesia Settlement Rail
+      description: BI-FAST, RTGS, or SKN bank settlement
+      additionalProperties: false
+      properties:
+        settlementType:
+          type: string
+          enum:
+          - BI_FAST
+          - RTGS
+          - SKN
+          description: 'BI_FAST: real-time settlement, max IDR 250 million per transaction. RTGS: high-value same-day
+            settlement, unlimited amount. SKN: batch clearing, lower value transactions.
+
+            '
+        biRef:
+          type: string
+          description: BI clearing reference number
+        settlementAt:
+          type: string
+          format: date-time
+          description: Settlement timestamp in UTC
+        beneficiaryName:
+          type: string
+        beneficiaryBank:
+          type: string
+        beneficiaryAccount:
+          type: string
+        ifscEquivalent:
+          type: string
+          description: Indonesian equivalent — bank routing code
+      x-ion-regulatory: PBI 22/23/PBI/2020 tentang Sistem Pembayaran; SNAP BI specification
+      required:
+      - settlementType
+    BNPL:
+      type: object
+      title: Buy Now Pay Later
+      additionalProperties: false
+      properties:
+        provider:
+          type: string
+          x-ion-vocab: https://schema.ion.id/core/payment/v1/vocab.jsonld#BNPLProvider
+          description: BNPL provider name
+        tenure:
+          type: integer
+          description: Repayment tenure in months
+          example: 3
+        installmentAmount:
+          type: number
+          description: Per-installment amount in IDR
+        interestRate:
+          type: number
+          description: Monthly interest rate as decimal e.g. 0.02 = 2%
+        totalRepayment:
+          type: number
+          description: Total repayment amount including interest
+        currency:
+          type: string
+          const: IDR
+        firstPaymentDate:
+          type: string
+          format: date
+      required:
+      - provider
+    CardPayment:
+      type: object
+      title: Credit or Debit Card Payment
+      additionalProperties: false
+      properties:
+        cardType:
+          type: string
+          enum:
+          - CREDIT
+          - DEBIT
+        scheme:
+          type: string
+          enum:
+          - VISA
+          - MASTERCARD
+          - JCB
+          - AMEX
+          - UNIONPAY
+        maskedPan:
+          type: string
+          description: Last 4 digits of card for display
+          example: '****4242'
+        bankIssuer:
+          type: string
+          description: Card-issuing bank name
+        gatewayRef:
+          type: string
+          description: Payment gateway transaction reference
+      required:
+      - cardType
+      - scheme
+    CreditTerms:
+      type: object
+      title: Credit Terms
+      description: 'Credit-based payment terms (business-procurement pattern, FWA-governed logistics, any deferred-payment scenario).
+        Populated on PaymentDeclaration when method=CREDIT_FACILITY or when an active FWA grants credit terms to
+        this transaction. ION Central validates credit availability at /init.
+
+        '
+      additionalProperties: false
+      properties:
+        creditTermsDays:
+          type: integer
+          description: Net payment terms in days from invoice date (e.g. 30 for NET-30, 60 for NET-60)
+          example: 30
+        paymentDueDate:
+          type: string
+          format: date
+          description: Computed due date for this specific invoice
+        creditLimit:
+          type: number
+          description: Total credit limit extended to buyer under the governing FWA / contract
+        creditAvailable:
+          type: number
+          description: Credit currently available after open invoices — for ION Central validation at /init
+        dunningSchedule:
+          type: array
+          description: Reminder schedule leading up to and past due date
+          items:
+            type: object
+            properties:
+              daysRelativeToDueDate:
+                type: integer
+                description: Negative before due, positive after
+              channel:
+                type: string
+                enum:
+                - EMAIL
+                - SMS
+                - WHATSAPP
+                - VOICE_CALL
+                - IN_APP
+    Refund:
+      type: object
+      title: Refund
+      description: 'Refund record attached to a PaymentDeclaration when a settlement is fully or partially refunded.
+        Default destination is the original payment instrument (MATI — refund to original); fallbacks are declared
+        explicitly.
+
+        '
+      additionalProperties: false
+      properties:
+        refundAmount:
+          type: number
+          description: Refunded amount in IDR
+        refundReason:
+          type: string
+          enum:
+          - BUYER_CANCELLATION
+          - SELLER_CANCELLATION
+          - ITEM_RETURNED
+          - ITEM_UNAVAILABLE
+          - ITEM_DEFECTIVE
+          - DELIVERY_FAILED
+          - WRONG_ITEM_DELIVERED
+          - PARTIAL_FULFILMENT
+          - SLA_BREACH_REBATE
+          - WEIGHT_DISPUTE_RESOLVED
+          - CUSTOMS_REJECTED
+          - OTHER
+        refundTimeline:
+          type: string
+          format: duration
+          description: Expected time-to-land (ISO 8601 duration, e.g. PT24H, P7D)
+        refundMethod:
+          type: string
+          enum:
+          - REFUND_TO_ORIGINAL
+          - REFUND_TO_VA
+          - REFUND_TO_BANK
+          - REFUND_AS_CREDIT
+          - REFUND_AS_VOUCHER
+          description: 'REFUND_TO_ORIGINAL is the default (MATI — Merchant Automatically To Instrument). Fallbacks
+            apply when original instrument is unavailable (e.g. expired card).
+
+            '
+        refundInitiatedAt:
+          type: string
+          format: date-time
+        refundSettledAt:
+          type: string
+          format: date-time
+      required:
+      - refundAmount
+      - refundMethod
+    InvoiceReference:
+      type: object
+      title: Invoice Reference
+      description: 'Invoice document references. A transaction may have a proforma (issued at /init for credit-term
+        scenarios) and a final invoice (issued at /on_confirm or later). Faktur Pajak tax-invoice references live
+        in core/tax/v1 — this block is for commercial invoices.
+
+        '
+      additionalProperties: false
+      properties:
+        invoiceReference:
+          type: string
+          description: Seller-issued commercial invoice number
+        invoiceIssuedAt:
+          type: string
+          format: date-time
+        proformaInvoiceReference:
+          type: string
+          description: Proforma invoice number (pre-shipment, for credit terms)
+        invoiceUrl:
+          type: string
+          format: uri
+          description: URL to PDF invoice (access-controlled, time-limited)
+    ProcessingFee:
+      type: object
+      title: Payment Processing Fee
+      description: 'Per-transaction processing fee charged by the payment gateway or collecting party. Carried on
+        the PaymentDeclaration so both parties see the fee split.
+
+        '
+      additionalProperties: false
+      properties:
+        amount:
+          type: number
+          description: Processing fee amount in IDR
+        currency:
+          type: string
+          const: IDR
+        borneBy:
+          type: string
+          enum:
+          - BUYER
+          - SELLER
+          - LSP
+          - NETWORK
+          - SPLIT
+          description: Which party bears this fee
+        splitDetail:
+          type: array
+          description: When borneBy=SPLIT, how the fee is split
+          items:
+            type: object
+            properties:
+              party:
+                type: string
+                enum:
+                - BUYER
+                - SELLER
+                - LSP
+                - NETWORK
+              amount:
+                type: number

@@ -1,0 +1,76 @@
+iri: ion://policy/finance.dispute.commercial-bani
+
+version: "1.0.0"
+
+versionEffectiveFrom: "2026-05-01"
+
+category: DISPUTE
+
+subCategory: COMMERCIAL_ARBITRATION
+
+status: ratified
+
+ratifiedAt: "2026-04-15"
+
+displayText:
+  id: "Penyelesaian sengketa komersial — arbitrase BANI"
+  en: "Commercial dispute resolution — BANI arbitration"
+
+disputeType: COMMERCIAL_ARBITRATION
+
+applicableTo: COMMERCIAL_AND_BUSINESS_BORROWERS
+
+arbitrationBody: BANI
+
+baniFullName: "Badan Arbitrase Nasional Indonesia"
+
+arbitrationClause:
+  mustBeInLoanAgreement: true
+  applicableFor:
+    - business-loan
+    - mortgage
+    - revolving-credit
+
+arbitrationProcess:
+  initiationDeadlineYearsFromDispute: 5
+  arbitratorCount:
+    belowIDR1Billion: 1
+    atOrAboveIDR1Billion: 3
+  hearingLocationDefault: JAKARTA
+  languageOfProceedings: BAHASA_INDONESIA
+
+timelineSla:
+  claimFilingToHearingDays: 30
+  hearingToAwardDays: 180
+  maxTotalDays: 270
+
+award:
+  binding: true
+  appealAllowed: false
+  enforcementVia: PENGADILAN_NEGERI
+
+costAllocation:
+  arbitrationFeePaidBy: LOSING_PARTY
+  eachPartyBearsOwnLegalCosts: true
+
+alternativeResolution:
+  mediationBeforeArbitration: ENCOURAGED
+  mediationBody: BAPMI
+
+applicablePatterns:
+  - business-loan
+  - mortgage
+  - revolving-credit
+
+applicableLenderTypes:
+  - BANK_UMUM
+  - MULTIFINANCE
+
+regulatoryBasis:
+  - "UU 30/1999 tentang Arbitrase dan Alternatif Penyelesaian Sengketa"
+  - "Peraturan Prosedur BANI 2022"
+  - "OJK POJK 61/2020 tentang Lembaga Alternatif Penyelesaian Sengketa Sektor Jasa Keuangan"
+
+supersededBy: null
+
+deprecatedAt: null

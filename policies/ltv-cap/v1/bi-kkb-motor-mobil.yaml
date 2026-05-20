@@ -1,0 +1,76 @@
+iri: ion://policy/finance.ltv-cap.bi-kkb-motor-mobil
+
+version: "1.0.0"
+
+versionEffectiveFrom: "2026-05-01"
+
+category: LTV_CAP
+
+subCategory: VEHICLE_LOAN
+
+status: ratified
+
+ratifiedAt: "2026-04-15"
+
+displayText:
+  id: "Batas uang muka / LTV kredit kendaraan bermotor"
+  en: "Minimum down payment / LTV cap — vehicle loan (KKB)"
+
+loanType: KKB_KREDIT_KENDARAAN_BERMOTOR
+
+ltvCapDefinition:
+  formula: "loanAmount / vehicleOTRPrice × 100"
+  vehicleValuationBasis: ON_THE_ROAD_PRICE_OTR
+
+minimumDownPaymentTiers:
+  - category: MOTOR_BARU
+    vehicleType: MOTORCYCLE_NEW
+    minDpPercent: 20
+    maxLtvPercent: 80
+  - category: MOTOR_BEKAS
+    vehicleType: MOTORCYCLE_USED
+    minDpPercent: 25
+    maxLtvPercent: 75
+  - category: MOBIL_PENUMPANG_BARU
+    vehicleType: PASSENGER_CAR_NEW
+    minDpPercent: 20
+    maxLtvPercent: 80
+  - category: MOBIL_PENUMPANG_BEKAS
+    vehicleType: PASSENGER_CAR_USED
+    minDpPercent: 25
+    maxLtvPercent: 75
+  - category: KENDARAAN_PRODUKTIF_BARU
+    vehicleType: COMMERCIAL_VEHICLE_NEW
+    minDpPercent: 15
+    maxLtvPercent: 85
+    note: "Productive/commercial vehicles get lower DP requirement"
+  - category: KENDARAAN_PRODUKTIF_BEKAS
+    vehicleType: COMMERCIAL_VEHICLE_USED
+    minDpPercent: 20
+    maxLtvPercent: 80
+
+dpVerificationRequired: true
+
+dpVerificationMethod:
+  - BANK_TRANSFER_PROOF_TO_DEALER
+  - DEALER_RECEIPT_SIGNED
+
+dpCannotBeLoanFinanced: true
+
+bpkbCustody: HELD_BY_LENDER_UNTIL_FULL_REPAYMENT
+
+applicablePatterns:
+  - vehicle-loan
+
+applicableLenderTypes:
+  - BANK_UMUM
+  - MULTIFINANCE
+
+regulatoryBasis:
+  - "Peraturan Bank Indonesia No.20/8/PBI/2018 tentang Rasio LTV dan FTV"
+  - "SE BI No.20/5/DKMP tentang Penilaian Kualitas Aset"
+  - "OJK POJK 35/2018 tentang Penyelenggaraan Usaha Perusahaan Pembiayaan"
+
+supersededBy: null
+
+deprecatedAt: null

@@ -1,0 +1,16 @@
+{
+  "@context": "https://schema.ion.id/logistics/contract/v1/context.jsonld",
+  "@type": "ion:LogisticsContract",
+  "contractType": "PARCEL",
+  "origin": {
+    "id": "ADDR-JKT-001"
+  },
+  "destination": {
+    "id": "ADDR-SBY-001"
+  },
+  "serviceLevel": "REGULAR",
+  "agreedRate": {
+    "value": 27500,
+    "currency": "IDR"
+  }
+}

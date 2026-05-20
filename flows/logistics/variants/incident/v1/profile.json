@@ -1,0 +1,11 @@
+{
+  "id": "ion-logistics-variant-incident-v1",
+  "version": "1.0.0",
+  "status": "ready",
+  "sectorCode": "B",
+  "branchType": "incident",
+  "maintainer": "ION Council \u2014 Sector B Lead",
+  "type": "Variant",
+  "variantName": "incident",
+  "sector": "ion:logistics"
+}

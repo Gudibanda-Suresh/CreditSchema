@@ -1,0 +1,37 @@
+{
+  "@context": {
+    "ion": "https://schema.ion.id/logistics/participant-logistics/v1#",
+    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#"
+  },
+  "@graph": [
+    {
+      "@id": "ion:LogisticsParticipantAddendum",
+      "@type": "rdfs:Class",
+      "rdfs:label": "LogisticsParticipantAddendum",
+      "rdfs:comment": "Addendum to core/participant/v1 for logistics-specific participant attributes: PPJK customs-broker licence and Indonesian driver SIM fields.",
+      "rdfs:subClassOf": {
+        "@id": "beckn:Participant"
+      }
+    },
+    {
+      "@id": "ion:ppjkLicenceNumber",
+      "@type": "rdf:Property",
+      "rdfs:label": "ppjkLicenceNumber",
+      "rdfs:comment": "PPJK (Pengusaha Pengurusan Jasa Kepabeanan) customs-broker licence number. Required for participants acting in the CUSTOMS_BROKER role."
+    },
+    {
+      "@id": "ion:simNumber",
+      "@type": "rdf:Property",
+      "rdfs:label": "simNumber",
+      "rdfs:comment": "Indonesian driver SIM (Surat Izin Mengemudi) number. Required for participants acting in the DRIVER role."
+    },
+    {
+      "@id": "ion:simCategory",
+      "@type": "rdf:Property",
+      "rdfs:label": "simCategory",
+      "rdfs:comment": "SIM category: A, B_I, B_II, C, or D. Determines what vehicle classes the driver is licensed for."
+    }
+  ]
+}

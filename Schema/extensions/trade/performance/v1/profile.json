@@ -1,0 +1,40 @@
+{
+  "id": "ion-trade-performance-v1",
+  "version": "1.0.0",
+  "domain": "trade",
+  "name": "ION Trade Performance Extension (v1)",
+  "description": "Fulfilment tracking — agent, AWB, OTP, SLA, handling, installation scheduling.",
+  "packSchema": "./schema.json",
+  "jsonldContext": "./context.jsonld",
+  "attachmentPoints": {
+    "performanceAttributes": [
+      "TradePerformance"
+    ]
+  },
+  "extends": "beckn:Performance",
+  "stateMachines": "schema/extensions/trade/performance-states/v1/states.yaml",
+  "type": "AttributePack",
+  "indexing": {
+    "indexable": [
+      {
+        "path": "$.performanceMode"
+      },
+      {
+        "path": "$.sla"
+      }
+    ],
+    "filterable": [
+      {
+        "path": "$.performanceMode"
+      },
+      {
+        "path": "$.sla"
+      }
+    ],
+    "sortable": []
+  },
+  "minimalForDiscovery": [
+    "performanceMode",
+    "sla"
+  ]
+}

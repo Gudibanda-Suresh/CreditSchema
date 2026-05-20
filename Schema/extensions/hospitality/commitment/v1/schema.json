@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schema.ion.id/hospitality/commitment/v1/schema.json",
+  "title": "RestaurantCommitment",
+  "description": "ION Hospitality Restaurant Ordering \u2014 order line with customisations and dietary requests. Attaches to: Commitment.commitmentAttributes",
+  "type": "object",
+  "additionalProperties": true,
+  "allOf": [
+    {
+      "$ref": "https://schema.beckn.io/core/v2/schema/Attributes.json"
+    }
+  ]
+}

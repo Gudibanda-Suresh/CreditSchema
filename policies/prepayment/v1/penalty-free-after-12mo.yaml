@@ -1,0 +1,51 @@
+iri: ion://policy/finance.prepayment.penalty-free-after-12mo
+
+version: "1.0.0"
+
+versionEffectiveFrom: "2026-05-01"
+
+category: PREPAYMENT
+
+status: ratified
+
+ratifiedAt: "2026-04-15"
+
+displayText:
+  id: "Bebas penalti pelunasan setelah 12 bulan"
+  en: "Penalty-free early settlement after 12 months"
+
+prepaymentPenaltyRate: 0.01
+
+penaltyBasis: OUTSTANDING_PRINCIPAL
+
+penaltyFreeAfterMonths: 12
+
+penaltySchedule:
+  - monthsElapsed: "0–11"
+    penaltyRate: 0.01
+  - monthsElapsed: "12+"
+    penaltyRate: 0.00
+
+partialPrepaymentAllowed: true
+
+fullPrepaymentAllowed: true
+
+quoteValidityDays: 7
+
+applicablePatterns:
+  - personal-loan
+  - mortgage
+  - vehicle-loan
+  - business-loan
+
+applicableLenderTypes:
+  - BANK_UMUM
+  - BPR
+  - MULTIFINANCE
+
+regulatoryBasis:
+  - "OJK POJK 22/2023 Pasal 28"
+
+supersededBy: null
+
+deprecatedAt: null

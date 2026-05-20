@@ -1,0 +1,55 @@
+{
+  "@context": {
+    "ion": "https://schema.ion.id/hospitality/fnb-delivery/v1#",
+    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#"
+  },
+  "@graph": [
+    {
+      "@id": "ion:FnbMenuItem",
+      "@type": "rdfs:Class",
+      "rdfs:label": "FnbMenuItem",
+      "rdfs:comment": "Resource attributes for prepared food and beverage items available for delivery or self-pickup in the Hospitality sector.",
+      "rdfs:subClassOf": {
+        "@id": "beckn:Resource"
+      }
+    },
+    {
+      "@id": "ion:preparationTime",
+      "@type": "rdf:Property",
+      "rdfs:label": "preparationTime",
+      "rdfs:comment": "Time from order confirm to item ready for pickup or dispatch. ISO 8601 duration. Used for SLA computation and ETA display."
+    },
+    {
+      "@id": "ion:fnb",
+      "@type": "rdf:Property",
+      "rdfs:label": "fnb",
+      "rdfs:comment": "Food and beverage specific attributes: dietary classification (halal status), allergens, cuisine type, spice level, and nutritional information."
+    },
+    {
+      "@id": "ion:menuCategory",
+      "@type": "rdf:Property",
+      "rdfs:label": "menuCategory",
+      "rdfs:comment": "Menu section this item belongs to. Drives display order and grouping in buyer app menu screens."
+    },
+    {
+      "@id": "ion:customisationGroups",
+      "@type": "rdf:Property",
+      "rdfs:label": "customisationGroups",
+      "rdfs:comment": "Customisation groups for COMPOSED and WITH_EXTRAS resources. Each group defines choices the buyer makes at order time (e.g. size, spice level, toppings)."
+    },
+    {
+      "@id": "ion:quantity",
+      "@type": "rdf:Property",
+      "rdfs:label": "quantity",
+      "rdfs:comment": "Quantity sold per order line. Unit options include portion, piece, cup, bowl, plate, set."
+    },
+    {
+      "@id": "ion:itemRating",
+      "@type": "rdf:Property",
+      "rdfs:label": "itemRating",
+      "rdfs:comment": "Aggregate item rating 1-5. Maintained by the BPP from verified purchase ratings."
+    }
+  ]
+}

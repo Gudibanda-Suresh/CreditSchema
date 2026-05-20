@@ -1,0 +1,502 @@
+{
+  "context": {
+    "action": "on_confirm",
+    "version": "2.0.0",
+    "networkId": "ion.id/logistics",
+    "domain": "ion:logistics",
+    "timestamp": "2026-01-09T08:17:30.000Z",
+    "ttl": "PT30S",
+    "messageId": "d4e5f6a7-b8c9-4d0e-af1b-2c3d4e5f6a7b",
+    "transactionId": "f4b9b8f0-2a3c-4f1e-9c4f-0e6a8b9b8f0a",
+    "bapId": "buyer-app.pidge.in",
+    "bapUri": "https://api.buyer.pidge.in/ion",
+    "bppId": "lsp.pidge.in",
+    "bppUri": "https://api.lsp.pidge.in/ion",
+    "schemaContext": [
+      "https://schema.ion.id/logistics/v1/commitment/context.jsonld",
+      "https://schema.ion.id/logistics/v1/consideration/context.jsonld",
+      "https://schema.ion.id/logistics/v1/performance/context.jsonld",
+      "https://schema.ion.id/logistics/v1/participant/context.jsonld",
+      "https://schema.ion.id/logistics/v1/payment/context.jsonld",
+      "https://schema.ion.id/logistics/v1/contract/context.jsonld"
+    ]
+  },
+  "message": {
+    "contract": {
+      "id": "PG-CONT-20260109-7842",
+      "descriptor": {
+        "name": "Multi-Stop P2P Logistics Shipment"
+      },
+      "status": {
+        "descriptor": {
+          "code": "ACTIVE",
+          "shortDesc": "Confirmed"
+        }
+      },
+      "commitments": [
+        {
+          "id": "cmmt-p2p-001",
+          "status": {
+            "descriptor": {
+              "code": "ACTIVE",
+              "shortDesc": "Active"
+            }
+          },
+          "resources": [
+            {
+              "id": "res-p2p-service-001",
+              "quantity": 1,
+              "descriptor": {
+                "name": "P2P Multi-Stop Delivery Service",
+                "shortDesc": "Point-to-point multi-stop delivery"
+              },
+              "resourceAttributes": {
+                "@context": "https://schema.ion.id/logistics/v1/resource/context.jsonld",
+                "@type": "ion:LogisticsShipment",
+                "shipmentType": "FORWARD",
+                "routingTopology": "P2P_MULTI_STOP",
+                "serviceability": { "available": true },
+                "sla": {
+                  "tat": "PT8H",
+                  "pickupTime": "PT30M"
+                },
+                "distance": { "value": 1450, "unit": "km" },
+                "pricingValidUntil": "2026-01-09T11:00:00.000Z"
+              }
+            }
+          ],
+          "offer": {
+            "id": "offer-p2p-multistop-001",
+            "descriptor": {
+              "name": "Multi-Stop P2P Delivery",
+              "shortDesc": "MULTISTOP_P2P"
+            },
+            "provider": {
+              "id": "pidge-lsp-001",
+              "descriptor": {
+                "name": "Pidge",
+                "shortDesc": "Pidge Logistics Service Provider"
+              }
+            },
+            "resourceIds": ["res-p2p-service-001"],
+            "considerationIds": ["cons-logistics-001"],
+            "validity": {
+              "startDate": "2026-01-09T08:15:00.000Z",
+              "endDate": "2026-01-09T11:00:00.000Z"
+            }
+          },
+          "commitmentAttributes": {
+            "@context": "https://schema.ion.id/logistics/v1/commitment/context.jsonld",
+            "@type": "ion:LogisticsCommitment",
+            "lineId": "L1",
+            "resourceId": "res-p2p-service-001",
+            "offerId": "offer-p2p-multistop-001",
+            "packageCount": 2,
+            "packages": [
+              {
+                "id": "pkg-001",
+                "descriptor": {
+                  "name": "Electronics Box",
+                  "shortDesc": "PKG-ELEC-001"
+                },
+                "dimensions": {
+                  "length": { "value": 40, "unit": "cm" },
+                  "breadth": { "value": 35, "unit": "cm" },
+                  "height": { "value": 20, "unit": "cm" }
+                },
+                "weight": { "value": 3.8, "unit": "kg" },
+                "fragile": true,
+                "dangerousGoods": false,
+                "goods": [
+                  {
+                    "id": "good-001",
+                    "descriptor": { "name": "Dell XPS 15 Laptop", "shortDesc": "SKU-DXP15-001" },
+                    "quantity": { "count": 1, "unit": "unit" },
+                    "weight": { "value": 2.0, "unit": "kg" },
+                    "dimensions": {
+                      "length": { "value": 37, "unit": "cm" },
+                      "breadth": { "value": 25, "unit": "cm" },
+                      "height": { "value": 2, "unit": "cm" }
+                    },
+                    "volumetricWeight": { "value": 2.3, "unit": "kg" },
+                    "declaredValue": { "currency": "INR", "value": 85000 },
+                    "hsCode": "84713000"
+                  },
+                  {
+                    "id": "good-002",
+                    "descriptor": { "name": "Laptop Charger", "shortDesc": "SKU-DXP15-CHG" },
+                    "quantity": { "count": 1, "unit": "unit" },
+                    "weight": { "value": 0.4, "unit": "kg" },
+                    "dimensions": {
+                      "length": { "value": 15, "unit": "cm" },
+                      "breadth": { "value": 10, "unit": "cm" },
+                      "height": { "value": 5, "unit": "cm" }
+                    },
+                    "volumetricWeight": { "value": 0.4, "unit": "kg" },
+                    "declaredValue": { "currency": "INR", "value": 3500 },
+                    "hsCode": "85044000"
+                  }
+                ]
+              },
+              {
+                "id": "pkg-002",
+                "descriptor": { "name": "Accessories Pouch", "shortDesc": "PKG-ACC-001" },
+                "dimensions": {
+                  "length": { "value": 20, "unit": "cm" },
+                  "breadth": { "value": 15, "unit": "cm" },
+                  "height": { "value": 10, "unit": "cm" }
+                },
+                "weight": { "value": 0.5, "unit": "kg" },
+                "fragile": false,
+                "dangerousGoods": false,
+                "goods": [
+                  {
+                    "id": "good-003",
+                    "descriptor": { "name": "Laptop Bag", "shortDesc": "SKU-LBAG-001" },
+                    "quantity": { "count": 1, "unit": "unit" },
+                    "weight": { "value": 0.5, "unit": "kg" },
+                    "dimensions": {
+                      "length": { "value": 45, "unit": "cm" },
+                      "breadth": { "value": 35, "unit": "cm" },
+                      "height": { "value": 5, "unit": "cm" }
+                    },
+                    "volumetricWeight": { "value": 0.4, "unit": "kg" },
+                    "declaredValue": { "currency": "INR", "value": 2500 },
+                    "hsCode": "42029200"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "consideration": [
+        {
+          "id": "cons-logistics-001",
+          "status": {
+            "descriptor": {
+              "code": "COMMITTED",
+              "shortDesc": "Committed"
+            }
+          },
+          "considerationAttributes": {
+            "@context": "https://schema.ion.id/logistics/v1/consideration/context.jsonld",
+            "@type": "ion:LogisticsConsideration",
+            "breakup": [
+              {
+                "titleType": "FREIGHT_BASE",
+                "amount": 80,
+                "currency": "INR"
+              },
+              {
+                "titleType": "DISTANCE_CHARGE",
+                "amount": 40,
+                "currency": "INR"
+              },
+              {
+                "titleType": "WEIGHT_CHARGE",
+                "amount": 30,
+                "currency": "INR"
+              },
+              {
+                "titleType": "MULTI_STOP_FEE",
+                "amount": 50,
+                "currency": "INR"
+              },
+              {
+                "titleType": "PPN_TAX",
+                "amount": 36,
+                "currency": "INR",
+                "ppnRate": 0.18,
+                "applicableOn": ["FREIGHT_BASE", "DISTANCE_CHARGE", "WEIGHT_CHARGE", "MULTI_STOP_FEE"]
+              },
+              {
+                "titleType": "COD_FEE",
+                "stopRef": "stop-002",
+                "amount": 50,
+                "currency": "INR"
+              },
+              {
+                "titleType": "COD_FEE",
+                "stopRef": "stop-003",
+                "amount": 1700,
+                "currency": "INR"
+              }
+            ],
+            "totalAmount": 1986,
+            "currency": "INR",
+            "conditionalCharges": {
+              "cancellationSchedule": [
+                { "triggerState": "PENDING", "fee": { "currency": "INR", "value": 0 } },
+                { "triggerState": "AGENT_ASSIGNED", "fee": { "currency": "INR", "value": 50 } },
+                { "triggerState": "RIDER_REACHED_PICKUP", "fee": { "currency": "INR", "value": 100 } },
+                { "triggerState": "ORDER_PICKED_UP", "fee": { "currency": "INR", "value": 200 } }
+              ],
+              "waitingSchedule": [
+                { "startInMinutes": 0, "endInMinutes": 15, "fee": { "currency": "INR", "value": 0 } },
+                { "startInMinutes": 15, "endInMinutes": 30, "fee": { "currency": "INR", "value": 50 } },
+                { "startInMinutes": 30, "endInMinutes": 60, "fee": { "currency": "INR", "value": 100 } },
+                { "startInMinutes": 60, "endInMinutes": 120, "fee": { "currency": "INR", "value": 200 } }
+              ],
+              "rtoBreakup": [
+                { "titleType": "FREIGHT_BASE", "amount": 60, "currency": "INR" },
+                { "titleType": "DISTANCE_CHARGE", "amount": 30, "currency": "INR" },
+                { "titleType": "PPN_TAX", "amount": 16, "currency": "INR", "ppnRate": 0.18 }
+              ],
+              "rtoTotal": { "currency": "INR", "value": 106 }
+            }
+          }
+        }
+      ],
+      "participants": [
+        {
+          "id": "participant-bap-001",
+          "descriptor": {
+            "name": "Pidge Buyer",
+            "shortDesc": "Buyer Application Platform"
+          },
+          "participantAttributes": {
+            "@context": "https://schema.ion.id/logistics/v1/participant/context.jsonld",
+            "@type": "ion:LogisticsParticipantAddendum",
+            "role": "BAP",
+            "displayName": "Pidge Buyer",
+            "telephone": "9999999999",
+            "email": "buyer@pidge.in",
+            "billingAddress": {
+              "streetAddress": "Plot 379/380, Iffco Chowk",
+              "addressLocality": "Sector-29, Gurgaon",
+              "addressRegion": "Haryana",
+              "postalCode": "122001",
+              "addressCountry": "IND"
+            }
+          }
+        },
+        {
+          "id": "participant-bpp-001",
+          "descriptor": {
+            "name": "Pidge",
+            "shortDesc": "Pidge Logistics Service Provider"
+          },
+          "participantAttributes": {
+            "@context": "https://schema.ion.id/logistics/v1/participant/context.jsonld",
+            "@type": "ion:LogisticsParticipantAddendum",
+            "role": "PROVIDER",
+            "subscriberId": "lsp.pidge.in"
+          }
+        }
+      ],
+      "performance": [
+        {
+          "id": "stop-001",
+          "status": {
+            "descriptor": {
+              "code": "READY_FOR_PICKUP",
+              "shortDesc": "Pickup pending"
+            }
+          },
+          "commitmentIds": ["cmmt-p2p-001"],
+          "performanceAttributes": {
+            "@context": "https://schema.ion.id/logistics/v1/performance/context.jsonld",
+            "@type": "ion:LogisticsPerformance",
+            "sequence": 1,
+            "type": "PICKUP",
+            "awbNumber": "AWB-PG-20260109-7842",
+            "awbAllocationMode": "BPP_ASSIGNED",
+            "routingTopology": "P2P_MULTI_STOP",
+            "location": {
+              "gps": { "latitude": "19.0760", "longitude": "72.8777" },
+              "address": {
+                "name": "Pidge Seller Warehouse",
+                "streetAddress": "Plot 12, MIDC Industrial Area",
+                "addressLocality": "Andheri East",
+                "addressRegion": "Maharashtra",
+                "postalCode": "400093",
+                "addressCountry": "IND",
+                "instructionsToReach": "Gate B, call security on arrival"
+              }
+            },
+            "contact": {
+              "name": "Pidge Seller",
+              "phoneCountryCode": "+91",
+              "phone": "9191919191",
+              "email": "seller@pidge.in"
+            },
+            "scheduledTime": "2026-01-09T08:40:00.000Z",
+            "timeWindow": {
+              "start": "2026-01-09T08:40:00.000Z",
+              "end": "2026-01-09T09:10:00.000Z"
+            },
+            "instructions": {
+              "shortDesc": "Gate code: 782666",
+              "longDesc": "Fragile electronics. Call 30 min before. Use side entrance."
+            },
+            "proofOfPickupType": "OTP",
+            "verification": {
+              "type": "OTP",
+              "otp": "482991",
+              "status": "PENDING"
+            },
+            "packageIds": ["pkg-001", "pkg-002"],
+            "agentDetails": {
+              "name": "Pidge Agent",
+              "phone": "9876543210",
+              "vehicle": {
+                "category": "BIKE",
+                "registration": "MH01AB1234"
+              }
+            },
+            "tracking": {
+              "url": "https://tracking.pidge.in/PG-CONT-20260109-7842",
+              "status": "active"
+            },
+            "shippingLabelUrl": "https://api.lsp.pidge.in/labels/AWB-PG-20260109-7842.pdf",
+            "executionLogs": [
+              {
+                "type": "ORDER_CONFIRMED",
+                "timestamp": "2026-01-09T08:17:00.000Z"
+              },
+              {
+                "type": "RIDER_ASSIGNED",
+                "timestamp": "2026-01-09T08:17:20.000Z",
+                "agent": {
+                  "name": "Pidge Agent",
+                  "phone": "9876543210"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "id": "stop-002",
+          "status": {
+            "descriptor": {
+              "code": "PENDING",
+              "shortDesc": "Drop pending"
+            }
+          },
+          "commitmentIds": ["cmmt-p2p-001"],
+          "performanceAttributes": {
+            "@context": "https://schema.ion.id/logistics/v1/performance/context.jsonld",
+            "@type": "ion:LogisticsPerformance",
+            "sequence": 2,
+            "type": "DROP",
+            "location": {
+              "gps": { "latitude": "18.5204", "longitude": "73.8567" },
+              "address": {
+                "name": "Pidge Buyer — Pune",
+                "streetAddress": "Plot 45, Hinjewadi Phase 1",
+                "addressLocality": "Hinjewadi",
+                "addressRegion": "Maharashtra",
+                "postalCode": "411057",
+                "addressCountry": "IND",
+                "instructionsToReach": "Building A, 3rd floor"
+              }
+            },
+            "contact": {
+              "name": "Pidge Buyer Pune",
+              "phoneCountryCode": "+91",
+              "phone": "9292929292",
+              "email": "buyer.pune@pidge.in"
+            },
+            "scheduledTime": "2026-01-09T11:40:00.000Z",
+            "timeWindow": {
+              "start": "2026-01-09T11:40:00.000Z",
+              "end": "2026-01-09T12:40:00.000Z"
+            },
+            "instructions": {
+              "shortDesc": "Call on arrival",
+              "longDesc": "Deliver to reception. Scan barcode before handover."
+            },
+            "proofOfDeliveryType": "BARCODE",
+            "codAmount": { "currency": "INR", "value": 2500 },
+            "verification": {
+              "type": "BARCODE",
+              "barcode": "BC-PG-STOP2-20260109-7842",
+              "status": "PENDING"
+            },
+            "packageIds": ["pkg-002"]
+          }
+        },
+        {
+          "id": "stop-003",
+          "status": {
+            "descriptor": {
+              "code": "PENDING",
+              "shortDesc": "Drop pending"
+            }
+          },
+          "commitmentIds": ["cmmt-p2p-001"],
+          "performanceAttributes": {
+            "@context": "https://schema.ion.id/logistics/v1/performance/context.jsonld",
+            "@type": "ion:LogisticsPerformance",
+            "sequence": 3,
+            "type": "DROP",
+            "location": {
+              "gps": { "latitude": "12.9716", "longitude": "77.5946" },
+              "address": {
+                "name": "Pidge Buyer — Bengaluru",
+                "streetAddress": "No. 27, Lavelle Road",
+                "addressLocality": "Lavelle Road",
+                "addressRegion": "Karnataka",
+                "postalCode": "560001",
+                "addressCountry": "IND",
+                "instructionsToReach": "Ground floor reception"
+              }
+            },
+            "contact": {
+              "name": "Pidge Buyer Bengaluru",
+              "phoneCountryCode": "+91",
+              "phone": "9898989898",
+              "email": "buyer.blr@pidge.in"
+            },
+            "scheduledTime": "2026-01-09T16:00:00.000Z",
+            "timeWindow": {
+              "start": "2026-01-09T16:00:00.000Z",
+              "end": "2026-01-09T18:00:00.000Z"
+            },
+            "instructions": {
+              "shortDesc": "Fragile — handle carefully",
+              "longDesc": "Electronics package. Collect OTP before handover."
+            },
+            "proofOfDeliveryType": "OTP",
+            "codAmount": { "currency": "INR", "value": 85000 },
+            "verification": {
+              "type": "OTP",
+              "otp": "739264",
+              "status": "PENDING"
+            },
+            "packageIds": ["pkg-001"]
+          }
+        }
+      ],
+      "settlements": [
+        {
+          "id": "settle-001",
+          "considerationId": "cons-logistics-001",
+          "status": "COMMITTED",
+          "settlementAttributes": {
+            "@context": "https://schema.ion.id/logistics/v1/payment/context.jsonld",
+            "@type": "ion:LogisticsPaymentAttributes",
+            "method": "COD",
+            "paymentRail": "CASH",
+            "collectedBy": "BPP",
+            "paymentTiming": "POSTPAID",
+            "status": "NOT-PAID",
+            "paymentRef": "PAY-REF-20260109-001"
+          }
+        }
+      ],
+      "contractAttributes": {
+        "@context": "https://schema.ion.id/logistics/v1/contract/context.jsonld",
+        "@type": "ion:LogisticsContract",
+        "linkedOrderId": "ORD-PIDGE-2439946",
+        "linkedOrderProvider": {
+          "id": "store-pidge-001",
+          "name": "Pidge Seller Store"
+        },
+        "createdAt": "2026-01-09T08:17:00.000Z",
+        "updatedAt": "2026-01-09T08:17:30.000Z"
+      }
+    }
+  }
+}

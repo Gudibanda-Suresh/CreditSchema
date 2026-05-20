@@ -1,0 +1,16 @@
+{
+  "@context": "https://schema.ion.id/logistics/commitment/v1/context.jsonld",
+  "@type": "ion:LogisticsCommitment",
+  "serviceLevel": "REGULAR",
+  "quantity": {
+    "value": 1,
+    "unit": "package"
+  },
+  "weight": {
+    "value": 2.5,
+    "unit": "kg"
+  },
+  "pickupAddress": {
+    "id": "ADDR-JKT-001"
+  }
+}

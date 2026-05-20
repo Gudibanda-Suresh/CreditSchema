@@ -1,0 +1,306 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schema.ion.id/logistics/provider/v1",
+  "title": "LogisticsProvider",
+  "type": "object",
+  "properties": {
+    "catalogVersion": {
+      "type": "string",
+      "description": "Semver catalog version. Incremented on every catalog publish. BAPs use this to detect changes and trigger allocation recompute.\n"
+    },
+    "catalogPublishedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when this catalog version was published"
+    },
+    "catalogValidFrom": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp from which this catalog's offers are bindable. May be in the future for pre-announced rate changes.\n"
+    },
+    "catalogValidUntil": {
+      "type": "string",
+      "format": "date-time",
+      "description": "If present, catalog supersedes at this time. Typically absent — catalog remains valid until a newer version is published.\n"
+    },
+    "rateCardEffectiveFrom": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Sometimes rate card effective date differs from catalog publish date (e.g. publish new rates a week ahead of effective date for transparency).\n"
+    },
+    "rateCardEffectiveUntil": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "catalogChangelogUrl": {
+      "type": "string",
+      "format": "uri",
+      "description": "URL to human-readable changelog describing what changed vs prior version"
+    },
+    "catalogDeltaReference": {
+      "type": "string",
+      "description": "Reference to the prior catalog version. BAPs can request delta from /catalog/pull?from={catalogDeltaReference} to get only changed offers.\n"
+    },
+    "nibRegistered": {
+      "type": "boolean",
+      "description": "NIB (Nomor Induk Berusaha) business registration status"
+    },
+    "nibNumber": {
+      "type": "string",
+      "description": "NIB number for registered logistics entities",
+      "x-ion-conditional": true
+    },
+    "siupNumber": {
+      "type": "string",
+      "description": "SIUP (Surat Izin Usaha Perdagangan) trading licence number",
+      "x-ion-conditional": true
+    },
+    "alfiMembership": {
+      "type": "boolean",
+      "description": "ALFI (Asosiasi Logistik dan Forwarder Indonesia) member status"
+    },
+    "asperindoMembership": {
+      "type": "boolean",
+      "description": "ASPERINDO (express, postal, logistics association) member status"
+    },
+    "providerCategory": {
+      "type": "string",
+      "enum": [
+        "CARRIER_DIRECT",
+        "FREIGHT_FORWARDER",
+        "AGGREGATOR",
+        "MARKETPLACE_LOGISTICS",
+        "3PL",
+        "4PL",
+        "WAREHOUSE_OPERATOR"
+      ]
+    },
+    "aggregatorModel": {
+      "type": "boolean",
+      "description": "True if this BPP aggregates capacity from multiple LSPs"
+    },
+    "patternsSupported": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "hyperlocal",
+          "parcel",
+          "freight",
+          "roro",
+          "cross-border",
+          "warehouse"
+        ]
+      }
+    },
+    "modesSupported": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "motorcycle",
+          "bicycle",
+          "car",
+          "van",
+          "truck",
+          "rail",
+          "sea",
+          "air",
+          "river",
+          "ferry"
+        ]
+      }
+    },
+    "coverage": {
+      "type": "array",
+      "description": "Geographic coverage declarations",
+      "items": {
+        "type": "object",
+        "properties": {
+          "provinsiCode": {
+            "type": "string"
+          },
+          "cityCode": {
+            "type": "string"
+          },
+          "pincodes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "coverageType": {
+            "type": "string",
+            "enum": [
+              "PICKUP",
+              "DELIVERY",
+              "BOTH"
+            ]
+          }
+        }
+      }
+    },
+    "coldChainCertified": {
+      "type": "boolean",
+      "description": "Cold chain handling capability"
+    },
+    "coldChainTemperatureZones": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "FROZEN",
+          "CHILLED",
+          "AMBIENT",
+          "CONTROLLED_ROOM"
+        ]
+      },
+      "x-ion-conditional": true
+    },
+    "hazmatCertified": {
+      "type": "boolean",
+      "description": "Dangerous goods handling certification"
+    },
+    "hazmatClasses": {
+      "type": "array",
+      "description": "IATA/IMO dangerous goods classes supported",
+      "items": {
+        "type": "string"
+      },
+      "x-ion-conditional": true
+    },
+    "highValueCapable": {
+      "type": "boolean",
+      "description": "Capable of handling high-declared-value shipments with enhanced security"
+    },
+    "beaCukaiLicenceNumber": {
+      "type": "string",
+      "description": "PPJK (customs broker) licence for cross-border providers"
+    },
+    "operatingHours": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "day": {
+            "type": "string",
+            "enum": [
+              "MON",
+              "TUE",
+              "WED",
+              "THU",
+              "FRI",
+              "SAT",
+              "SUN",
+              "PUBLIC_HOLIDAY"
+            ]
+          },
+          "opens": {
+            "type": "string",
+            "format": "time"
+          },
+          "closes": {
+            "type": "string",
+            "format": "time"
+          }
+        }
+      }
+    },
+    "holidayCalendar": {
+      "type": "array",
+      "description": "Dates when no service is provided",
+      "items": {
+        "type": "string",
+        "format": "date"
+      }
+    },
+    "pickupCutoffTimes": {
+      "type": "array",
+      "description": "Latest time to request pickup for same-day or next-day dispatch per corridor",
+      "items": {
+        "type": "object",
+        "properties": {
+          "corridor": {
+            "type": "string"
+          },
+          "serviceLevel": {
+            "type": "string"
+          },
+          "cutoffTime": {
+            "type": "string",
+            "format": "time"
+          }
+        }
+      }
+    },
+    "fleetType": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "OWN_FLEET",
+          "PARTNER_FLEET",
+          "CROWDSOURCED",
+          "DEDICATED_PARTNER"
+        ]
+      }
+    },
+    "maxDeliveryRadiusKm": {
+      "type": "number",
+      "description": "Maximum service radius for hyperlocal providers"
+    },
+    "warehouseLocations": {
+      "type": "array",
+      "description": "For warehouse providers",
+      "items": {
+        "type": "object",
+        "properties": {
+          "locationId": {
+            "type": "string"
+          },
+          "address": {
+            "type": "object"
+          },
+          "warehouseType": {
+            "type": "string",
+            "enum": [
+              "BONDED",
+              "NON_BONDED",
+              "COLD_STORAGE",
+              "FULFILMENT_CENTRE",
+              "DARK_STORE",
+              "CROSS_DOCK"
+            ]
+          },
+          "totalCapacityCbm": {
+            "type": "number"
+          },
+          "bondedStatus": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "fwaApplicable": {
+      "type": "boolean",
+      "description": "Whether this provider accepts Framework Agreement-governed transactions"
+    }
+  },
+  "required": [
+    "catalogVersion",
+    "catalogPublishedAt",
+    "catalogValidFrom",
+    "nibRegistered",
+    "providerCategory",
+    "patternsSupported",
+    "modesSupported",
+    "coverage",
+    "operatingHours"
+  ],
+  "additionalProperties": true,
+  "allOf": [
+    {
+      "$ref": "../../../../core/v2/api/v2.0.0/beckn.yaml#/components/schemas/Attributes"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "id": "ion-logistics-variant-weight-dispute-v1",
+  "version": "1.0.0",
+  "status": "ready",
+  "sectorCode": "B",
+  "branchType": "weight-dispute",
+  "maintainer": "ION Council \u2014 Sector B Lead",
+  "type": "Variant",
+  "variantName": "weight-dispute",
+  "sector": "ion:logistics"
+}

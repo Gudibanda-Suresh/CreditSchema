@@ -1,0 +1,239 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schema.ion.id/logistics/consideration/v1",
+  "title": "LogisticsConsideration",
+  "type": "object",
+  "properties": {
+    "breakup": {
+      "type": "array",
+      "description": "Line-item financial breakdown. Each entry is one charge type.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "titleType": {
+            "type": "string",
+            "enum": [
+              "FREIGHT_BASE",
+              "MINIMUM_CHARGE",
+              "COD_COLLECTION_FEE",
+              "COD_HANDLING_FEE",
+              "COD_CONVENIENCE_FEE",
+              "COD_CHARGE",
+              "FUEL_SURCHARGE",
+              "PEAK_SEASON_SURCHARGE",
+              "EMERGENCY_BUNKER_SURCHARGE",
+              "CURRENCY_ADJUSTMENT_FACTOR",
+              "LOW_SULPHUR_SURCHARGE",
+              "SECURITY_SURCHARGE",
+              "CHASSIS_FEE",
+              "DEMURRAGE",
+              "DETENTION",
+              "TERMINAL_HANDLING_CHARGE",
+              "DOCUMENTATION_FEE",
+              "BILL_OF_LADING_FEE",
+              "CONTAINER_CLEANING_FEE",
+              "MULTI_STOP_PICKUP_FEE",
+              "MULTI_STOP_DELIVERY_FEE",
+              "SIGNATURE_ON_DELIVERY_FEE",
+              "INSIDE_DELIVERY_FEE",
+              "LIFTGATE_DELIVERY_FEE",
+              "RESIDENTIAL_DELIVERY_FEE",
+              "ARMED_ESCORT_FEE",
+              "WAITING_TIME_FEE",
+              "REDELIVERY_FEE",
+              "HANDLING_FEE",
+              "COLD_CHAIN_PREMIUM",
+              "HAZMAT_SURCHARGE",
+              "REEFER_POWER_FEE",
+              "REMOTE_AREA_SURCHARGE",
+              "OVERSIZE_SURCHARGE",
+              "OVERWEIGHT_SURCHARGE",
+              "HIGH_VALUE_DECLARATION_FEE",
+              "INSURANCE_PREMIUM",
+              "WAR_RISK_PREMIUM",
+              "STRIKE_RISK_PREMIUM",
+              "CUSTOMS_DUTY",
+              "CUSTOMS_HANDLING_FEE",
+              "INATRADE_PERMIT_FEE",
+              "FUMIGATION_FEE",
+              "PHYTOSANITARY_FEE",
+              "VALUE_ADDED_SERVICE_FEE",
+              "PICK_PACK_FEE",
+              "STORAGE_FEE",
+              "QC_INSPECTION_FEE",
+              "KITTING_FEE",
+              "LABELLING_FEE",
+              "PACKAGING_FEE",
+              "RETURNS_PROCESSING_FEE",
+              "RE_ATTEMPT_FEE",
+              "FAILED_PICKUP_FEE",
+              "RETURN_TO_SENDER_FEE",
+              "WEIGHT_DIFF_ADJUSTMENT",
+              "CREDIT_NOTE",
+              "DISCOUNT",
+              "VOLUME_REBATE",
+              "SLA_REBATE",
+              "PAYMENT_PROCESSING_FEE",
+              "PPN_TAX",
+              "PPNBM_TAX",
+              "PPN_DIBEBASKAN_CREDIT",
+              "PPH_23_WITHHOLDING",
+              "STAMP_DUTY"
+            ]
+          },
+          "amount": {
+            "type": "number"
+          },
+          "currency": {
+            "type": "string",
+            "default": "IDR"
+          },
+          "ppnRate": {
+            "type": "number",
+            "description": "PPN rate actually charged on this line (decimal fraction). Source applicable rate from current DJP/PMK regulation — current standard is 0.11 per PMK 131/2024.\n",
+            "x-ion-conditional": true
+          }
+        }
+      }
+    },
+    "totalAmount": {
+      "type": "number"
+    },
+    "currency": {
+      "type": "string",
+      "default": "IDR"
+    },
+    "freightBase": {
+      "type": "number",
+      "description": "Base freight charge before surcharges"
+    },
+    "fuelSurcharge": {
+      "type": "number",
+      "description": "Fuel surcharge amount (computed from offer's fuelSurchargeFormula)"
+    },
+    "fuelSurchargeRate": {
+      "type": "number",
+      "description": "Applied fuel surcharge rate"
+    },
+    "codCharge": {
+      "type": "number",
+      "description": "COD collection fee charged by the LSP"
+    },
+    "codAmountCollected": {
+      "type": "number",
+      "description": "Actual COD amount collected at delivery"
+    },
+    "codRemittanceAmount": {
+      "type": "number",
+      "description": "Net amount remitted to BAP after COD charges"
+    },
+    "codRemittanceBatchRef": {
+      "type": "string"
+    },
+    "codRemittanceTimestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "codRemittanceMethod": {
+      "type": "string",
+      "enum": [
+        "BANK_TRANSFER",
+        "VIRTUAL_ACCOUNT",
+        "QRIS"
+      ]
+    },
+    "insurancePremium": {
+      "type": "number"
+    },
+    "insuranceCoverageAmount": {
+      "type": "number",
+      "description": "Amount covered by insurance per shipment"
+    },
+    "dutyEstimate": {
+      "type": "number",
+      "description": "Estimated customs duty (from /on_select)"
+    },
+    "taxEstimate": {
+      "type": "number",
+      "description": "Estimated import tax (from /on_select)"
+    },
+    "actualDuty": {
+      "type": "number",
+      "description": "Actual customs duty (from import customs cleared event)"
+    },
+    "actualTax": {
+      "type": "number",
+      "description": "Actual import tax applied"
+    },
+    "revisedAmount": {
+      "type": "number",
+      "description": "BPP's proposed revised total after weight discrepancy"
+    },
+    "revisionBreakup": {
+      "type": "array",
+      "description": "Breakup of the revised amount",
+      "items": {
+        "type": "object",
+        "properties": {
+          "titleType": {
+            "type": "string"
+          },
+          "originalAmount": {
+            "type": "number"
+          },
+          "revisedAmount": {
+            "type": "number"
+          },
+          "diff": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "weightDiffAdjustment": {
+      "type": "number",
+      "description": "Additional charge (or refund) from weight discrepancy resolution"
+    },
+    "addressChangeSurcharge": {
+      "type": "number",
+      "description": "Surcharge when delivery zone changes due to address correction"
+    },
+    "rescheduleFee": {
+      "type": "number"
+    },
+    "failedPickupFee": {
+      "type": "number"
+    },
+    "storageFee": {
+      "type": "number",
+      "description": "Periodic storage fee per billing cycle"
+    },
+    "pickPackFee": {
+      "type": "number",
+      "description": "Per-unit pick and pack fee"
+    },
+    "valueAddedServiceFee": {
+      "type": "number",
+      "description": "Aggregated value-added services charge"
+    },
+    "ppnRate": {
+      "type": "number",
+      "description": "PPN (Pajak Pertambahan Nilai) rate applied to applicable charges. Source applicable rate from current DJP/PMK regulation — current standard is 0.11 (11%) per PMK 131/2024.\n"
+    },
+    "ppnAmount": {
+      "type": "number",
+      "description": "Computed PPN amount",
+      "x-ion-conditional": true
+    }
+  },
+  "required": [
+    "breakup",
+    "totalAmount"
+  ],
+  "additionalProperties": true,
+  "allOf": [
+    {
+      "$ref": "../../../../core/v2/api/v2.0.0/beckn.yaml#/components/schemas/Attributes"
+    }
+  ]
+}
