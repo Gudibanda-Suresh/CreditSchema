@@ -65,7 +65,7 @@ components:
           example: "+6281234567890"
       x-ion-closed-extensions: false
       allOf:
-        - $ref: ../../../../../core/v2/api/v2.0.0/beckn.yaml#/components/schemas/Attributes
+        - $ref: ../../../../core/v2/api/v2.0.0/beckn.yaml#/components/schemas/Attributes
 
     Lender:
       type: object
@@ -99,5 +99,5 @@ components:
           example: "Dewi Rahmawati"
       x-ion-closed-extensions: false
       allOf:
-        - $ref: ../../../../../core/v2/api/v2.0.0/beckn.yaml#/components/schemas/Attributes
+        - $ref: ../../../../core/v2/api/v2.0.0/beckn.yaml#/components/schemas/Attributes
 
