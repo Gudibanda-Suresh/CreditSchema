@@ -68,5 +68,5 @@ components:
           description: Actual payment receipt date. Populated when status is PAID, OVERDUE, or PARTIAL.
       x-ion-closed-extensions: false
       allOf:
-        - $ref: ../../../../../core/v2/api/v2.0.0/beckn.yaml#/components/schemas/Attributes
+        - $ref: ../../../../core/v2/api/v2.0.0/beckn.yaml#/components/schemas/Attributes
 
