@@ -1,0 +1,21 @@
+{
+  "$schema": "https://schema.ion.id/finance/performance/v1/schema.json",
+  "@context": "https://schema.ion.id/finance/performance/v1/context.jsonld",
+  "description": "Example: performance entry for a KPR disbursement via notary escrow to the property developer. Target 14 business days; actual disbursement to developer on 2026-04-08 after AJB and APHT completion.",
+  "performance": [
+    {
+      "id": "PERF-KPR-001",
+      "status": {
+        "code": "COMPLETE",
+        "description": "Mortgage principal released from notary escrow to developer after AJB signing and APHT registration at BPN"
+      },
+      "performanceAttributes": {
+        "@context": "https://schema.ion.id/finance/performance/v1/context.jsonld",
+        "@type": "ion:DisbursementPerformance",
+        "disbursementDate": "2026-04-08",
+        "targetBusinessDays": 14,
+        "disbursementMethod": "DEVELOPER_TRANSFER"
+      }
+    }
+  ]
+}

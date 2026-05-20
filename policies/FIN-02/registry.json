@@ -1,0 +1,501 @@
+{
+  "$schema": "https://ionprotocol.org/schemas/policy-registry/v1",
+  "sector": "finance",
+  "generatedAt": "2026-05-01T00:00:00Z",
+  "version": "1.0.0",
+  "totalPolicies": 29,
+  "policies": [
+    {
+      "iri": "ion://policy/finance.cancellation.loan-free-before-disburse",
+      "category": "CANCELLATION",
+      "status": "ratified",
+      "version": "1.0.0",
+      "versionEffectiveFrom": "2026-05-01",
+      "file": "cancellation/v1/loan-free-before-disburse.yaml",
+      "displayText": {
+        "id": "Pembatalan pinjaman gratis sebelum pencairan",
+        "en": "Loan cancellation free before disbursement"
+      }
+    },
+    {
+      "iri": "ion://policy/finance.cancellation.loan-nonrefundable-processing-fee",
+      "category": "CANCELLATION",
+      "status": "ratified",
+      "version": "1.0.0",
+      "versionEffectiveFrom": "2026-05-01",
+      "file": "cancellation/v1/loan-nonrefundable-processing-fee.yaml",
+      "displayText": {
+        "id": "Biaya administrasi tidak dikembalikan saat pembatalan",
+        "en": "Non-refundable processing fee on borrower-initiated cancellation"
+      }
+    },
+    {
+      "iri": "ion://policy/finance.prepayment.penalty-1pct-standard",
+      "category": "PREPAYMENT",
+      "status": "ratified",
+      "version": "1.0.0",
+      "versionEffectiveFrom": "2026-05-01",
+      "file": "prepayment/v1/penalty-1pct-standard.yaml",
+      "displayText": {
+        "id": "Penalti pelunasan awal 1% — standar",
+        "en": "Prepayment penalty 1% — standard"
+      }
+    },
+    {
+      "iri": "ion://policy/finance.prepayment.penalty-2pct-standard",
+      "category": "PREPAYMENT",
+      "status": "ratified",
+      "version": "1.0.0",
+      "versionEffectiveFrom": "2026-05-01",
+      "file": "prepayment/v1/penalty-2pct-standard.yaml",
+      "displayText": {
+        "id": "Penalti pelunasan awal 2% — KPR dan KKB",
+        "en": "Prepayment penalty 2% — mortgage and vehicle loan"
+      }
+    },
+    {
+      "iri": "ion://policy/finance.prepayment.penalty-free-after-12mo",
+      "category": "PREPAYMENT",
+      "status": "ratified",
+      "version": "1.0.0",
+      "versionEffectiveFrom": "2026-05-01",
+      "file": "prepayment/v1/penalty-free-after-12mo.yaml",
+      "displayText": {
+        "id": "Bebas penalti pelunasan awal setelah 12 bulan",
+        "en": "Prepayment penalty-free after 12 months"
+      }
+    },
+    {
+      "iri": "ion://policy/finance.prepayment.zero-penalty-kur",
+      "category": "PREPAYMENT",
+      "status": "ratified",
+      "version": "1.0.0",
+      "versionEffectiveFrom": "2026-05-01",
+      "file": "prepayment/v1/zero-penalty-kur.yaml",
+      "displayText": {
+        "id": "Bebas penalti pelunasan awal — KUR",
+        "en": "Zero prepayment penalty — KUR"
+      }
+    },
+    {
+      "iri": "ion://policy/finance.credit-assessment.slik-hard-standard",
+      "category": "CREDIT_ASSESSMENT",
+      "status": "ratified",
+      "version": "1.0.0",
+      "versionEffectiveFrom": "2026-05-01",
+      "file": "credit-assessment/v1/slik-hard-standard.yaml",
+      "displayText": {
+        "id": "Pengecekan SLIK keras — standar",
+        "en": "Hard SLIK inquiry — standard"
+      }
+    },
+    {
+      "iri": "ion://policy/finance.credit-assessment.dti-50pct-cap",
+      "category": "CREDIT_ASSESSMENT",
+      "status": "ratified",
+      "version": "1.0.0",
+      "versionEffectiveFrom": "2026-05-01",
+      "file": "credit-assessment/v1/dti-50pct-cap.yaml",
+      "displayText": {
+        "id": "Batas rasio utang terhadap pendapatan 50%",
+        "en": "Debt-to-income ratio cap at 50%"
+      }
+    },
+    {
+      "iri": "ion://policy/finance.credit-assessment.dti-70pct-cap",
+      "category": "CREDIT_ASSESSMENT",
+      "status": "ratified",
+      "version": "1.0.0",
+      "versionEffectiveFrom": "2026-05-01",
+      "file": "credit-assessment/v1/dti-70pct-cap.yaml",
+      "displayText": {
+        "id": "Batas rasio utang terhadap pendapatan 70% — penghasilan tinggi",
+        "en": "Debt-to-income ratio cap at 70% — high income borrowers"
+      }
+    },
+    {
+      "iri": "ion://policy/finance.kyc.tier-1-low-risk",
+      "category": "KYC",
+      "status": "ratified",
+      "version": "1.0.0",
+      "versionEffectiveFrom": "2026-05-01",
+      "file": "kyc/v1/tier-1-low-risk.yaml",
+      "displayText": {
+        "id": "eKYC Tier 1 — Risiko Rendah",
+        "en": "eKYC Tier 1 — Low Risk"
+      }
+    },
+    {
+      "iri": "ion://policy/finance.kyc.tier-2-medium-risk",
+      "category": "KYC",
+      "status": "ratified",
+      "version": "1.0.0",
+      "versionEffectiveFrom": "2026-05-01",
+      "file": "kyc/v1/tier-2-medium-risk.yaml",
+      "displayText": {
+        "id": "eKYC Tier 2 — Risiko Menengah",
+        "en": "eKYC Tier 2 — Medium Risk"
+      }
+    },
+    {
+      "iri": "ion://policy/finance.kyc.tier-3-high-risk",
+      "category": "KYC",
+      "status": "ratified",
+      "version": "1.0.0",
+      "versionEffectiveFrom": "2026-05-01",
+      "file": "kyc/v1/tier-3-high-risk.yaml",
+      "displayText": {
+        "id": "eKYC Tier 3 — Risiko Tinggi",
+        "en": "eKYC Tier 3 — High Risk (Full Verification)"
+      }
+    },
+    {
+      "iri": "ion://policy/finance.collateral.skmht-apht-property",
+      "category": "COLLATERAL",
+      "status": "ratified",
+      "version": "1.0.0",
+      "versionEffectiveFrom": "2026-05-01",
+      "file": "collateral/v1/skmht-apht-property.yaml",
+      "displayText": {
+        "id": "Jaminan properti — SKMHT dan APHT",
+        "en": "Property collateral — SKMHT and APHT registration"
+      }
+    },
+    {
+      "iri": "ion://policy/finance.collateral.fiducia-bpkb-vehicle",
+      "category": "COLLATERAL",
+      "status": "ratified",
+      "version": "1.0.0",
+      "versionEffectiveFrom": "2026-05-01",
+      "file": "collateral/v1/fiducia-bpkb-vehicle.yaml",
+      "displayText": {
+        "id": "Jaminan kendaraan — fidusia BPKB",
+        "en": "Vehicle collateral — BPKB fiducia registration"
+      }
+    },
+    {
+      "iri": "ion://policy/finance.collateral.movable-asset-fiducia",
+      "category": "COLLATERAL",
+      "status": "ratified",
+      "version": "1.0.0",
+      "versionEffectiveFrom": "2026-05-01",
+      "file": "collateral/v1/movable-asset-fiducia.yaml",
+      "displayText": {
+        "id": "Jaminan aset bergerak — fidusia non-kendaraan",
+        "en": "Movable asset collateral — non-vehicle fiducia"
+      }
+    },
+    {
+      "iri": "ion://policy/finance.disbursement.direct-to-account",
+      "category": "DISBURSEMENT",
+      "status": "ratified",
+      "version": "1.0.0",
+      "versionEffectiveFrom": "2026-05-01",
+      "file": "disbursement/v1/direct-to-account.yaml",
+      "displayText": {
+        "id": "Pencairan langsung ke rekening peminjam",
+        "en": "Direct disbursement to borrower account"
+      }
+    },
+    {
+      "iri": "ion://policy/finance.disbursement.notary-escrow",
+      "category": "DISBURSEMENT",
+      "status": "ratified",
+      "version": "1.0.0",
+      "versionEffectiveFrom": "2026-05-01",
+      "file": "disbursement/v1/notary-escrow.yaml",
+      "displayText": {
+        "id": "Pencairan melalui rekening penampungan notaris",
+        "en": "Disbursement via notary escrow account"
+      }
+    },
+    {
+      "iri": "ion://policy/finance.disbursement.dealer-direct",
+      "category": "DISBURSEMENT",
+      "status": "ratified",
+      "version": "1.0.0",
+      "versionEffectiveFrom": "2026-05-01",
+      "file": "disbursement/v1/dealer-direct.yaml",
+      "displayText": {
+        "id": "Pencairan langsung ke dealer kendaraan",
+        "en": "Direct disbursement to vehicle dealer"
+      }
+    },
+    {
+      "iri": "ion://policy/finance.disbursement.merchant-direct",
+      "category": "DISBURSEMENT",
+      "status": "ratified",
+      "version": "1.0.0",
+      "versionEffectiveFrom": "2026-05-01",
+      "file": "disbursement/v1/merchant-direct.yaml",
+      "displayText": {
+        "id": "Pencairan langsung ke merchant — BNPL",
+        "en": "Direct disbursement to merchant — BNPL"
+      }
+    },
+    {
+      "iri": "ion://policy/finance.restructure.rescheduling-standard",
+      "category": "RESTRUCTURE",
+      "status": "ratified",
+      "version": "1.0.0",
+      "versionEffectiveFrom": "2026-05-01",
+      "file": "restructure/v1/rescheduling-standard.yaml",
+      "displayText": {
+        "id": "Restrukturisasi kredit — penjadwalan ulang angsuran",
+        "en": "Credit restructuring — rescheduling (extended tenure)"
+      }
+    },
+    {
+      "iri": "ion://policy/finance.restructure.reconditioning-standard",
+      "category": "RESTRUCTURE",
+      "status": "ratified",
+      "version": "1.0.0",
+      "versionEffectiveFrom": "2026-05-01",
+      "file": "restructure/v1/reconditioning-standard.yaml",
+      "displayText": {
+        "id": "Restrukturisasi kredit — perubahan persyaratan kredit",
+        "en": "Credit restructuring — reconditioning (term modification)"
+      }
+    },
+    {
+      "iri": "ion://policy/finance.restructure.payment-holiday-3mo",
+      "category": "RESTRUCTURE",
+      "status": "ratified",
+      "version": "1.0.0",
+      "versionEffectiveFrom": "2026-05-01",
+      "file": "restructure/v1/payment-holiday-3mo.yaml",
+      "displayText": {
+        "id": "Keringanan pembayaran — penangguhan 3 bulan",
+        "en": "Payment holiday — 3-month deferral"
+      }
+    },
+    {
+      "iri": "ion://policy/finance.restructure.payment-holiday-6mo",
+      "category": "RESTRUCTURE",
+      "status": "ratified",
+      "version": "1.0.0",
+      "versionEffectiveFrom": "2026-05-01",
+      "file": "restructure/v1/payment-holiday-6mo.yaml",
+      "displayText": {
+        "id": "Keringanan pembayaran — penangguhan 6 bulan",
+        "en": "Payment holiday — 6-month deferral"
+      }
+    },
+    {
+      "iri": "ion://policy/finance.penalty.borrower-late-payment",
+      "category": "PENALTY",
+      "status": "ratified",
+      "version": "1.0.0",
+      "versionEffectiveFrom": "2026-05-01",
+      "file": "penalty/v1/borrower-late-payment.yaml",
+      "displayText": {
+        "id": "Denda keterlambatan pembayaran oleh peminjam",
+        "en": "Late payment penalty charged to borrower"
+      }
+    },
+    {
+      "iri": "ion://policy/finance.penalty.lender-disbursement-delay",
+      "category": "PENALTY",
+      "status": "ratified",
+      "version": "1.0.0",
+      "versionEffectiveFrom": "2026-05-01",
+      "file": "penalty/v1/lender-disbursement-delay.yaml",
+      "displayText": {
+        "id": "Kompensasi keterlambatan pencairan dana oleh pemberi pinjaman",
+        "en": "Lender disbursement delay compensation to borrower"
+      }
+    },
+    {
+      "iri": "ion://policy/finance.penalty.lender-assessment-delay",
+      "category": "PENALTY",
+      "status": "ratified",
+      "version": "1.0.0",
+      "versionEffectiveFrom": "2026-05-01",
+      "file": "penalty/v1/lender-assessment-delay.yaml",
+      "displayText": {
+        "id": "Kompensasi keterlambatan penilaian kredit oleh pemberi pinjaman",
+        "en": "Lender credit assessment delay compensation"
+      }
+    },
+    {
+      "iri": "ion://policy/finance.insurance.credit-life-standard",
+      "category": "INSURANCE",
+      "status": "ratified",
+      "version": "1.0.0",
+      "versionEffectiveFrom": "2026-05-01",
+      "file": "insurance/v1/credit-life-standard.yaml",
+      "displayText": {
+        "id": "Asuransi jiwa kredit — standar",
+        "en": "Credit life insurance — standard"
+      }
+    },
+    {
+      "iri": "ion://policy/finance.insurance.mrta-standard",
+      "category": "INSURANCE",
+      "status": "ratified",
+      "version": "1.0.0",
+      "versionEffectiveFrom": "2026-05-01",
+      "file": "insurance/v1/mrta-standard.yaml",
+      "displayText": {
+        "id": "Asuransi MRTA — perlindungan KPR standar",
+        "en": "MRTA — Mortgage Reducing Term Assurance standard"
+      }
+    },
+    {
+      "iri": "ion://policy/finance.insurance.vehicle-allrisk-standard",
+      "category": "INSURANCE",
+      "status": "ratified",
+      "version": "1.0.0",
+      "versionEffectiveFrom": "2026-05-01",
+      "file": "insurance/v1/vehicle-allrisk-standard.yaml",
+      "displayText": {
+        "id": "Asuransi kendaraan — all-risk standar untuk KKB",
+        "en": "Vehicle insurance — all-risk standard for vehicle loan"
+      }
+    },
+    {
+      "iri": "ion://policy/finance.dispute.consumer-ojk-pojk-18",
+      "category": "DISPUTE",
+      "status": "ratified",
+      "version": "1.0.0",
+      "versionEffectiveFrom": "2026-05-01",
+      "file": "dispute/v1/consumer-ojk-pojk-18.yaml",
+      "displayText": {
+        "id": "Penanganan pengaduan konsumen — POJK 18/2018",
+        "en": "Consumer complaint handling — OJK POJK 18/2018"
+      }
+    },
+    {
+      "iri": "ion://policy/finance.dispute.commercial-bani",
+      "category": "DISPUTE",
+      "status": "ratified",
+      "version": "1.0.0",
+      "versionEffectiveFrom": "2026-05-01",
+      "file": "dispute/v1/commercial-bani.yaml",
+      "displayText": {
+        "id": "Penyelesaian sengketa komersial — arbitrase BANI",
+        "en": "Commercial dispute resolution — BANI arbitration"
+      }
+    },
+    {
+      "iri": "ion://policy/finance.dispute.consumer-bpsk",
+      "category": "DISPUTE",
+      "status": "ratified",
+      "version": "1.0.0",
+      "versionEffectiveFrom": "2026-05-01",
+      "file": "dispute/v1/consumer-bpsk.yaml",
+      "displayText": {
+        "id": "Penyelesaian sengketa konsumen — BPSK",
+        "en": "Consumer dispute resolution — BPSK"
+      }
+    },
+    {
+      "iri": "ion://policy/finance.interest-rate-cap.ojk-kta-unsecured",
+      "category": "INTEREST_RATE_CAP",
+      "status": "ratified",
+      "version": "1.0.0",
+      "versionEffectiveFrom": "2026-05-01",
+      "file": "interest-rate-cap/v1/ojk-kta-unsecured.yaml",
+      "displayText": {
+        "id": "Batas suku bunga kredit tanpa agunan (KTA)",
+        "en": "Interest rate cap — unsecured personal loan (KTA)"
+      }
+    },
+    {
+      "iri": "ion://policy/finance.interest-rate-cap.ojk-kpr-property",
+      "category": "INTEREST_RATE_CAP",
+      "status": "ratified",
+      "version": "1.0.0",
+      "versionEffectiveFrom": "2026-05-01",
+      "file": "interest-rate-cap/v1/ojk-kpr-property.yaml",
+      "displayText": {
+        "id": "Batas suku bunga KPR/KPA",
+        "en": "Interest rate cap — mortgage (KPR/KPA)"
+      }
+    },
+    {
+      "iri": "ion://policy/finance.interest-rate-cap.ojk-kkb-vehicle",
+      "category": "INTEREST_RATE_CAP",
+      "status": "ratified",
+      "version": "1.0.0",
+      "versionEffectiveFrom": "2026-05-01",
+      "file": "interest-rate-cap/v1/ojk-kkb-vehicle.yaml",
+      "displayText": {
+        "id": "Batas suku bunga kredit kendaraan bermotor (KKB)",
+        "en": "Interest rate cap — vehicle loan (KKB)"
+      }
+    },
+    {
+      "iri": "ion://policy/finance.interest-rate-cap.ojk-kur-subsidized",
+      "category": "INTEREST_RATE_CAP",
+      "status": "ratified",
+      "version": "1.0.0",
+      "versionEffectiveFrom": "2026-05-01",
+      "file": "interest-rate-cap/v1/ojk-kur-subsidized.yaml",
+      "displayText": {
+        "id": "Batas suku bunga KUR bersubsidi pemerintah",
+        "en": "Interest rate cap — government-subsidized KUR"
+      }
+    },
+    {
+      "iri": "ion://policy/finance.ltv-cap.ojk-kpr-rumah-tapak",
+      "category": "LTV_CAP",
+      "status": "ratified",
+      "version": "1.0.0",
+      "versionEffectiveFrom": "2026-05-01",
+      "file": "ltv-cap/v1/ojk-kpr-rumah-tapak.yaml",
+      "displayText": {
+        "id": "Batas LTV KPR rumah tapak",
+        "en": "LTV cap — landed house mortgage (KPR Rumah Tapak)"
+      }
+    },
+    {
+      "iri": "ion://policy/finance.ltv-cap.ojk-kpr-apartemen",
+      "category": "LTV_CAP",
+      "status": "ratified",
+      "version": "1.0.0",
+      "versionEffectiveFrom": "2026-05-01",
+      "file": "ltv-cap/v1/ojk-kpr-apartemen.yaml",
+      "displayText": {
+        "id": "Batas LTV KPA apartemen/rumah susun",
+        "en": "LTV cap — apartment/flat mortgage (KPA Apartemen)"
+      }
+    },
+    {
+      "iri": "ion://policy/finance.ltv-cap.bi-kkb-motor-mobil",
+      "category": "LTV_CAP",
+      "status": "ratified",
+      "version": "1.0.0",
+      "versionEffectiveFrom": "2026-05-01",
+      "file": "ltv-cap/v1/bi-kkb-motor-mobil.yaml",
+      "displayText": {
+        "id": "Batas uang muka / LTV kredit kendaraan bermotor",
+        "en": "Minimum down payment / LTV cap — vehicle loan (KKB)"
+      }
+    },
+    {
+      "iri": "ion://policy/finance.collections-conduct.ojk-pojk-22-2023",
+      "category": "COLLECTIONS_CONDUCT",
+      "status": "ratified",
+      "version": "1.0.0",
+      "versionEffectiveFrom": "2026-05-01",
+      "file": "collections-conduct/v1/ojk-pojk-22-2023.yaml",
+      "displayText": {
+        "id": "Standar etika penagihan kredit — POJK 22/2023",
+        "en": "Ethical debt collection standards — OJK POJK 22/2023"
+      }
+    },
+    {
+      "iri": "ion://policy/finance.slik-reporting.monthly-standard",
+      "category": "SLIK_REPORTING",
+      "status": "ratified",
+      "version": "1.0.0",
+      "versionEffectiveFrom": "2026-05-01",
+      "file": "slik-reporting/v1/monthly-standard.yaml",
+      "displayText": {
+        "id": "Pelaporan SLIK OJK — standar bulanan",
+        "en": "OJK SLIK credit bureau reporting — monthly standard"
+      }
+    }
+  ]
+}

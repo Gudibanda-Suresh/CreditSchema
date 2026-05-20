@@ -1,0 +1,62 @@
+{
+  "$schema": "https://schema.ion.id/finance/offer/v1/schema.json",
+  "@context": "https://schema.ion.id/finance/offer/v1/context.jsonld",
+  "description": "Example: CreditApproval offer for a KPR (mortgage) — IDR 450jt, 240 months, 9.5% fixed 3 years then floating. Status: CONDITIONALLY_APPROVED pending original SHM submission.",
+  "id": "OFFER-BTN-KPR-2026-001234",
+  "resourceIds": ["RES-BTN-KPR-001"],
+  "validity": {
+    "endDate": "2026-06-30T23:59:59+07:00"
+  },
+  "offerAttributes": {
+    "@context": "https://schema.ion.id/finance/offer/v1/context.jsonld",
+    "@type": "ion:CreditApproval",
+    "offerReference": "OFFER-BTN-KPR-2026-001234",
+    "validUntil": "2026-06-30T23:59:59+07:00",
+    "offerStatus": "CONDITIONALLY_APPROVED",
+    "approvedPrincipal": {
+      "value": 450000000,
+      "currency": "IDR"
+    },
+    "approvedTenor": {
+      "value": 240,
+      "unit": "MONTHS"
+    },
+    "effectiveRate": {
+      "percentPerYear": 9.5,
+      "method": "ANNUITY",
+      "yieldType": "COMBINED",
+      "fixedPeriodYears": 3,
+      "floatingRateAfterFixedPercent": 12.5
+    },
+    "monthlyInstallment": {
+      "totalIDR": 4193000,
+      "principalIDR": 630500,
+      "interestIDR": 3562500
+    },
+    "totalFees": {
+      "provisionFeeIDR": 4500000,
+      "administrationFeeIDR": 200000,
+      "appraisalFeeIDR": 750000,
+      "notaryFeeIDR": 5000000,
+      "lifeInsurancePremiumIDR": 1200000,
+      "annualFireInsuranceIDR": 850000,
+      "stampDutyIDR": 10000,
+      "totalUpfrontCostsIDR": 12510000,
+      "aprEquivalent": 11.2
+    },
+    "additionalConditions": [
+      "Submit original SHM (free of encumbrance) to the branch office within 14 working days",
+      "Sign the Akad Kredit before a notary designated by the bank",
+      "Open a BTN Batara savings account for auto-debit installment payments"
+    ],
+    "disbursementSchedule": {
+      "targetBusinessDays": 14,
+      "disbursementMethod": "DEVELOPER_TRANSFER"
+    },
+    "internalCreditScore": {
+      "score": 720,
+      "category": "GOOD",
+      "slikGrade": "1"
+    }
+  }
+}

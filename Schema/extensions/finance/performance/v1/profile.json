@@ -1,0 +1,28 @@
+{
+  "id": "ion-finance-performance-v1",
+  "version": "1.0.0",
+  "domain": "finance",
+  "type": "AttributePack",
+  "name": "ION Finance Credit Performance Extension (v1)",
+  "packSchema": "./schema.json",
+  "jsonldContext": "./context.jsonld",
+  "extends": "beckn:Performance",
+  "attachmentPoints": {
+    "performanceAttributes": ["DisbursementPerformance"]
+  },
+  "indexing": {
+    "indexable": [
+      { "path": "$.disbursementDate" },
+      { "path": "$.disbursementMethod" }
+    ],
+    "filterable": [
+      { "path": "$.disbursementMethod" }
+    ]
+  },
+  "minimalForDiscovery": ["disbursementMethod", "disbursementDate"],
+  "context": {
+    "schemaContext": [
+      "https://schema.ion.id/finance/performance/v1/context.jsonld"
+    ]
+  }
+}

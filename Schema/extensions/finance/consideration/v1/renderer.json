@@ -1,0 +1,23 @@
+{
+  "schemaId": "ion-finance-consideration-v1",
+  "version": "1.0.0",
+  "slots": {
+    "considerationAttributes": {
+      "fieldGroups": [
+        {
+          "id": "loanConsideration",
+          "label": "Loan Consideration",
+          "icon": "banknotes",
+          "fields": ["approvedPrincipal", "currency", "totalFeesIDR", "aprEquivalent"]
+        }
+      ]
+    }
+  },
+  "displayPreferences": {
+    "primaryFields": ["approvedPrincipal", "totalFeesIDR", "aprEquivalent"],
+    "currencyFields": ["approvedPrincipal", "totalFeesIDR"],
+    "percentageFields": ["aprEquivalent"],
+    "locale": "id-ID",
+    "currency": "IDR"
+  }
+}

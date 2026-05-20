@@ -1,0 +1,1122 @@
+﻿openapi: "3.1.1"
+info:
+  title: "ION Finance Credit Resource Extension (v1)"
+  version: 1.0.0
+  description: |
+    Canonical product-template schema for all credit and financing products
+    offered in Indonesia under OJK/BI regulatory framework. Supports both
+    conventional (konvensional) and Islamic (syariah) finance structures across
+    all credit categories â€” retail consumer, UMKM, corporate, and government
+    programs (KUR, FLPP, UMi, BPUM).
+
+    ION v2.0 placement:
+      Placed in Resource.resourceAttributes returned in on_discover.
+      The Beckn Resource wrapping it must carry:
+        Resource.id          â€” lender-assigned product identifier
+        Resource.descriptor  â€” human-readable product name/description
+        Resource.resourceAttributes["@context"] â€” context.jsonld URI
+        Resource.resourceAttributes["@type"]    â€” "ion:CreditProduct"
+
+    Regulatory anchors:
+      - OJK (Otoritas Jasa Keuangan) â€” primary financial regulator
+      - BI (Bank Indonesia) â€” central bank, macro-prudential & payment systems
+      - DSN-MUI â€” Islamic finance product certification
+      - UU PDP 2022 â€” Personal Data Protection Act (privacy disclosures)
+      - POJK 10/2022 â€” P2P lending regulation
+      - POJK 42/2017 â€” Finance company regulation
+  license:
+    name: Apache-2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+  contact:
+    name: ION Network
+    url: https://schema.ion.id
+
+components:
+  schemas:
+
+    # â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    # ROOT OBJECT
+    # â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    CreditProduct:
+      type: object
+      description: |
+        Product template for a credit/financing offering. This is the CATALOG
+        item â€” it describes ranges, eligibility, and terms. Per-applicant
+        pricing is in CreditApproval; the signed agreement is in
+        LoanAgreement.
+      x-jsonld:
+        '@context': ./context.jsonld
+        '@type': ion:CreditProduct
+      x-beckn-attaches-to: Resource.resourceAttributes
+      additionalProperties: true
+      required:
+        - productIdentity
+        - principalRange
+        - tenor
+        - costOfFund
+        - repaymentSchedule
+        - borrowerCriteria
+        - regulatoryDeclaration
+        - requiredDocuments
+      properties:
+        productIdentity:
+          $ref: '#/components/schemas/ProductIdentity'
+        principalRange:
+          $ref: '#/components/schemas/PrincipalRange'
+        tenor:
+          $ref: '#/components/schemas/Tenor'
+        costOfFund:
+          $ref: '#/components/schemas/CostOfFundMechanism'
+        repaymentSchedule:
+          $ref: '#/components/schemas/RepaymentSchedule'
+        feeStructure:
+          $ref: '#/components/schemas/FeeStructure'
+        collateral:
+          $ref: '#/components/schemas/Collateral'
+        borrowerCriteria:
+          $ref: '#/components/schemas/BorrowerCriteria'
+        regulatoryDeclaration:
+          $ref: '#/components/schemas/RegulatoryDeclaration'
+        requiredDocuments:
+          type: array
+          items:
+            $ref: '#/components/schemas/RequiredDocument'
+          description: Checklist of documents required from the borrower
+        islamicFinance:
+          $ref: '#/components/schemas/IslamicFinanceStructure'
+          description: Present only when productIdentity.financeType = ISLAMIC
+        governmentProgram:
+          $ref: '#/components/schemas/GovernmentProgram'
+          description: Present for government programs (KUR, FLPP, UMi, BPUM)
+        paylaterService:
+          $ref: '#/components/schemas/PaylaterService'
+          description: Present only for productType = PAYLATER or BNPL
+      x-ion-closed-extensions: false
+      allOf:
+        - $ref: ../../../../../core/v2/api/v2.0.0/beckn.yaml#/components/schemas/Attributes
+
+    # â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    # BLOCK 1 â€” Product Identity
+    # â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    ProductIdentity:
+      type: object
+      description: Product identity, classification, and provider information
+      required:
+        - productName
+        - institutionName
+        - productType
+        - financeType
+        - currency
+        - institutionType
+      properties:
+        productName:
+          type: string
+          description: |
+            Official product name as displayed in marketing materials and OJK product
+            registration. Should match the name in the RIPLAY document header exactly.
+          example: "KPR BRI Subsidi FLPP"
+        institutionName:
+          type: string
+          description: |
+            Full legal entity name of the lending institution as registered with
+            Kemenkumham and OJK. Must match the OJK license holder name exactly.
+          example: "PT Bank Rakyat Indonesia (Persero) Tbk"
+        productType:
+          type: string
+          description: Credit/financing product category
+          enum:
+            - KPR
+            - KPA
+            - KKB
+            - KTA
+            - CREDIT_CARD
+            - PAYLATER
+            - MULTIPURPOSE_LOAN
+            - CASH_ADVANCE
+            - KUR_SUPER_MIKRO
+            - KUR_MIKRO
+            - KUR_KECIL
+            - KUR_TKI
+            - WORKING_CAPITAL
+            - INVESTMENT_LOAN
+            - MICRO_BUSINESS_LOAN
+            - INVOICE_FINANCING
+            - SUPPLY_CHAIN_FINANCE
+            - LINKAGE
+            - P2P_PRODUCTIVE
+            - P2P_CONSUMER
+            - KPR_SYARIAH
+            - KKB_SYARIAH
+            - ISLAMIC_BUSINESS
+            - RAHN
+            - QARDH_HASAN
+            - FLPP
+            - TAPERA
+            - BPUM
+            - UMI
+            - ALSINTAN
+            - CONVENTIONAL_PAWN
+            - OTHER
+          example: "KPR"
+        financeType:
+          type: string
+          description: |
+            Finance structure classification. CONVENTIONAL uses interest (bunga).
+            ISLAMIC uses profit/fee-based contracts (akad) certified by DSN-MUI.
+          enum:
+            - CONVENTIONAL
+            - ISLAMIC
+          example: "CONVENTIONAL"
+        currency:
+          type: string
+          description: ISO 4217 currency code for all monetary amounts in this product.
+          default: IDR
+          enum: [IDR, USD, SGD, EUR]
+          example: "IDR"
+        institutionType:
+          type: string
+          description: Lending institution type per OJK classification
+          enum:
+            - BANK_UMUM
+            - BPR
+            - BPRS
+            - PERUSAHAAN_PEMBIAYAAN
+            - KOPERASI_SIMPAN_PINJAM
+            - P2P_LENDING
+            - PEGADAIAN
+            - BMT
+            - MODAL_VENTURA
+            - LEMBAGA_KEUANGAN_MIKRO
+          example: "BANK_UMUM"
+        bankCapitalTier:
+          type: string
+          description: BI bank capital classification tier (BUKU) per POJK 12/POJK.03/2021.
+          enum: [BUKU_1, BUKU_2, BUKU_3, BUKU_4]
+        digitalOnly:
+          type: boolean
+          description: True if this product is offered exclusively through digital channels.
+          default: false
+        distributionChannels:
+          type: array
+          description: Distribution channels through which this product can be applied for.
+          items:
+            type: string
+            enum:
+              - BRANCH_OFFICE
+              - MOBILE_BANKING
+              - INTERNET_BANKING
+              - BRANCHLESS_BANKING_AGENT
+              - FINANCIAL_MARKETPLACE
+              - WHATSAPP_BANKING
+              - DIRECT_API
+              - FIELD_SALES_AGENT
+
+    # â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    # BLOCK 2 â€” Principal Range
+    # â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    PrincipalRange:
+      type: object
+      description: Loan/financing principal amount range
+      required:
+        - minimum
+        - maximum
+      properties:
+        minimum:
+          $ref: '#/components/schemas/MonetaryAmount'
+          description: Minimum principal offered
+        maximum:
+          $ref: '#/components/schemas/MonetaryAmount'
+          description: Maximum principal offered
+        maximumKUROfficial:
+          type: number
+          description: Official KUR program cap per government regulation.
+          example: 100000000
+        denomination:
+          type: number
+          description: Allowed amount must be a multiple of this value (e.g., 500,000)
+          example: 500000
+
+    MonetaryAmount:
+      type: object
+      description: Reusable monetary amount object with value and currency.
+      required:
+        - value
+        - currency
+      properties:
+        value:
+          type: number
+          minimum: 0
+          description: The numeric amount in the currency specified by currency.
+          example: 50000000
+        currency:
+          type: string
+          default: IDR
+          description: ISO 4217 currency code for this amount.
+          example: "IDR"
+
+    # â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    # BLOCK 3 â€” Tenor (Tenure)
+    # â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    Tenor:
+      type: object
+      description: Loan or financing tenure (maturity) range.
+      required:
+        - unit
+        - minimum
+        - maximum
+      properties:
+        unit:
+          type: string
+          description: Time unit for all tenure values (DAYS, MONTHS, YEARS).
+          enum: [DAYS, MONTHS, YEARS]
+          example: "MONTHS"
+        minimum:
+          type: integer
+          minimum: 1
+          description: Minimum tenure in the unit specified.
+          example: 12
+        maximum:
+          type: integer
+          minimum: 1
+          description: Maximum tenure in the unit specified.
+          example: 360
+        availableTenors:
+          type: array
+          items:
+            type: integer
+          description: Discrete list of available tenors when free selection is not allowed.
+          example: [3, 6, 12, 24, 36, 48, 60]
+
+    # â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    # BLOCK 4 â€” Cost of Fund Mechanism
+    # â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    CostOfFundMechanism:
+      type: object
+      description: Interest mechanics for conventional products, or profit mechanics for Islamic products.
+      required:
+        - yieldType
+      properties:
+        yieldType:
+          type: string
+          description: Cost-of-fund mechanism type
+          enum:
+            - FIXED
+            - FLOATING
+            - COMBINED
+            - MARGIN
+            - NISBAH
+            - UJRAH
+            - ZERO_COST
+          example: "FIXED"
+        calculationMethod:
+          type: string
+          description: Calculation method used to compute the installment schedule.
+          enum:
+            - ANNUITY
+            - FLAT
+            - EFFECTIVE
+            - DECLINING_BALANCE
+          example: "ANNUITY"
+        rateMinPercent:
+          type: number
+          description: Minimum interest/margin rate per annum (%)
+          minimum: 0
+          maximum: 100
+          example: 7.5
+        rateMaxPercent:
+          type: number
+          description: Maximum interest/margin rate per annum (%)
+          minimum: 0
+          maximum: 100
+          example: 14.0
+        rateReference:
+          type: string
+          description: Benchmark rate for floating-rate products
+          enum:
+            - BI_RATE
+            - JIBOR
+            - SBDK
+            - PRIME_RATE
+            - SOFR
+          example: "BI_RATE"
+        spreadPercent:
+          type: number
+          description: Spread above benchmark for floating products (% p.a.)
+          example: 3.5
+        fixedPeriodYears:
+          type: integer
+          description: For COMBINED â€” fixed-rate period in years before switching to floating
+          example: 3
+        governmentSubsidyPercent:
+          type: number
+          description: Government interest subsidy (% p.a.) deducted from bank's market rate.
+          example: 10.5
+        effectiveRatePercent:
+          type: number
+          description: Final rate paid by borrower after government subsidy (e.g., 6% for KUR)
+          example: 6.0
+        creditCardMonthlyRatePercent:
+          type: number
+          description: Monthly revolving interest rate for credit card products (%)
+          example: 1.75
+
+    # â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    # BLOCK 5 â€” Repayment Schedule
+    # â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    RepaymentSchedule:
+      type: object
+      description: Repayment schedule, frequency, and accepted payment channels
+      required:
+        - frequency
+        - paymentChannels
+      properties:
+        frequency:
+          type: string
+          description: Repayment frequency
+          enum:
+            - DAILY
+            - WEEKLY
+            - BIWEEKLY
+            - MONTHLY
+            - QUARTERLY
+            - SEMIANNUAL
+            - ANNUAL
+            - BULLET
+            - SEASONAL
+          example: "MONTHLY"
+        paymentChannels:
+          type: array
+          description: Accepted payment channels
+          items:
+            type: string
+            enum:
+              - AUTODEBIT
+              - VIRTUAL_ACCOUNT
+              - MOBILE_BANKING
+              - INTERNET_BANKING
+              - ATM
+              - BANK_TELLER
+              - BIFAST
+              - RTGS
+              - KLIRING
+              - QRIS
+              - GOPAY
+              - OVO
+              - DANA
+              - LINKAJA
+              - SHOPEEPAY
+              - SAKUKU
+              - ALFAMART
+              - INDOMARET
+          example: ["AUTODEBIT", "VIRTUAL_ACCOUNT", "QRIS", "BIFAST"]
+        gracePeriodDays:
+          type: integer
+          description: Grace period in days after due date before late penalty applies
+          minimum: 0
+          default: 0
+          example: 3
+        earlySettlementAllowed:
+          type: boolean
+          description: Whether early (partial or full) repayment is allowed
+          default: true
+        earlySettlementPenalty:
+          type: boolean
+          description: Whether early repayment carries a penalty fee
+          default: false
+        restructuringAllowed:
+          type: boolean
+          description: Loan restructuring available (moratorium, tenor extension, etc.)
+          default: true
+        seasonalArrangement:
+          type: string
+          description: Seasonal repayment arrangement description (for farmers/fishers)
+          example: "Principal repaid after harvest; interest paid monthly"
+
+    # â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    # BLOCK 6 â€” Fee Structure
+    # â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    FeeStructure:
+      type: object
+      description: All fees and charges associated with this credit product
+      properties:
+        provisionFeePercent:
+          type: number
+          description: Provision / origination fee as % of approved principal (paid upfront)
+          minimum: 0
+          example: 1.0
+        administrationFeeIDR:
+          type: number
+          description: Flat administration fee in IDR
+          minimum: 0
+          example: 200000
+        appraisalFeeIDR:
+          type: number
+          description: Collateral appraisal fee (KJPP â€” licensed appraiser) in IDR
+          minimum: 0
+          example: 500000
+        notaryFeeIDR:
+          type: number
+          description: Estimated notary / PPAT fee in IDR
+          minimum: 0
+          example: 3000000
+        insurancePremiumPercent:
+          type: number
+          description: Insurance premium as % of approved principal (annual)
+          minimum: 0
+          example: 0.35
+        mandatoryInsurance:
+          type: boolean
+          description: Whether insurance is compulsory for this product
+          default: false
+        mandatoryInsuranceTypes:
+          type: array
+          description: Compulsory insurance types required before disbursement
+          items:
+            type: string
+            enum:
+              - LIFE_INSURANCE
+              - CREDIT_INSURANCE
+              - FIRE_INSURANCE
+              - VEHICLE_INSURANCE
+              - EMPLOYMENT_INSURANCE
+              - PROPERTY_INSURANCE
+              - BUSINESS_INSURANCE
+          example: ["LIFE_INSURANCE", "FIRE_INSURANCE"]
+        latePenaltyPercentPerDay:
+          type: number
+          description: Late payment penalty â€” % of outstanding installment per day overdue
+          minimum: 0
+          example: 0.1
+        prepaymentPenaltyPercent:
+          type: number
+          description: Prepayment / early settlement penalty as % of outstanding principal
+          minimum: 0
+          example: 1.0
+        stampDutyIDR:
+          type: integer
+          description: Stamp duty per document (e-Meterai IDR 10,000 per UU No. 10/2020)
+          default: 10000
+          example: 10000
+        maxTotalCostPercent:
+          type: number
+          description: All-in cost cap as % of principal (APR equivalent per POJK 6/2022).
+          example: 24.0
+
+    # â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    # BLOCK 7 â€” Collateral
+    # â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    Collateral:
+      type: object
+      description: Collateral and security requirements
+      required:
+        - required
+      properties:
+        required:
+          type: boolean
+          description: Whether collateral is required for this product
+          example: true
+        collateralTypes:
+          type: array
+          description: Accepted collateral types
+          items:
+            type: string
+            enum:
+              - UNSECURED
+              - PROPERTY
+              - APARTMENT
+              - MOTOR_VEHICLE_CAR
+              - MOTOR_VEHICLE_MOTORCYCLE
+              - GOLD
+              - FIXED_DEPOSIT
+              - LISTED_SHARES
+              - GOVERNMENT_BONDS
+              - TRADE_RECEIVABLES
+              - INVENTORY
+              - MACHINERY_AND_EQUIPMENT
+              - VESSEL
+              - AIRCRAFT
+              - RIGHTS_OF_CLAIM
+              - PERSONAL_GUARANTOR
+              - CORPORATE_GUARANTOR
+              - GOVERNMENT_GUARANTOR
+          example: ["PROPERTY"]
+        maxLTVPercent:
+          type: number
+          description: |
+            Maximum Loan-to-Value ratio (%).
+            BI LTV limits: KPR first property â‰¤ 80%, KKB new vehicle â‰¤ 85%.
+          minimum: 0
+          maximum: 100
+          example: 80.0
+        appraisalRequired:
+          type: boolean
+          description: Whether an independent KJPP appraisal is required
+          default: false
+          example: true
+        guarantorInstitution:
+          type: string
+          description: Credit guarantee institution for KUR/UMKM programs
+          enum:
+            - JAMKRINDO
+            - ASKRINDO
+            - JAMKRIDA
+            - PERUM_JAMKRINDO
+          example: "JAMKRINDO"
+
+    # â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    # BLOCK 8 â€” Borrower Criteria
+    # â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    BorrowerCriteria:
+      type: object
+      description: Borrower eligibility and qualification criteria
+      required:
+        - applicantTypes
+      properties:
+        applicantTypes:
+          type: array
+          description: Eligible borrower entity types
+          items:
+            type: string
+            enum:
+              - INDIVIDUAL
+              - MARRIED_COUPLE
+              - MICRO_ENTERPRISE
+              - SMALL_ENTERPRISE
+              - MEDIUM_ENTERPRISE
+              - CORPORATION
+              - COOPERATIVE
+              - FOUNDATION
+              - STATE_OWNED_ENTERPRISE
+              - REGIONAL_STATE_ENTERPRISE
+          example: ["INDIVIDUAL"]
+        minimumAge:
+          type: integer
+          description: Minimum applicant age at application (years)
+          minimum: 17
+          example: 21
+        maximumAgeAtMaturity:
+          type: integer
+          description: Maximum borrower age at loan maturity (years)
+          maximum: 80
+          example: 65
+        minimumMonthlyIncomeIDR:
+          type: number
+          description: Minimum gross monthly income in IDR
+          minimum: 0
+          example: 3000000
+        minimumSLIKGrade:
+          type: integer
+          description: Minimum credit quality from OJK SLIK/iDEB (1=Current, 5=Loss).
+          minimum: 1
+          maximum: 5
+          example: 1
+        requiredCollectibilityGrade:
+          type: integer
+          description: Required SLIK collectibility grade (1 = current/lancar)
+          enum: [1, 2]
+          default: 1
+          example: 1
+        employmentTypes:
+          type: array
+          description: Eligible employment / occupation types
+          items:
+            type: string
+            enum:
+              - CIVIL_SERVANT
+              - MILITARY
+              - POLICE
+              - PERMANENT_EMPLOYEE
+              - CONTRACT_EMPLOYEE
+              - SELF_EMPLOYED
+              - PROFESSIONAL
+              - FARMER
+              - FISHERMAN
+              - LIVESTOCK_BREEDER
+              - PENSIONER
+              - STUDENT
+              - HOMEMAKER
+              - TRADER
+              - RIDEHAILING_DRIVER
+          example: ["CIVIL_SERVANT", "PERMANENT_EMPLOYEE", "SELF_EMPLOYED", "PROFESSIONAL"]
+        citizenship:
+          type: array
+          description: Eligible citizenship / residency status
+          items:
+            type: string
+            enum:
+              - NATIONAL_CITIZEN
+              - FOREIGN_KITAS
+              - FOREIGN_KITAP
+              - LEGAL_ENTITY
+              - FOREIGN_LEGAL_ENTITY
+          example: ["NATIONAL_CITIZEN"]
+        serviceRegions:
+          type: array
+          description: ISO 3166-2:ID provinces where available. NATIONAL = all 38 provinces.
+          items:
+            type: string
+            enum:
+              - NATIONAL
+              - ID-AC
+              - ID-BA
+              - ID-BB
+              - ID-BE
+              - ID-GO
+              - ID-JA
+              - ID-JB
+              - ID-JI
+              - ID-JK
+              - ID-JT
+              - ID-KB
+              - ID-KI
+              - ID-KR
+              - ID-KS
+              - ID-KT
+              - ID-KU
+              - ID-LA
+              - ID-MA
+              - ID-MU
+              - ID-NB
+              - ID-NT
+              - ID-PA
+              - ID-PB
+              - ID-PD
+              - ID-PS
+              - ID-PT
+              - ID-RI
+              - ID-SA
+              - ID-SB
+              - ID-SG
+              - ID-SN
+              - ID-SR
+              - ID-SS
+              - ID-ST
+              - ID-SU
+              - ID-YO
+          example: ["NATIONAL"]
+        maxDSRPercent:
+          type: number
+          description: Maximum Debt Service Ratio (DSR) â€” total monthly debt / gross income.
+          minimum: 0
+          maximum: 100
+          example: 70.0
+        cleanCreditHistoryRequired:
+          type: boolean
+          description: Requires clean credit history (SLIK collectibility Grade 1)
+          default: false
+          example: true
+
+    # â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    # BLOCK 9 â€” Regulatory Declaration
+    # â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    RegulatoryDeclaration:
+      type: object
+      description: OJK/BI license declarations, required disclosures, and consumer protection
+      required:
+        - licenses
+      properties:
+        licenses:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/License'
+          description: Regulatory licenses and registrations
+        disclosures:
+          type: array
+          items:
+            $ref: '#/components/schemas/Disclosure'
+          description: Required consumer disclosures per OJK POJK 6/2022
+        complaintService:
+          $ref: '#/components/schemas/ComplaintService'
+          description: Customer complaint and grievance redressal service contacts per POJK 6/2022.
+        privacyPolicyUrl:
+          type: string
+          format: uri
+          description: Privacy policy URL per UU PDP No. 27/2022
+
+    License:
+      type: object
+      description: Single regulatory license / registration record
+      required:
+        - regulatoryBody
+        - licenseNumber
+        - role
+      properties:
+        regulatoryBody:
+          type: string
+          description: Issuing regulatory authority
+          enum:
+            - OJK_BANK_UMUM
+            - OJK_BPR
+            - OJK_BPRS
+            - OJK_PERUSAHAAN_PEMBIAYAAN
+            - OJK_P2P_LENDING
+            - OJK_MODAL_VENTURA
+            - OJK_LKM
+            - BI_SISTEM_PEMBAYARAN
+            - KEMENKOP_KOPERASI
+            - DSN_MUI
+            - AFPI
+            - APPI
+          example: "OJK_BANK_UMUM"
+        licenseNumber:
+          type: string
+          description: License / registration number
+          example: "KEP-046/DIR/1992"
+        role:
+          type: string
+          description: Institution's role in this credit transaction
+          enum:
+            - DIRECT_LENDER
+            - KUR_CHANNEL_BANK
+            - DISTRIBUTION_PARTNER
+            - MARKETING_AGENT
+            - LOAN_SERVICE_PROVIDER
+            - GUARANTOR
+          example: "DIRECT_LENDER"
+        verificationUrl:
+          type: string
+          format: uri
+          description: URL for public license verification on OJK/BI portal
+
+    Disclosure:
+      type: object
+      description: Required disclosure document reference
+      required:
+        - disclosureType
+        - url
+      properties:
+        disclosureType:
+          type: string
+          description: Category of the regulatory disclosure document.
+          enum:
+            - PRODUCT_SUMMARY
+            - INSTALLMENT_SIMULATOR
+            - TERMS_AND_CONDITIONS
+            - PRIVACY_POLICY
+            - COMPLAINT_PROCEDURE
+            - DISPUTE_RESOLUTION
+            - REGULATORY_REFERENCE
+            - DSN_MUI_FATWA
+            - SLIK_CONSENT_FORM
+          example: "PRODUCT_SUMMARY"
+        url:
+          type: string
+          format: uri
+          description: Publicly accessible HTTPS URL to the disclosure document.
+        language:
+          type: string
+          default: "id"
+          enum: ["id", "en"]
+          description: Language of the disclosure document (BCP 47 tag).
+
+    ComplaintService:
+      type: object
+      description: Customer complaint and grievance redressal contacts per POJK 6/POJK.07/2022.
+      properties:
+        tollFreePhone:
+          type: string
+          description: Toll-free customer service phone number.
+          example: "1500017"
+        email:
+          type: string
+          format: email
+          description: Customer service email for written complaints.
+          example: "callcenter@bri.co.id"
+        complaintUrl:
+          type: string
+          format: uri
+          description: URL to the lender's online complaint submission portal.
+        ojkConsumerPortal:
+          type: string
+          format: uri
+          description: OJK consumer protection portal for escalation.
+          default: "https://konsumen.ojk.go.id"
+
+    # â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    # BLOCK 10 â€” Required Documents
+    # â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    RequiredDocument:
+      type: object
+      description: A single document required for the credit application
+      required:
+        - documentType
+        - mandatory
+      properties:
+        documentType:
+          type: string
+          description: Document type code
+          enum:
+            - KTP
+            - KK
+            - PASPOR
+            - KITAS
+            - KITAP
+            - BUKU_NIKAH
+            - AKTA_CERAI
+            - AKTA_KEMATIAN
+            - SLIP_GAJI
+            - SK_PENGANGKATAN
+            - SURAT_KONTRAK_KERJA
+            - SURAT_KETERANGAN_KERJA
+            - ID_CARD_PEGAWAI
+            - NPWP
+            - SPT_TAHUNAN_PPH
+            - REKENING_KORAN
+            - LAPORAN_KEUANGAN
+            - LAPORAN_LABA_RUGI
+            - NERACA_KEUANGAN
+            - CASHFLOW
+            - NIB
+            - SIUP
+            - SKDU
+            - AKTA_PENDIRIAN
+            - AKTA_PERUBAHAN
+            - SK_KEMENKUMHAM
+            - SURAT_IZIN_USAHA
+            - SHM
+            - SHGB
+            - SHP
+            - BPKB
+            - STNK
+            - IMB_PBG
+            - PBB_TERAKHIR
+            - FOTO_AGUNAN
+            - FOTO_USAHA
+            - SLIK_CONSENT
+            - DATA_SLIK_IDEB
+            - INVOICE_TAGIHAN
+            - PURCHASE_ORDER
+            - KONTRAK_PENJUALAN
+            - SERTIFIKAT_HALAL
+            - AKAD_SYARIAH_DRAFT
+            - SURAT_PERNYATAAN_KUR
+            - SURAT_BELUM_DAPAT_KUR
+            - SKU_DESA
+          example: "KTP"
+        mandatory:
+          type: boolean
+          description: Is this document mandatory for all applicants?
+          example: true
+        issuer:
+          type: string
+          description: Issuing institution or authority
+          example: "DUKCAPIL / Disdukcapil"
+        digitalVerification:
+          type: boolean
+          description: Digital verification supported (e-KYC, OCR, API Dukcapil)
+          default: false
+          example: true
+        notes:
+          type: string
+          description: Contextual notes or conditions on this document requirement
+
+    # â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    # BLOCK 11 â€” Islamic Finance Structure
+    # â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    IslamicFinanceStructure:
+      type: object
+      description: Islamic finance akad details. Present only when financeType = ISLAMIC.
+      required:
+        - contractType
+        - dsnMuiFatwaNumber
+      properties:
+        contractType:
+          type: string
+          description: Islamic contract (akad) type governing this product
+          enum:
+            - MURABAHAH
+            - MUSHARAKAH_MUTANAQISAH
+            - MUDHARABAH
+            - MUSHARAKAH
+            - IJARAH
+            - IJARAH_MUNTAHIA_BITTAMLIK
+            - ISTISHNA
+            - SALAM
+            - QARDH
+            - RAHN
+            - WAKALAH_BIL_ISTITHMAR
+            - KAFALAH
+            - HIWALAH
+          example: "MURABAHAH"
+        dsnMuiFatwaNumber:
+          type: string
+          description: DSN-MUI fatwa reference number authorising this contract type
+          example: "DSN-MUI/IV/2000 No. 04"
+        marginPercentPerYear:
+          type: number
+          description: Murabahah margin equivalent annual rate (%)
+          example: 9.5
+        bankProfitSharePercent:
+          type: number
+          description: Bank profit-sharing ratio % (for mudharabah/musharakah products)
+          minimum: 0
+          maximum: 100
+          example: 70
+        customerProfitSharePercent:
+          type: number
+          description: Customer profit-sharing ratio % (for mudharabah/musharakah products)
+          minimum: 0
+          maximum: 100
+          example: 30
+        annualUjrahIDR:
+          type: number
+          description: Annual fee (ujrah) for ijarah products in IDR
+          example: 6000000
+        shariahBoardSupervision:
+          type: object
+          description: Dewan Pengawas Syariah (DPS) supervisory board information
+          properties:
+            chairmanName:
+              type: string
+              description: Full name of DPS chairperson
+            dsnMuiCertNumber:
+              type: string
+              description: DPS certification number issued by DSN-MUI
+        halalCertified:
+          type: boolean
+          description: Product certified halal (no involvement in haram activities)
+          default: true
+
+    # â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    # BLOCK 12 â€” Government Program
+    # â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    GovernmentProgram:
+      type: object
+      description: Government subsidy and support program details (KUR, FLPP, UMi, BPUM).
+      required:
+        - programType
+      properties:
+        programType:
+          type: string
+          description: Government-backed credit or financing program type.
+          enum:
+            - KUR_SUPER_MIKRO
+            - KUR_MIKRO
+            - KUR_KECIL
+            - KUR_TKI
+            - FLPP
+            - TAPERA
+            - BPUM
+            - UMI
+            - ALSINTAN
+            - GERAK_UMi
+          example: "KUR_MIKRO"
+        responsibleMinistry:
+          type: string
+          description: Responsible government ministry or agency
+          example: "Kementerian Koordinator Bidang Perekonomian"
+        subsidyPercent:
+          type: number
+          description: Government subsidy rate (% p.a.) paid to the lending bank
+          example: 10.5
+        effectiveRatePercent:
+          type: number
+          description: Effective rate paid by the borrower after government subsidy
+          example: 6.0
+        targetBusinessSectors:
+          type: array
+          description: Eligible business sectors for this government program.
+          items:
+            type: string
+            enum:
+              - AGRICULTURE
+              - FISHERIES
+              - LIVESTOCK
+              - FORESTRY
+              - MANUFACTURING
+              - TRADE
+              - GENERAL_SERVICES
+              - TOURISM
+              - CONSTRUCTION
+              - TRANSPORTATION
+              - EDUCATION
+              - HEALTHCARE
+              - ALL_SECTORS
+          example: ["TRADE", "AGRICULTURE", "GENERAL_SERVICES"]
+        authorizedDistributingBanks:
+          type: array
+          description: Banks officially designated by the government as channel banks.
+          items:
+            type: string
+          example: ["BRI", "BNI", "Bank Mandiri", "BSI", "BPD se-Indonesia"]
+        officialGuarantorInstitution:
+          type: string
+          description: Government-designated credit guarantee institution.
+          enum: [JAMKRINDO, ASKRINDO, JAMKRIDA, PERUM_JAMKRINDO]
+          example: "JAMKRINDO"
+        specialRequirements:
+          type: array
+          items:
+            type: string
+          description: Special eligibility requirements set by government regulation
+          example:
+            - "Business must have been operating for at least 6 months"
+            - "Applicant must not have received KUR from another bank in the current period"
+            - "Must hold NIB or village business letter (SKU)"
+        regulatoryReference:
+          type: string
+          description: Governing regulation reference
+          example: "Permenko Perekonomian No. 1 Tahun 2023 tentang Pedoman KUR"
+
+    # â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    # BLOCK 13 â€” Paylater / BNPL Service
+    # â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    PaylaterService:
+      type: object
+      description: Buy-Now-Pay-Later and Paylater specific attributes
+      properties:
+        maxCreditLimitIDR:
+          type: number
+          description: Maximum credit limit per customer in IDR
+          example: 20000000
+        maxTransactionIDR:
+          type: number
+          description: Maximum single transaction amount in IDR
+          example: 10000000
+        billingCycle:
+          type: string
+          description: Paylater billing / repayment cycle type.
+          enum:
+            - FIXED_INSTALLMENT
+            - MONTHLY_BILLING
+          example: "FIXED_INSTALLMENT"
+        interestFreePeriodDays:
+          type: integer
+          description: Interest-free grace period in days after purchase
+          example: 30
+        availableInstallmentTenors:
+          type: array
+          items:
+            type: integer
+          description: Available installment tenors in months
+          example: [3, 6, 12, 24]
+        merchantCategories:
+          type: array
+          description: Merchant categories where this paylater / BNPL product can be used.
+          items:
+            type: string
+            enum:
+              - E_COMMERCE
+              - FASHION_RETAIL
+              - ELECTRONICS
+              - HEALTH_PHARMACY
+              - EDUCATION
+              - TRAVEL_TOURISM
+              - FOOD_BEVERAGE
+              - AUTOMOTIVE
+              - HOME_FURNITURE
+              - ENTERTAINMENT
+              - ALL_MERCHANTS
+          example: ["E_COMMERCE", "ALL_MERCHANTS"]
+        integratedPlatforms:
+          type: array
+          items:
+            type: string
+          description: Platforms / marketplaces where this paylater is integrated
+          example: ["Tokopedia", "Shopee", "Lazada", "Bukalapak", "Blibli"]
+        usesInternalCreditScore:
+          type: boolean
+          description: Whether the issuer uses proprietary scoring instead of SLIK
+          default: false
+

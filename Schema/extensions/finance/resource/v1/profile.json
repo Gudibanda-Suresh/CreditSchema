@@ -1,0 +1,60 @@
+{
+  "id": "ion-finance-resource-v1",
+  "version": "1.0.0",
+  "domain": "finance",
+  "type": "AttributePack",
+  "name": "ION Finance Credit Resource Extension (v1)",
+  "packSchema": "./schema.json",
+  "jsonldContext": "./context.jsonld",
+  "extends": "beckn:Resource",
+  "attachmentPoints": {
+    "resourceAttributes": ["CreditProduct"]
+  },
+  "indexing": {
+    "indexable": [
+      { "path": "$.productIdentity.productType" },
+      { "path": "$.productIdentity.financeType" },
+      { "path": "$.productIdentity.institutionName" },
+      { "path": "$.productIdentity.institutionType" },
+      { "path": "$.principalRange.minimum.value" },
+      { "path": "$.principalRange.maximum.value" },
+      { "path": "$.tenor.minimum" },
+      { "path": "$.tenor.maximum" },
+      { "path": "$.costOfFund.yieldType" },
+      { "path": "$.costOfFund.rateMinPercent" },
+      { "path": "$.costOfFund.rateMaxPercent" },
+      { "path": "$.borrowerCriteria.serviceRegions[*]" },
+      { "path": "$.borrowerCriteria.applicantTypes[*]" }
+    ],
+    "filterable": [
+      { "path": "$.productIdentity.productType" },
+      { "path": "$.productIdentity.financeType" },
+      { "path": "$.productIdentity.currency" },
+      { "path": "$.productIdentity.institutionType" },
+      { "path": "$.costOfFund.yieldType" },
+      { "path": "$.costOfFund.calculationMethod" },
+      { "path": "$.collateral.required" },
+      { "path": "$.borrowerCriteria.serviceRegions[*]" },
+      { "path": "$.governmentProgram.programType" }
+    ],
+    "sortable": [
+      { "path": "$.costOfFund.rateMinPercent" },
+      { "path": "$.principalRange.maximum.value" }
+    ]
+  },
+  "minimalForDiscovery": [
+    "productIdentity.productName",
+    "productIdentity.productType",
+    "productIdentity.financeType",
+    "productIdentity.institutionName",
+    "principalRange.minimum",
+    "principalRange.maximum",
+    "costOfFund.yieldType",
+    "costOfFund.rateMinPercent"
+  ],
+  "context": {
+    "schemaContext": [
+      "https://schema.ion.id/finance/resource/v1/context.jsonld"
+    ]
+  }
+}

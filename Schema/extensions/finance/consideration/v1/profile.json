@@ -1,0 +1,30 @@
+{
+  "id": "ion-finance-consideration-v1",
+  "version": "1.0.0",
+  "domain": "finance",
+  "type": "AttributePack",
+  "name": "ION Finance Credit Consideration Extension (v1)",
+  "packSchema": "./schema.json",
+  "jsonldContext": "./context.jsonld",
+  "extends": "beckn:Consideration",
+  "attachmentPoints": {
+    "considerationAttributes": ["LoanConsideration"]
+  },
+  "indexing": {
+    "indexable": [
+      { "path": "$.approvedPrincipal" },
+      { "path": "$.totalFeesIDR" },
+      { "path": "$.aprEquivalent" }
+    ],
+    "sortable": [
+      { "path": "$.approvedPrincipal" },
+      { "path": "$.aprEquivalent" }
+    ]
+  },
+  "minimalForDiscovery": ["approvedPrincipal", "currency", "aprEquivalent"],
+  "context": {
+    "schemaContext": [
+      "https://schema.ion.id/finance/consideration/v1/context.jsonld"
+    ]
+  }
+}

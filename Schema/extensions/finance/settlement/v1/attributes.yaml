@@ -1,0 +1,72 @@
+﻿openapi: "3.1.1"
+info:
+  title: "ION Finance Credit Settlement Extension (v1)"
+  version: 1.0.0
+  description: |
+    Credit amortisation schedule attributes for the Finance domain. Each row
+    represents one installment. Attaches to: beckn:Settlement.settlementAttributes
+  license:
+    name: Apache-2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+  contact:
+    name: ION Network
+    url: https://schema.ion.id
+
+components:
+  schemas:
+
+    AmortisationRow:
+      type: object
+      description: |
+        A single installment row in the amortisation schedule. Placed in
+        Beckn Contract.settlements[] with settlementAttributes["@type"] = "ion:AmortisationRow".
+        Beckn Settlement.status maps to paymentStatus:
+          DRAFT â†’ UNPAID | COMMITTED â†’ PARTIAL | COMPLETE â†’ PAID/OVERDUE
+      x-jsonld:
+        '@context': ./context.jsonld
+        '@type': ion:AmortisationRow
+      x-beckn-attaches-to: Settlement.settlementAttributes
+      additionalProperties: true
+      required:
+        - installmentNumber
+        - dueDate
+        - installmentIDR
+      properties:
+        installmentNumber:
+          type: integer
+          description: Installment sequence number (1-based).
+          example: 1
+        dueDate:
+          type: string
+          format: date
+          description: Due date for this installment (ISO 8601 YYYY-MM-DD).
+          example: "2024-04-20"
+        installmentIDR:
+          type: number
+          description: Total installment due for this period in IDR.
+          example: 4193000
+        principalIDR:
+          type: number
+          description: "Principal repayment component in IDR (ANNUITY: increases; FLAT: constant)."
+          example: 630500
+        interestIDR:
+          type: number
+          description: "Interest / margin component in IDR (ANNUITY: decreases; FLAT: constant)."
+          example: 3562500
+        outstandingPrincipalIDR:
+          type: number
+          description: Remaining principal after this installment in IDR. Zero at final row.
+          example: 448739000
+        paymentStatus:
+          type: string
+          description: Real-time payment status for this row.
+          enum: [UNPAID, PAID, OVERDUE, PARTIAL]
+          default: "UNPAID"
+        actualPaymentDate:
+          type: string
+          format: date
+          description: Actual payment receipt date. Populated when status is PAID, OVERDUE, or PARTIAL.
+      x-ion-closed-extensions: false
+      allOf:
+        - $ref: ../../../../../core/v2/api/v2.0.0/beckn.yaml#/components/schemas/Attributes
+

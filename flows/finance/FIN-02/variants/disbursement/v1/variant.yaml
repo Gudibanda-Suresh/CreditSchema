@@ -1,0 +1,219 @@
+id: ion-finance-variant-disbursement-v1
+version: "1.0.0"
+variantType: disbursement
+sector: ion:finance
+status: ready
+description: >
+  Fund disbursement variants. The default for personal-loan and
+  business-loan is direct-to-borrower-account. Mortgage uses
+  notary-escrow. Vehicle-loan uses dealer-direct. BNPL uses
+  merchant-direct. Staged/tranche disbursement applies to
+  construction mortgages and large business capex loans.
+  Each sub-branch overrides the settlement fields from the
+  reference pattern.
+
+appliesTo:
+  - FNC-lending
+  - FNC-lending
+  - FNC-lending
+  - FNC-lending
+  - FNC-lending
+
+window:
+  earliest: on_confirm
+  latest: "on_status[DISBURSED]"
+
+subBranches:
+
+  direct-to-account:
+    id: direct-to-account
+    appliesTo: [FNC-lending, FNC-lending]
+    description: >
+      Funds transferred directly to borrower's or business owner's
+      verified bank account. Account must pass penny-drop verification
+      before on_confirm. BI-FAST or RTGS depending on amount.
+    steps:
+      - step: account-verification
+        trigger: init
+        direction: BPP-internal (penny-drop)
+        requiredFields:
+          - settlementAttributes.disbursementAccount.bankCode
+          - settlementAttributes.disbursementAccount.accountNumber
+          - settlementAttributes.disbursementAccount.accountName
+        blockingConditions:
+          - name mismatch → ION-FIN-6009
+          - account not found → ION-FIN-6009
+          - third-party account (not in borrower's name) → ION-FIN-6009
+
+      - step: disbursement-initiation
+        trigger: on_confirm
+        direction: BPP → BI-FAST / RTGS
+        requiredFields:
+          - settlementAttributes.disbursementReference
+          - settlementAttributes.disbursementAmount
+          - settlementAttributes.disbursementChannel
+        disbursementChannels:
+          BI_FAST: For amounts ≤ IDR 250 juta (T+0 same-day)
+          RTGS: For amounts > IDR 250 juta (T+0 within operating hours)
+          SKN: Fallback if BI-FAST is unavailable (T+1)
+        conditionalFields:
+          - field: settlementAttributes.dailyLimitCheck
+            condition: required if amount approaches OJK/gateway daily limit → ION-FIN-6010
+
+      - step: disbursement-confirmation
+        trigger: "on_status[DISBURSED]"
+        direction: BPP → BAP (unsolicited)
+        requiredFields:
+          - contractAttributes.disbursementTimestamp
+          - contractAttributes.disbursedAmount
+          - contractAttributes.disbursementReference
+          - contractAttributes.disbursementChannel
+
+  notary-escrow:
+    id: notary-escrow
+    appliesTo: [FNC-lending]
+    description: >
+      Funds transferred to a notary/PPAT escrow account. Released to
+      the property seller only after SKMHT is executed and AJB is
+      signed. Prevents disbursement before collateral is legally secured.
+    steps:
+      - step: escrow-account-setup
+        trigger: on_confirm
+        requiredFields:
+          - contractAttributes.notaryEscrowAccount.bankCode
+          - contractAttributes.notaryEscrowAccount.accountNumber
+          - contractAttributes.notaryEscrowAccount.notaryId
+          - contractAttributes.notaryEscrowAccount.escrowRef
+
+      - step: funds-to-escrow
+        trigger: "on_status[SKMHT_EXECUTED]"
+        direction: BPP → escrow account
+        requiredFields:
+          - contractAttributes.escrowTransferRef
+          - contractAttributes.escrowTransferTimestamp
+          - contractAttributes.escrowAmount
+        on_status:
+          trigger: FUNDS_IN_ESCROW
+
+      - step: seller-disbursement
+        trigger: "on_status[AJB_SIGNED]"
+        direction: escrow → PROPERTY_SELLER
+        requiredFields:
+          - contractAttributes.sellerDisbursementRef
+          - contractAttributes.sellerDisbursementAmount
+          - contractAttributes.ajbDeedNumber
+        on_status:
+          trigger: DISBURSED
+
+      - step: escrow-reconciliation
+        description: Any unspent escrow (e.g., price adjustment) is returned to BPP
+
+  dealer-direct:
+    id: dealer-direct
+    appliesTo: [FNC-lending]
+    description: >
+      Funds transferred directly to the vehicle dealer's bank account
+      after borrower's down payment is confirmed. Net of DP, not the
+      full vehicle price. Dealer releases vehicle to borrower after
+      receiving funds.
+    steps:
+      - step: dp-confirmation
+        trigger: init
+        requiredFields:
+          - contractAttributes.downPaymentAmount
+          - contractAttributes.downPaymentEvidenceRef
+        description: BAP submits evidence that borrower has paid DP to dealer
+
+      - step: dealer-account-verification
+        trigger: on_confirm
+        direction: BPP-internal
+        requiredFields:
+          - participants[role=DEALER].settlementAccount.bankCode
+          - participants[role=DEALER].settlementAccount.accountNumber
+          - participants[role=DEALER].participantAttributes.dealerCode
+
+      - step: dealer-disbursement
+        trigger: on_confirm
+        requiredFields:
+          - contractAttributes.dealerDisbursementAmount
+          - contractAttributes.dealerDisbursementRef
+        disbursementAmount: vehiclePrice − downPaymentAmount
+        on_status:
+          trigger: DISBURSED_TO_DEALER
+
+      - step: vehicle-release-confirmation
+        trigger: "on_status[VEHICLE_RELEASED]"
+        from: BAP
+        to: BPP
+        requiredFields:
+          - contractAttributes.vehicleHandoverRef
+          - contractAttributes.vehicleHandoverDate
+
+  merchant-direct:
+    id: merchant-direct
+    appliesTo: [FNC-lending]
+    description: >
+      BPP pays the merchant directly upon BNPL approval. Borrower's
+      goods/services are released immediately. Merchant receives
+      (purchaseAmount − MDR). Settlement to merchant is T+1 business days.
+    steps:
+      - step: merchant-payment-initiation
+        trigger: on_confirm
+        requiredFields:
+          - contractAttributes.merchantId
+          - contractAttributes.merchantOrderId
+          - contractAttributes.purchaseAmount
+          - contractAttributes.merchantMDR
+          - contractAttributes.merchantNetAmount
+          - contractAttributes.merchantDisbursementTimeline
+
+      - step: merchant-disbursement-confirmation
+        trigger: "on_status[MERCHANT_DISBURSEMENT_COMPLETE]"
+        requiredFields:
+          - contractAttributes.merchantDisbursementRef
+          - contractAttributes.merchantDisbursementTimestamp
+
+  tranche:
+    id: tranche
+    appliesTo: [FNC-lending, FNC-lending]
+    description: >
+      Staged disbursement in multiple tranches. Used for under-construction
+      KPR (bertahap) and business investment loans tied to project milestones.
+      Each tranche is released upon verification of the preceding milestone.
+    steps:
+      - step: tranche-schedule-declaration
+        within: on_confirm
+        requiredFields:
+          - contractAttributes.trancheSchedule[].trancheNumber
+          - contractAttributes.trancheSchedule[].expectedReleaseDate
+          - contractAttributes.trancheSchedule[].trancheAmount
+          - contractAttributes.trancheSchedule[].releaseTrigger
+
+      - step: tranche-release-request
+        from: BAP
+        to: BPP
+        updateType: TRANCHE_RELEASE
+        requiredFields:
+          - contractAttributes.trancheNumber
+          - contractAttributes.milestoneVerificationRef
+          - contractAttributes.milestoneVerificationDate
+
+      - step: tranche-disbursement
+        direction: BPP after milestone verification
+        requiredFields:
+          - contractAttributes.trancheDisbursementRef
+          - contractAttributes.trancheAmount
+          - contractAttributes.trancheReleaseDate
+
+  errors:
+    - ION-FIN-6009  # Disbursement account invalid or unverified
+    - ION-FIN-6010  # Daily disbursement limit exceeded
+
+policyReferences:
+  - ion://policy/finance/disbursement/direct-to-account/v1
+  - ion://policy/finance/disbursement/notary-escrow/v1
+  - ion://policy/finance/disbursement/dealer-direct/v1
+  - ion://policy/finance/disbursement/merchant-direct/v1
+  - ion://policy/finance/disbursement/tranche/v1
+
+

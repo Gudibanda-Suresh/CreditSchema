@@ -1,0 +1,66 @@
+iri: ion://policy/finance.kyc.tier-2-medium-risk
+
+version: "1.0.0"
+
+versionEffectiveFrom: "2026-05-01"
+
+category: KYC
+
+subCategory: RISK_BASED_KYC
+
+status: ratified
+
+ratifiedAt: "2026-04-15"
+
+displayText:
+  id: "eKYC Tier 2 — Risiko Menengah"
+  en: "eKYC Tier 2 — Medium Risk"
+
+riskTier: 2
+
+maxLoanAmountIDR: 50000000
+
+requiredChecks:
+  - DUKCAPIL_MATCH
+  - LIVENESS_DETECTION
+
+livenessCheckRequired: true
+
+livenessProvider: OJK_APPROVED_LIVENESS_VENDOR
+
+faceMatchRequired: false
+
+documentOcrRequired: false
+
+kycExpiryMonths: 24
+
+dukcapilMatchFields:
+  - NIK
+  - FULL_NAME
+  - DATE_OF_BIRTH
+
+livenessMinConfidenceScore: 0.85
+
+reVerificationRequired: false
+
+applicablePatterns:
+  - personal-loan
+  - vehicle-loan
+  - revolving-credit
+  - bnpl
+
+applicableLenderTypes:
+  - BANK_UMUM
+  - BPR
+  - MULTIFINANCE
+  - LPBBTI_P2P
+  - LPBBTI_DIGITAL
+
+regulatoryBasis:
+  - "OJK POJK 12/2018 tentang Layanan Perbankan Digital"
+  - "OJK POJK 13/2018 tentang Inovasi Keuangan Digital"
+  - "PPATK PER-09/1.02/PPATK/09/14"
+
+supersededBy: null
+
+deprecatedAt: null

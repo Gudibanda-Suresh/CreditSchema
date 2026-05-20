@@ -1,0 +1,49 @@
+iri: ion://policy/finance.prepayment.penalty-1pct-standard
+
+version: "1.0.0"
+
+versionEffectiveFrom: "2026-05-01"
+
+category: PREPAYMENT
+
+status: ratified
+
+ratifiedAt: "2026-04-15"
+
+displayText:
+  id: "Pelunasan dipercepat — penalti 1% dari sisa pokok"
+  en: "Early settlement — 1% penalty on outstanding principal"
+
+prepaymentPenaltyRate: 0.01
+
+penaltyBasis: OUTSTANDING_PRINCIPAL
+
+penaltyFreeAfterMonths: 0
+
+partialPrepaymentAllowed: true
+
+fullPrepaymentAllowed: true
+
+quoteValidityDays: 5
+
+penaltyWaivedIf:
+  - condition: LENDER_INITIATED_RESTRUCTURE
+    description: Penalty waived when lender initiates restructuring without borrower fault
+
+applicablePatterns:
+  - personal-loan
+  - business-loan
+
+applicableLenderTypes:
+  - BANK_UMUM
+  - BPR
+  - MULTIFINANCE
+  - LPBBTI_P2P
+
+regulatoryBasis:
+  - "OJK POJK 22/2023 Pasal 28 tentang biaya pelunasan dipercepat"
+  - "UU 8/1999 tentang Perlindungan Konsumen"
+
+supersededBy: null
+
+deprecatedAt: null

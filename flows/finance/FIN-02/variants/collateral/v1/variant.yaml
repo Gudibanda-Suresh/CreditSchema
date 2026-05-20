@@ -1,0 +1,201 @@
+id: ion-finance-variant-collateral-v1
+version: "1.0.0"
+variantType: collateral
+sector: ion:finance
+status: ready
+description: >
+  Collateral declaration, appraisal, and legal registration sub-flow.
+  Activated for all secured loan patterns: mortgage (SKMHT/APHT on
+  property), vehicle-loan (fiducia on BPKB), and business-loan with
+  collateral (where KUR Mikro IJP waiver does not apply). Sub-branches
+  differ by collateral type: property, vehicle, or movable asset.
+  Collateral is always validated before on_confirm is sent. Legal
+  registration (APHT, fiducia deed) happens post-disbursement.
+
+appliesTo:
+  - FNC-lending
+  - FNC-lending
+  - FNC-lending
+
+window:
+  earliest: init
+  latest: contract_COMPLETE
+  note: Declaration and appraisal at init→on_init; legal registration post-disbursement
+
+subBranches:
+
+  property-collateral:
+    id: property-collateral
+    appliesTo: [FNC-lending]
+    description: >
+      Land and/or building used as collateral for KPR/KPA.
+      Certificate types: SHM (Sertifikat Hak Milik) preferred;
+      HGB (Hak Guna Bangunan) accepted with tenure check;
+      SHGB-Apartemen for strata-title units. SKMHT is executed
+      at notary first (allows immediate disbursement); APHT follows
+      after AJB signing and BPN registration within 30 days.
+    steps:
+      - step: collateral-declaration
+        from: BAP
+        to: BPP
+        within: init
+        requiredFields:
+          - contractAttributes.collateral.certificateType
+          - contractAttributes.collateral.certificateNumber
+          - contractAttributes.collateral.landArea
+          - contractAttributes.collateral.buildingArea
+          - contractAttributes.collateral.propertyAddress
+          - contractAttributes.collateral.bpnRegistrationRef
+        conditionalFields:
+          - field: contractAttributes.collateral.hgbExpiryDate
+            condition: required for HGB certificates — must have sufficient remaining tenure
+          - field: contractAttributes.collateral.developerName
+            condition: required for primary market (developer property)
+
+      - step: appraisal-submission
+        from: BAP
+        to: BPP
+        within: init
+        requiredFields:
+          - contractAttributes.collateral.appraisedValue
+          - contractAttributes.collateral.appraisalProvider
+          - contractAttributes.collateral.appraisalRef
+          - contractAttributes.collateral.appraisalDate
+        conditionalFields:
+          - field: contractAttributes.collateral.kjppCertificateRef
+            condition: required for secondary market — KJPP-stamped appraisal mandatory
+
+      - step: ltv-check
+        direction: BPP-internal
+        formula: loanAmount / appraisedValue × 100
+        blockingConditions:
+          - ltv > offerAttributes.collateralPolicy.maxLtv → ION-FIN-6007
+          - existing lien found on BPN record → ION-FIN-6008
+
+      - step: skmht-execution
+        trigger: on_confirm
+        from: BPP → NOTARY
+        description: BPP instructs notary to execute SKMHT (Surat Kuasa Membebankan Hak Tanggungan)
+        requiredFields:
+          - contractAttributes.notaryId
+          - contractAttributes.skmhtExecutionDate
+          - contractAttributes.skmhtDeedNumber
+
+      - step: apht-registration
+        trigger: "on_status[AJB_SIGNED]"
+        from: NOTARY → BPN
+        description: APHT registered at BPN within 30 days of AJB signing per UUHT 4/1996
+        requiredFields:
+          - contractAttributes.aphtDeedNumber
+          - contractAttributes.bpnRegistrationNumber
+          - contractAttributes.aphtCertificateUrl
+        on_status:
+          trigger: COLLATERAL_REGISTERED
+          requiredFields:
+            - contractAttributes.aphtCertificateUrl
+            - contractAttributes.collateralRegistrationDate
+
+  vehicle-collateral:
+    id: vehicle-collateral
+    appliesTo: [FNC-lending]
+    description: >
+      Vehicle BPKB (Bukti Pemilikan Kendaraan Bermotor) registered as
+      fiducia collateral per UUJF 42/1999. BPP retains BPKB during
+      loan tenure. Fiducia deed executed at notary within 30 days of
+      disbursement. BPKB returned to borrower after full settlement.
+    steps:
+      - step: bpkb-declaration
+        from: BAP
+        to: BPP
+        within: init
+        requiredFields:
+          - contractAttributes.collateral.vehicleNoRangka
+          - contractAttributes.collateral.vehicleNoMesin
+          - contractAttributes.collateral.bpkbNumber
+          - contractAttributes.collateral.stnkNumber
+          - contractAttributes.collateral.vehicleMake
+          - contractAttributes.collateral.vehicleModel
+          - contractAttributes.collateral.vehicleYear
+          - contractAttributes.collateral.vehicleAppraisedValue
+        conditionalFields:
+          - field: contractAttributes.collateral.vehicleInspectionReport
+            condition: required for used vehicles older than 3 years
+          - field: contractAttributes.collateral.existingFiduciaRef
+            condition: required if vehicle had a prior fiducia that needs release
+
+      - step: fiducia-registration
+        trigger: "on_status[DISBURSED_TO_DEALER]"
+        from: BPP → NOTARY
+        description: Fiducia deed (Akta Fidusia) created and registered at Kemenkumham within 30 days
+        requiredFields:
+          - contractAttributes.fiduciaDeedNumber
+          - contractAttributes.fiduciaRegistrationNumber
+          - contractAttributes.fiduciaRegistrationDate
+          - contractAttributes.fiduciaCertificateUrl
+
+      - step: bpkb-retention
+        trigger: on_confirm
+        description: BPP takes physical custody of BPKB until full settlement
+        requiredFields:
+          - contractAttributes.bpkbReceiptRef
+          - contractAttributes.bpkbReturnConditions
+
+      - step: bpkb-release
+        trigger: "on_status[FULLY_REPAID]"
+        requiredFields:
+          - contractAttributes.fiduciaReleaseRef
+          - contractAttributes.bpkbReturnDate
+          - contractAttributes.bpkbCourierRef
+
+  movable-asset-collateral:
+    id: movable-asset-collateral
+    appliesTo: [FNC-lending]
+    description: >
+      Movable assets as collateral for business loans — machinery, inventory,
+      accounts receivable, gold, or other valuables. Registered as fiducia
+      per UUJF 42/1999. Relevant for KUR Kecil and non-KUR SME loans.
+      KUR Mikro with IJP guarantee is exempt from this sub-branch.
+    steps:
+      - step: asset-declaration
+        from: BAP
+        to: BPP
+        within: init
+        requiredFields:
+          - contractAttributes.collateral.assetType
+          - contractAttributes.collateral.assetDescription
+          - contractAttributes.collateral.assetLocation
+          - contractAttributes.collateral.assetAppraisedValue
+          - contractAttributes.collateral.assetOwnershipProof
+        assetTypes:
+          - MESIN_PERALATAN
+          - STOK_BARANG
+          - PIUTANG_USAHA
+          - EMAS
+          - TANAH_TANPA_BANGUNAN
+          - SURAT_BERHARGA
+
+      - step: asset-appraisal
+        direction: BPP-internal or independent appraiser
+        requiredFields:
+          - contractAttributes.collateral.appraisedValue
+          - contractAttributes.collateral.appraisalRef
+          - contractAttributes.collateral.appraisalDate
+
+      - step: fiducia-registration
+        trigger: on_confirm
+        description: Fiducia deed executed and registered at Kemenkumham
+        requiredFields:
+          - contractAttributes.fiduciaDeedNumber
+          - contractAttributes.fiduciaRegistrationNumber
+
+  errors:
+    - ION-FIN-6007  # Collateral valuation insufficient
+    - ION-FIN-6008  # Collateral already encumbered
+
+policyReferences:
+  - ion://policy/finance/collateral/skmht-apht/v1
+  - ion://policy/finance/collateral/fiducia-bpkb/v1
+  - ion://policy/finance/collateral/movable-asset/v1
+  - ion://policy/finance/ojk-kpr-ltv-cap/v1
+
+

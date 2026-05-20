@@ -1,0 +1,1099 @@
+{
+  "@context": {
+    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "schema": "https://schema.org/",
+    "ion": "https://schema.ion.id/finance/resource/v1#",
+    "skos": "http://www.w3.org/2004/02/skos/core#",
+    "owl": "http://www.w3.org/2002/07/owl#"
+  },
+  "@graph": [
+    {
+      "@id": "ion:CreditProduct",
+      "@type": "rdfs:Class",
+      "rdfs:subClassOf": {
+        "@id": "schema:LoanOrCredit"
+      },
+      "rdfs:label": "CreditProduct",
+      "rdfs:comment": "Product template for credit/financing offerings. Placed in Beckn Resource.resourceAttributes within Catalog.resources[] returned in on_discover. Carries ranges (not exact values) — exact per-applicant values are in CreditApproval."
+    },
+    {
+      "@id": "ion:ProductIdentity",
+      "@type": "rdfs:Class",
+      "rdfs:label": "ProductIdentity",
+      "rdfs:comment": "Product name, type, institution, and channel information. Block 1 of CreditProduct.",
+      "rdfs:subClassOf": {
+        "@id": "schema:FinancialProduct"
+      }
+    },
+    {
+      "@id": "ion:PrincipalRange",
+      "@type": "rdfs:Class",
+      "rdfs:label": "PrincipalRange",
+      "rdfs:comment": "Min/max principal amount range offered. Block 2 of CreditProduct.",
+      "rdfs:subClassOf": {
+        "@id": "schema:MonetaryAmount"
+      }
+    },
+    {
+      "@id": "ion:MonetaryAmount",
+      "@type": "rdfs:Class",
+      "rdfs:label": "MonetaryAmount",
+      "rdfs:comment": "A monetary value paired with its ISO 4217 currency code.",
+      "rdfs:subClassOf": {
+        "@id": "schema:MonetaryAmount"
+      }
+    },
+    {
+      "@id": "ion:Tenor",
+      "@type": "rdfs:Class",
+      "rdfs:label": "Tenor",
+      "rdfs:comment": "Loan tenure range and available discrete options. Block 3 of CreditProduct.",
+      "rdfs:subClassOf": {
+        "@id": "schema:LoanOrCredit"
+      }
+    },
+    {
+      "@id": "ion:CostOfFundMechanism",
+      "@type": "rdfs:Class",
+      "rdfs:label": "CostOfFundMechanism",
+      "rdfs:comment": "Interest or profit mechanics (conventional or Islamic). Block 4 of CreditProduct.",
+      "rdfs:subClassOf": {
+        "@id": "schema:LoanOrCredit"
+      }
+    },
+    {
+      "@id": "ion:RepaymentSchedule",
+      "@type": "rdfs:Class",
+      "rdfs:label": "RepaymentSchedule",
+      "rdfs:comment": "Repayment frequency and accepted payment channels. Block 5 of CreditProduct.",
+      "rdfs:subClassOf": {
+        "@id": "schema:RepaymentSpecification"
+      }
+    },
+    {
+      "@id": "ion:FeeStructure",
+      "@type": "rdfs:Class",
+      "rdfs:label": "FeeStructure",
+      "rdfs:comment": "All fees and charges for this product. Block 6 of CreditProduct.",
+      "rdfs:subClassOf": {
+        "@id": "schema:PriceSpecification"
+      }
+    },
+    {
+      "@id": "ion:Collateral",
+      "@type": "rdfs:Class",
+      "rdfs:label": "Collateral",
+      "rdfs:comment": "Collateral types, LTV limits, and guarantee institutions. Block 7 of CreditProduct.",
+      "rdfs:subClassOf": {
+        "@id": "schema:LoanOrCredit"
+      }
+    },
+    {
+      "@id": "ion:BorrowerCriteria",
+      "@type": "rdfs:Class",
+      "rdfs:label": "BorrowerCriteria",
+      "rdfs:comment": "Borrower eligibility requirements. Block 8 of CreditProduct.",
+      "rdfs:subClassOf": {
+        "@id": "schema:LoanOrCredit"
+      }
+    },
+    {
+      "@id": "ion:RegulatoryDeclaration",
+      "@type": "rdfs:Class",
+      "rdfs:label": "RegulatoryDeclaration",
+      "rdfs:comment": "OJK/BI licenses, disclosures, and complaint service. Block 9 of CreditProduct.",
+      "rdfs:subClassOf": {
+        "@id": "schema:FinancialService"
+      }
+    },
+    {
+      "@id": "ion:License",
+      "@type": "rdfs:Class",
+      "rdfs:label": "License",
+      "rdfs:comment": "Single OJK/BI/DSN-MUI license record within RegulatoryDeclaration.",
+      "rdfs:subClassOf": {
+        "@id": "schema:FinancialService"
+      }
+    },
+    {
+      "@id": "ion:Disclosure",
+      "@type": "rdfs:Class",
+      "rdfs:label": "Disclosure",
+      "rdfs:comment": "Required consumer disclosure document reference (RIPLAY, T&C, privacy policy, etc.).",
+      "rdfs:subClassOf": {
+        "@id": "schema:DigitalDocument"
+      }
+    },
+    {
+      "@id": "ion:ComplaintService",
+      "@type": "rdfs:Class",
+      "rdfs:label": "ComplaintService",
+      "rdfs:comment": "Complaint and grievance redressal contacts per POJK 6/POJK.07/2022.",
+      "rdfs:subClassOf": {
+        "@id": "schema:ContactPoint"
+      }
+    },
+    {
+      "@id": "ion:RequiredDocument",
+      "@type": "rdfs:Class",
+      "rdfs:label": "RequiredDocument",
+      "rdfs:comment": "A single document required from the borrower. Block 10 of CreditProduct.",
+      "rdfs:subClassOf": {
+        "@id": "schema:DigitalDocument"
+      }
+    },
+    {
+      "@id": "ion:IslamicFinanceStructure",
+      "@type": "rdfs:Class",
+      "rdfs:label": "IslamicFinanceStructure",
+      "rdfs:comment": "Islamic contract (akad) details and DSN-MUI fatwa reference. Block 11 — present only when financeType=ISLAMIC.",
+      "rdfs:subClassOf": {
+        "@id": "schema:LoanOrCredit"
+      }
+    },
+    {
+      "@id": "ion:GovernmentProgram",
+      "@type": "rdfs:Class",
+      "rdfs:label": "GovernmentProgram",
+      "rdfs:comment": "Government subsidy program details (KUR, FLPP, UMi, BPUM). Block 12 — present for subsidised products.",
+      "rdfs:subClassOf": {
+        "@id": "schema:GovernmentService"
+      }
+    },
+    {
+      "@id": "ion:PaylaterService",
+      "@type": "rdfs:Class",
+      "rdfs:label": "PaylaterService",
+      "rdfs:comment": "BNPL / Paylater specific attributes. Block 13 — present only for productType=PAYLATER.",
+      "rdfs:subClassOf": {
+        "@id": "schema:PaymentService"
+      }
+    },
+    {
+      "@id": "ion:productIdentity",
+      "@type": "rdf:Property",
+      "rdfs:label": "productIdentity",
+      "rdfs:range": {
+        "@id": "ion:ProductIdentity"
+      },
+      "rdfs:comment": "Product name, type, institution, and distribution channel information."
+    },
+    {
+      "@id": "ion:principalRange",
+      "@type": "rdf:Property",
+      "rdfs:label": "principalRange",
+      "rdfs:range": {
+        "@id": "ion:PrincipalRange"
+      },
+      "rdfs:comment": "Min/max principal amount offered by this credit product."
+    },
+    {
+      "@id": "ion:tenor",
+      "@type": "rdf:Property",
+      "rdfs:label": "tenor",
+      "rdfs:range": {
+        "@id": "ion:Tenor"
+      },
+      "rdfs:comment": "Loan tenure range (minimum, maximum, available options)."
+    },
+    {
+      "@id": "ion:costOfFund",
+      "@type": "rdf:Property",
+      "rdfs:label": "costOfFund",
+      "rdfs:range": {
+        "@id": "ion:CostOfFundMechanism"
+      },
+      "rdfs:comment": "Interest or profit mechanics and rate range."
+    },
+    {
+      "@id": "ion:repaymentSchedule",
+      "@type": "rdf:Property",
+      "rdfs:label": "repaymentSchedule",
+      "rdfs:range": {
+        "@id": "ion:RepaymentSchedule"
+      },
+      "rdfs:comment": "Repayment schedule, frequency, and accepted payment channels."
+    },
+    {
+      "@id": "ion:feeStructure",
+      "@type": "rdf:Property",
+      "rdfs:label": "feeStructure",
+      "rdfs:range": {
+        "@id": "ion:FeeStructure"
+      },
+      "rdfs:comment": "All fees and charges associated with this credit product."
+    },
+    {
+      "@id": "ion:collateral",
+      "@type": "rdf:Property",
+      "rdfs:label": "collateral",
+      "rdfs:range": {
+        "@id": "ion:Collateral"
+      },
+      "rdfs:comment": "Collateral types, LTV limits, and guarantee institution."
+    },
+    {
+      "@id": "ion:borrowerCriteria",
+      "@type": "rdf:Property",
+      "rdfs:label": "borrowerCriteria",
+      "rdfs:range": {
+        "@id": "ion:BorrowerCriteria"
+      },
+      "rdfs:comment": "Borrower eligibility and qualification criteria."
+    },
+    {
+      "@id": "ion:regulatoryDeclaration",
+      "@type": "rdf:Property",
+      "rdfs:label": "regulatoryDeclaration",
+      "rdfs:range": {
+        "@id": "ion:RegulatoryDeclaration"
+      },
+      "rdfs:comment": "Regulatory licenses, consumer disclosures, and complaint channel."
+    },
+    {
+      "@id": "ion:requiredDocuments",
+      "@type": "rdf:Property",
+      "rdfs:label": "requiredDocuments",
+      "rdfs:range": {
+        "@id": "ion:RequiredDocument"
+      },
+      "rdfs:comment": "Checklist of documents required from the borrower."
+    },
+    {
+      "@id": "ion:islamicFinance",
+      "@type": "rdf:Property",
+      "rdfs:label": "islamicFinance",
+      "rdfs:range": {
+        "@id": "ion:IslamicFinanceStructure"
+      },
+      "rdfs:comment": "Islamic akad details. Present only when financeType=ISLAMIC."
+    },
+    {
+      "@id": "ion:governmentProgram",
+      "@type": "rdf:Property",
+      "rdfs:label": "governmentProgram",
+      "rdfs:range": {
+        "@id": "ion:GovernmentProgram"
+      },
+      "rdfs:comment": "Government program details (KUR, FLPP, UMi, BPUM)."
+    },
+    {
+      "@id": "ion:paylaterService",
+      "@type": "rdf:Property",
+      "rdfs:label": "paylaterService",
+      "rdfs:range": {
+        "@id": "ion:PaylaterService"
+      },
+      "rdfs:comment": "BNPL/Paylater attributes. Present only for productType=PAYLATER."
+    },
+    {
+      "@id": "ion:productName",
+      "@type": "rdf:Property",
+      "rdfs:label": "productName",
+      "rdfs:range": {
+        "@id": "xsd:string"
+      },
+      "rdfs:comment": "Official product name as in OJK registration and RIPLAY header."
+    },
+    {
+      "@id": "ion:institutionName",
+      "@type": "rdf:Property",
+      "rdfs:label": "institutionName",
+      "rdfs:range": {
+        "@id": "xsd:string"
+      },
+      "rdfs:comment": "Full legal entity name of the lending institution as registered with OJK."
+    },
+    {
+      "@id": "ion:productType",
+      "@type": "rdf:Property",
+      "rdfs:label": "productType",
+      "rdfs:range": {
+        "@id": "xsd:string"
+      },
+      "rdfs:comment": "Credit product category (KPR, KTA, KUR_MIKRO, PAYLATER, etc.)."
+    },
+    {
+      "@id": "ion:financeType",
+      "@type": "rdf:Property",
+      "rdfs:label": "financeType",
+      "rdfs:range": {
+        "@id": "xsd:string"
+      },
+      "rdfs:comment": "CONVENTIONAL (interest-based) or ISLAMIC (akad/DSN-MUI certified)."
+    },
+    {
+      "@id": "ion:currency",
+      "@type": "rdf:Property",
+      "rdfs:label": "currency",
+      "rdfs:range": {
+        "@id": "xsd:string"
+      },
+      "rdfs:comment": "ISO 4217 currency code for all monetary amounts (default IDR)."
+    },
+    {
+      "@id": "ion:institutionType",
+      "@type": "rdf:Property",
+      "rdfs:label": "institutionType",
+      "rdfs:range": {
+        "@id": "xsd:string"
+      },
+      "rdfs:comment": "OJK institution type (BANK_UMUM, BPR, BPRS, P2P_LENDING, etc.)."
+    },
+    {
+      "@id": "ion:bankCapitalTier",
+      "@type": "rdf:Property",
+      "rdfs:label": "bankCapitalTier",
+      "rdfs:range": {
+        "@id": "xsd:string"
+      },
+      "rdfs:comment": "BI BUKU capital tier (BUKU_1 to BUKU_4). Applies to BANK_UMUM only."
+    },
+    {
+      "@id": "ion:digitalOnly",
+      "@type": "rdf:Property",
+      "rdfs:label": "digitalOnly",
+      "rdfs:range": {
+        "@id": "xsd:boolean"
+      },
+      "rdfs:comment": "True if no physical branch visit required for this product."
+    },
+    {
+      "@id": "ion:distributionChannels",
+      "@type": "rdf:Property",
+      "rdfs:label": "distributionChannels",
+      "rdfs:range": {
+        "@id": "xsd:string"
+      },
+      "rdfs:comment": "Available application channels (BRANCH_OFFICE, MOBILE_BANKING, etc.)."
+    },
+    {
+      "@id": "ion:value",
+      "@type": "rdf:Property",
+      "rdfs:label": "value",
+      "rdfs:range": {
+        "@id": "xsd:decimal"
+      },
+      "rdfs:comment": "Numeric monetary amount in the currency specified by ion:currency."
+    },
+    {
+      "@id": "ion:minimum",
+      "@type": "rdf:Property",
+      "rdfs:label": "minimum",
+      "rdfs:range": {
+        "@id": "xsd:decimal"
+      },
+      "rdfs:comment": "Minimum value for a range (principal or tenor)."
+    },
+    {
+      "@id": "ion:maximum",
+      "@type": "rdf:Property",
+      "rdfs:label": "maximum",
+      "rdfs:range": {
+        "@id": "xsd:decimal"
+      },
+      "rdfs:comment": "Maximum value for a range (principal or tenor)."
+    },
+    {
+      "@id": "ion:maximumKUROfficial",
+      "@type": "rdf:Property",
+      "rdfs:label": "maximumKUROfficial",
+      "rdfs:range": {
+        "@id": "xsd:decimal"
+      },
+      "rdfs:comment": "Official KUR plafond cap per government regulation (Permenko 1/2023)."
+    },
+    {
+      "@id": "ion:denomination",
+      "@type": "rdf:Property",
+      "rdfs:label": "denomination",
+      "rdfs:range": {
+        "@id": "xsd:decimal"
+      },
+      "rdfs:comment": "Allowed principal increment (amount must be a multiple of this value)."
+    },
+    {
+      "@id": "ion:unit",
+      "@type": "rdf:Property",
+      "rdfs:label": "unit",
+      "rdfs:range": {
+        "@id": "xsd:string"
+      },
+      "rdfs:comment": "Time unit for tenor values (DAYS, MONTHS, or YEARS)."
+    },
+    {
+      "@id": "ion:availableTenors",
+      "@type": "rdf:Property",
+      "rdfs:label": "availableTenors",
+      "rdfs:range": {
+        "@id": "xsd:integer"
+      },
+      "rdfs:comment": "Discrete list of available tenors when free selection is not permitted."
+    },
+    {
+      "@id": "ion:yieldType",
+      "@type": "rdf:Property",
+      "rdfs:label": "yieldType",
+      "rdfs:range": {
+        "@id": "xsd:string"
+      },
+      "rdfs:comment": "Cost-of-fund type (FIXED, FLOATING, COMBINED, MARGIN, NISBAH, UJRAH, ZERO_COST)."
+    },
+    {
+      "@id": "ion:calculationMethod",
+      "@type": "rdf:Property",
+      "rdfs:label": "calculationMethod",
+      "rdfs:range": {
+        "@id": "xsd:string"
+      },
+      "rdfs:comment": "Amortisation method (ANNUITY, FLAT, EFFECTIVE, DECLINING_BALANCE)."
+    },
+    {
+      "@id": "ion:rateMinPercent",
+      "@type": "rdf:Property",
+      "rdfs:label": "rateMinPercent",
+      "rdfs:range": {
+        "@id": "xsd:decimal"
+      },
+      "rdfs:comment": "Minimum annual interest/margin rate offered for this product (%)."
+    },
+    {
+      "@id": "ion:rateMaxPercent",
+      "@type": "rdf:Property",
+      "rdfs:label": "rateMaxPercent",
+      "rdfs:range": {
+        "@id": "xsd:decimal"
+      },
+      "rdfs:comment": "Maximum annual interest/margin rate offered for this product (%)."
+    },
+    {
+      "@id": "ion:rateReference",
+      "@type": "rdf:Property",
+      "rdfs:label": "rateReference",
+      "rdfs:range": {
+        "@id": "xsd:string"
+      },
+      "rdfs:comment": "Floating-rate benchmark (BI_RATE, SBDK, JIBOR, PRIME_RATE, SOFR)."
+    },
+    {
+      "@id": "ion:spreadPercent",
+      "@type": "rdf:Property",
+      "rdfs:label": "spreadPercent",
+      "rdfs:range": {
+        "@id": "xsd:decimal"
+      },
+      "rdfs:comment": "Spread above benchmark rate for floating-rate products (% p.a.)."
+    },
+    {
+      "@id": "ion:fixedPeriodYears",
+      "@type": "rdf:Property",
+      "rdfs:label": "fixedPeriodYears",
+      "rdfs:range": {
+        "@id": "xsd:integer"
+      },
+      "rdfs:comment": "Fixed-rate period in years for COMBINED products before switching to floating."
+    },
+    {
+      "@id": "ion:governmentSubsidyPercent",
+      "@type": "rdf:Property",
+      "rdfs:label": "governmentSubsidyPercent",
+      "rdfs:range": {
+        "@id": "xsd:decimal"
+      },
+      "rdfs:comment": "Government interest subsidy rate (% p.a.) paid to the bank on KUR programs."
+    },
+    {
+      "@id": "ion:effectiveRatePercent",
+      "@type": "rdf:Property",
+      "rdfs:label": "effectiveRatePercent",
+      "rdfs:range": {
+        "@id": "xsd:decimal"
+      },
+      "rdfs:comment": "Effective rate paid by the borrower after government subsidy deduction."
+    },
+    {
+      "@id": "ion:frequency",
+      "@type": "rdf:Property",
+      "rdfs:label": "frequency",
+      "rdfs:range": {
+        "@id": "xsd:string"
+      },
+      "rdfs:comment": "Repayment frequency (MONTHLY, QUARTERLY, BULLET, SEASONAL, etc.)."
+    },
+    {
+      "@id": "ion:paymentChannels",
+      "@type": "rdf:Property",
+      "rdfs:label": "paymentChannels",
+      "rdfs:range": {
+        "@id": "xsd:string"
+      },
+      "rdfs:comment": "Accepted payment channels (AUTODEBIT, QRIS, BIFAST, VIRTUAL_ACCOUNT, etc.)."
+    },
+    {
+      "@id": "ion:gracePeriodDays",
+      "@type": "rdf:Property",
+      "rdfs:label": "gracePeriodDays",
+      "rdfs:range": {
+        "@id": "xsd:integer"
+      },
+      "rdfs:comment": "Number of days after due date before a late penalty applies."
+    },
+    {
+      "@id": "ion:earlySettlementAllowed",
+      "@type": "rdf:Property",
+      "rdfs:label": "earlySettlementAllowed",
+      "rdfs:range": {
+        "@id": "xsd:boolean"
+      },
+      "rdfs:comment": "Whether partial or full early repayment is permitted."
+    },
+    {
+      "@id": "ion:earlySettlementPenalty",
+      "@type": "rdf:Property",
+      "rdfs:label": "earlySettlementPenalty",
+      "rdfs:range": {
+        "@id": "xsd:boolean"
+      },
+      "rdfs:comment": "Whether early repayment incurs a penalty fee."
+    },
+    {
+      "@id": "ion:restructuringAllowed",
+      "@type": "rdf:Property",
+      "rdfs:label": "restructuringAllowed",
+      "rdfs:range": {
+        "@id": "xsd:boolean"
+      },
+      "rdfs:comment": "Whether loan restructuring (moratorium, tenor extension) is available."
+    },
+    {
+      "@id": "ion:provisionFeePercent",
+      "@type": "rdf:Property",
+      "rdfs:label": "provisionFeePercent",
+      "rdfs:range": {
+        "@id": "xsd:decimal"
+      },
+      "rdfs:comment": "Provision/origination fee as % of approved principal (paid upfront)."
+    },
+    {
+      "@id": "ion:administrationFeeIDR",
+      "@type": "rdf:Property",
+      "rdfs:label": "administrationFeeIDR",
+      "rdfs:range": {
+        "@id": "xsd:decimal"
+      },
+      "rdfs:comment": "Flat administration fee for processing the credit application (IDR)."
+    },
+    {
+      "@id": "ion:appraisalFeeIDR",
+      "@type": "rdf:Property",
+      "rdfs:label": "appraisalFeeIDR",
+      "rdfs:range": {
+        "@id": "xsd:decimal"
+      },
+      "rdfs:comment": "KJPP collateral appraisal fee (IDR). Required for KPR, KKB, secured business credit."
+    },
+    {
+      "@id": "ion:notaryFeeIDR",
+      "@type": "rdf:Property",
+      "rdfs:label": "notaryFeeIDR",
+      "rdfs:range": {
+        "@id": "xsd:decimal"
+      },
+      "rdfs:comment": "Estimated notary/PPAT fee for deed preparation (IDR)."
+    },
+    {
+      "@id": "ion:stampDutyIDR",
+      "@type": "rdf:Property",
+      "rdfs:label": "stampDutyIDR",
+      "rdfs:range": {
+        "@id": "xsd:integer"
+      },
+      "rdfs:comment": "Stamp duty per document (e-Meterai IDR 10,000 per UU No. 10/2020)."
+    },
+    {
+      "@id": "ion:required",
+      "@type": "rdf:Property",
+      "rdfs:label": "required",
+      "rdfs:range": {
+        "@id": "xsd:boolean"
+      },
+      "rdfs:comment": "Whether collateral is required for this credit product."
+    },
+    {
+      "@id": "ion:collateralTypes",
+      "@type": "rdf:Property",
+      "rdfs:label": "collateralTypes",
+      "rdfs:range": {
+        "@id": "xsd:string"
+      },
+      "rdfs:comment": "Accepted collateral types (PROPERTY, MOTOR_VEHICLE_CAR, GOLD, UNSECURED, etc.)."
+    },
+    {
+      "@id": "ion:maxLTVPercent",
+      "@type": "rdf:Property",
+      "rdfs:label": "maxLTVPercent",
+      "rdfs:range": {
+        "@id": "xsd:decimal"
+      },
+      "rdfs:comment": "Maximum Loan-to-Value ratio (%) per BI regulation PBI 20/8/PBI/2018."
+    },
+    {
+      "@id": "ion:appraisalRequired",
+      "@type": "rdf:Property",
+      "rdfs:label": "appraisalRequired",
+      "rdfs:range": {
+        "@id": "xsd:boolean"
+      },
+      "rdfs:comment": "Whether independent KJPP appraisal is required for this product."
+    },
+    {
+      "@id": "ion:guarantorInstitution",
+      "@type": "rdf:Property",
+      "rdfs:label": "guarantorInstitution",
+      "rdfs:range": {
+        "@id": "xsd:string"
+      },
+      "rdfs:comment": "Designated credit guarantee institution (JAMKRINDO, ASKRINDO, JAMKRIDA)."
+    },
+    {
+      "@id": "ion:applicantTypes",
+      "@type": "rdf:Property",
+      "rdfs:label": "applicantTypes",
+      "rdfs:range": {
+        "@id": "xsd:string"
+      },
+      "rdfs:comment": "Eligible borrower entity types (INDIVIDUAL, MICRO_ENTERPRISE, CORPORATION, etc.)."
+    },
+    {
+      "@id": "ion:minimumAge",
+      "@type": "rdf:Property",
+      "rdfs:label": "minimumAge",
+      "rdfs:range": {
+        "@id": "xsd:integer"
+      },
+      "rdfs:comment": "Minimum applicant age at time of application (years)."
+    },
+    {
+      "@id": "ion:maximumAgeAtMaturity",
+      "@type": "rdf:Property",
+      "rdfs:label": "maximumAgeAtMaturity",
+      "rdfs:range": {
+        "@id": "xsd:integer"
+      },
+      "rdfs:comment": "Maximum borrower age at loan maturity (years)."
+    },
+    {
+      "@id": "ion:minimumMonthlyIncomeIDR",
+      "@type": "rdf:Property",
+      "rdfs:label": "minimumMonthlyIncomeIDR",
+      "rdfs:range": {
+        "@id": "xsd:decimal"
+      },
+      "rdfs:comment": "Minimum gross monthly income required to qualify (IDR)."
+    },
+    {
+      "@id": "ion:employmentTypes",
+      "@type": "rdf:Property",
+      "rdfs:label": "employmentTypes",
+      "rdfs:range": {
+        "@id": "xsd:string"
+      },
+      "rdfs:comment": "Eligible employment types (CIVIL_SERVANT, PERMANENT_EMPLOYEE, SELF_EMPLOYED, etc.)."
+    },
+    {
+      "@id": "ion:citizenship",
+      "@type": "rdf:Property",
+      "rdfs:label": "citizenship",
+      "rdfs:range": {
+        "@id": "xsd:string"
+      },
+      "rdfs:comment": "Eligible citizenship/residency status (NATIONAL_CITIZEN, FOREIGN_KITAS, etc.)."
+    },
+    {
+      "@id": "ion:serviceRegions",
+      "@type": "rdf:Property",
+      "rdfs:label": "serviceRegions",
+      "rdfs:range": {
+        "@id": "xsd:string"
+      },
+      "rdfs:comment": "ISO 3166-2:ID province codes where this product is available, or NATIONAL."
+    },
+    {
+      "@id": "ion:maxDSRPercent",
+      "@type": "rdf:Property",
+      "rdfs:label": "maxDSRPercent",
+      "rdfs:range": {
+        "@id": "xsd:decimal"
+      },
+      "rdfs:comment": "Maximum Debt Service Ratio — total monthly obligations / gross income (%)."
+    },
+    {
+      "@id": "ion:licenses",
+      "@type": "rdf:Property",
+      "rdfs:label": "licenses",
+      "rdfs:range": {
+        "@id": "ion:License"
+      },
+      "rdfs:comment": "Array of OJK/BI/DSN-MUI license and registration records."
+    },
+    {
+      "@id": "ion:disclosures",
+      "@type": "rdf:Property",
+      "rdfs:label": "disclosures",
+      "rdfs:range": {
+        "@id": "ion:Disclosure"
+      },
+      "rdfs:comment": "Array of required consumer disclosure document references (RIPLAY, T&C, etc.)."
+    },
+    {
+      "@id": "ion:regulatoryBody",
+      "@type": "rdf:Property",
+      "rdfs:label": "regulatoryBody",
+      "rdfs:range": {
+        "@id": "xsd:string"
+      },
+      "rdfs:comment": "Issuing regulatory authority (OJK_BANK_UMUM, OJK_P2P_LENDING, DSN_MUI, etc.)."
+    },
+    {
+      "@id": "ion:licenseNumber",
+      "@type": "rdf:Property",
+      "rdfs:label": "licenseNumber",
+      "rdfs:range": {
+        "@id": "xsd:string"
+      },
+      "rdfs:comment": "OJK/BI/DSN-MUI license or registration number."
+    },
+    {
+      "@id": "ion:role",
+      "@type": "rdf:Property",
+      "rdfs:label": "role",
+      "rdfs:range": {
+        "@id": "xsd:string"
+      },
+      "rdfs:comment": "Institution's role in this transaction (DIRECT_LENDER, KUR_CHANNEL_BANK, etc.)."
+    },
+    {
+      "@id": "ion:disclosureType",
+      "@type": "rdf:Property",
+      "rdfs:label": "disclosureType",
+      "rdfs:range": {
+        "@id": "xsd:string"
+      },
+      "rdfs:comment": "Category of disclosure (PRODUCT_SUMMARY/RIPLAY, PRIVACY_POLICY, DSN_MUI_FATWA, etc.)."
+    },
+    {
+      "@id": "ion:tollFreePhone",
+      "@type": "rdf:Property",
+      "rdfs:label": "tollFreePhone",
+      "rdfs:range": {
+        "@id": "xsd:string"
+      },
+      "rdfs:comment": "Customer service toll-free phone number per POJK 6/2022 complaint channel requirement."
+    },
+    {
+      "@id": "ion:documentType",
+      "@type": "rdf:Property",
+      "rdfs:label": "documentType",
+      "rdfs:range": {
+        "@id": "xsd:string"
+      },
+      "rdfs:comment": "Government document type code (KTP, NPWP, SHM, BPKB, SLIK_CONSENT, etc.)."
+    },
+    {
+      "@id": "ion:mandatory",
+      "@type": "rdf:Property",
+      "rdfs:label": "mandatory",
+      "rdfs:range": {
+        "@id": "xsd:boolean"
+      },
+      "rdfs:comment": "Whether this document is mandatory for all applicants."
+    },
+    {
+      "@id": "ion:issuer",
+      "@type": "rdf:Property",
+      "rdfs:label": "issuer",
+      "rdfs:range": {
+        "@id": "xsd:string"
+      },
+      "rdfs:comment": "Issuing authority for this document (e.g. DUKCAPIL, DJP, BPN)."
+    },
+    {
+      "@id": "ion:contractType",
+      "@type": "rdf:Property",
+      "rdfs:label": "contractType",
+      "rdfs:range": {
+        "@id": "xsd:string"
+      },
+      "rdfs:comment": "Islamic akad type (MURABAHAH, MUSHARAKAH_MUTANAQISAH, MUDHARABAH, IJARAH, etc.)."
+    },
+    {
+      "@id": "ion:dsnMuiFatwaNumber",
+      "@type": "rdf:Property",
+      "rdfs:label": "dsnMuiFatwaNumber",
+      "rdfs:range": {
+        "@id": "xsd:string"
+      },
+      "rdfs:comment": "DSN-MUI fatwa reference number authorising the Islamic contract type."
+    },
+    {
+      "@id": "ion:programType",
+      "@type": "rdf:Property",
+      "rdfs:label": "programType",
+      "rdfs:range": {
+        "@id": "xsd:string"
+      },
+      "rdfs:comment": "Government program type (KUR_MIKRO, FLPP, UMI, BPUM, TAPERA, etc.)."
+    },
+    {
+      "@id": "ion:subsidyPercent",
+      "@type": "rdf:Property",
+      "rdfs:label": "subsidyPercent",
+      "rdfs:range": {
+        "@id": "xsd:decimal"
+      },
+      "rdfs:comment": "Government interest subsidy rate (% p.a.) paid to the channel bank."
+    },
+    {
+      "@id": "ion:billingCycle",
+      "@type": "rdf:Property",
+      "rdfs:label": "billingCycle",
+      "rdfs:range": {
+        "@id": "xsd:string"
+      },
+      "rdfs:comment": "Paylater billing cycle type (FIXED_INSTALLMENT or MONTHLY_BILLING)."
+    },
+    {
+      "@id": "ion:YieldType",
+      "@type": [
+        "rdfs:Class",
+        "skos:ConceptScheme"
+      ],
+      "rdfs:label": "YieldType",
+      "rdfs:comment": "Taxonomy of cost-of-fund mechanisms for credit products. This is the canonical definition; offer/v1 declares owl:sameAs pointing here."
+    },
+    {
+      "@id": "ion:CalculationMethod",
+      "@type": [
+        "rdfs:Class",
+        "skos:ConceptScheme"
+      ],
+      "rdfs:label": "CalculationMethod",
+      "rdfs:comment": "Taxonomy of amortisation / installment calculation methods. This is the canonical definition; offer/v1 declares owl:sameAs pointing here."
+    },
+    {
+      "@id": "ion:InstitutionType",
+      "@type": [
+        "rdfs:Class",
+        "skos:ConceptScheme"
+      ],
+      "rdfs:label": "InstitutionType",
+      "rdfs:comment": "OJK-defined taxonomy of licensed financial institution categories in Indonesia."
+    },
+    {
+      "@id": "ion:ProductTypeScheme",
+      "@type": [
+        "rdfs:Class",
+        "skos:ConceptScheme"
+      ],
+      "rdfs:label": "ProductTypeScheme",
+      "rdfs:comment": "Taxonomy of credit product categories recognised on the ION network."
+    },
+    {
+      "@id": "ion:FIXED",
+      "@type": "skos:Concept",
+      "skos:prefLabel": "FIXED",
+      "skos:broader": {
+        "@id": "ion:YieldType"
+      },
+      "rdfs:comment": "Fixed interest rate throughout the entire loan tenor."
+    },
+    {
+      "@id": "ion:FLOATING",
+      "@type": "skos:Concept",
+      "skos:prefLabel": "FLOATING",
+      "skos:broader": {
+        "@id": "ion:YieldType"
+      },
+      "rdfs:comment": "Floating rate tied to a reference index (BI Rate, SBDK, JIBOR)."
+    },
+    {
+      "@id": "ion:COMBINED",
+      "@type": "skos:Concept",
+      "skos:prefLabel": "COMBINED",
+      "skos:broader": {
+        "@id": "ion:YieldType"
+      },
+      "rdfs:comment": "Fixed rate for an initial period then switches to floating."
+    },
+    {
+      "@id": "ion:MARGIN",
+      "@type": "skos:Concept",
+      "skos:prefLabel": "MARGIN",
+      "skos:broader": {
+        "@id": "ion:YieldType"
+      },
+      "rdfs:comment": "Islamic fixed margin (Murabahah / Istishna akad)."
+    },
+    {
+      "@id": "ion:NISBAH",
+      "@type": "skos:Concept",
+      "skos:prefLabel": "NISBAH",
+      "skos:broader": {
+        "@id": "ion:YieldType"
+      },
+      "rdfs:comment": "Islamic profit-sharing ratio (Mudharabah / Musharakah akad)."
+    },
+    {
+      "@id": "ion:UJRAH",
+      "@type": "skos:Concept",
+      "skos:prefLabel": "UJRAH",
+      "skos:broader": {
+        "@id": "ion:YieldType"
+      },
+      "rdfs:comment": "Islamic service fee / rental (Ijarah akad)."
+    },
+    {
+      "@id": "ion:ZERO_COST",
+      "@type": "skos:Concept",
+      "skos:prefLabel": "ZERO_COST",
+      "skos:broader": {
+        "@id": "ion:YieldType"
+      },
+      "rdfs:comment": "Zero-cost financing (Qardh Hasan or fully-subsidised government programs)."
+    },
+    {
+      "@id": "ion:ANNUITY",
+      "@type": "skos:Concept",
+      "skos:prefLabel": "ANNUITY",
+      "skos:broader": {
+        "@id": "ion:CalculationMethod"
+      },
+      "rdfs:comment": "Equal total installment each period; principal component rises, interest falls."
+    },
+    {
+      "@id": "ion:FLAT",
+      "@type": "skos:Concept",
+      "skos:prefLabel": "FLAT",
+      "skos:broader": {
+        "@id": "ion:CalculationMethod"
+      },
+      "rdfs:comment": "Interest calculated on original principal; equal installments throughout."
+    },
+    {
+      "@id": "ion:EFFECTIVE",
+      "@type": "skos:Concept",
+      "skos:prefLabel": "EFFECTIVE",
+      "skos:broader": {
+        "@id": "ion:CalculationMethod"
+      },
+      "rdfs:comment": "Interest calculated on outstanding balance; equivalent to declining-balance."
+    },
+    {
+      "@id": "ion:BANK_UMUM",
+      "@type": "skos:Concept",
+      "skos:prefLabel": "BANK_UMUM",
+      "skos:broader": {
+        "@id": "ion:InstitutionType"
+      },
+      "rdfs:comment": "Commercial bank licensed under UU 7/1992 as amended by UU 10/1998."
+    },
+    {
+      "@id": "ion:BPR",
+      "@type": "skos:Concept",
+      "skos:prefLabel": "BPR",
+      "skos:broader": {
+        "@id": "ion:InstitutionType"
+      },
+      "rdfs:comment": "Rural bank (Bank Perkreditan Rakyat) — conventional."
+    },
+    {
+      "@id": "ion:BPRS",
+      "@type": "skos:Concept",
+      "skos:prefLabel": "BPRS",
+      "skos:broader": {
+        "@id": "ion:InstitutionType"
+      },
+      "rdfs:comment": "Rural Islamic bank (Bank Pembiayaan Rakyat Syariah)."
+    },
+    {
+      "@id": "ion:PERUSAHAAN_PEMBIAYAAN",
+      "@type": "skos:Concept",
+      "skos:prefLabel": "PERUSAHAAN_PEMBIAYAAN",
+      "skos:broader": {
+        "@id": "ion:InstitutionType"
+      },
+      "rdfs:comment": "Finance company (multifinance) licensed under POJK 35/2018."
+    },
+    {
+      "@id": "ion:P2P_LENDING",
+      "@type": "skos:Concept",
+      "skos:prefLabel": "P2P_LENDING",
+      "skos:broader": {
+        "@id": "ion:InstitutionType"
+      },
+      "rdfs:comment": "Peer-to-peer lending platform licensed under POJK 10/2022."
+    },
+    {
+      "@id": "ion:KPR",
+      "@type": "skos:Concept",
+      "skos:prefLabel": "KPR",
+      "skos:broader": {
+        "@id": "ion:ProductTypeScheme"
+      },
+      "rdfs:subClassOf": {
+        "@id": "schema:LoanOrCredit"
+      },
+      "rdfs:comment": "Kredit Pemilikan Rumah — mortgage loan for residential property."
+    },
+    {
+      "@id": "ion:KKB",
+      "@type": "skos:Concept",
+      "skos:prefLabel": "KKB",
+      "skos:broader": {
+        "@id": "ion:ProductTypeScheme"
+      },
+      "rdfs:subClassOf": {
+        "@id": "schema:LoanOrCredit"
+      },
+      "rdfs:comment": "Kredit Kendaraan Bermotor — vehicle financing."
+    },
+    {
+      "@id": "ion:KTA",
+      "@type": "skos:Concept",
+      "skos:prefLabel": "KTA",
+      "skos:broader": {
+        "@id": "ion:ProductTypeScheme"
+      },
+      "rdfs:subClassOf": {
+        "@id": "schema:LoanOrCredit"
+      },
+      "rdfs:comment": "Kredit Tanpa Agunan — unsecured personal loan."
+    },
+    {
+      "@id": "ion:KUR_MIKRO",
+      "@type": "skos:Concept",
+      "skos:prefLabel": "KUR_MIKRO",
+      "skos:broader": {
+        "@id": "ion:ProductTypeScheme"
+      },
+      "rdfs:subClassOf": {
+        "@id": "schema:LoanOrCredit"
+      },
+      "rdfs:comment": "KUR Mikro — government-subsidised MSME credit up to IDR 100 jt."
+    },
+    {
+      "@id": "ion:PAYLATER",
+      "@type": "skos:Concept",
+      "skos:prefLabel": "PAYLATER",
+      "skos:broader": {
+        "@id": "ion:ProductTypeScheme"
+      },
+      "rdfs:subClassOf": {
+        "@id": "schema:LoanOrCredit"
+      },
+      "rdfs:comment": "Buy-now-pay-later (BNPL) product."
+    }
+  ]
+}

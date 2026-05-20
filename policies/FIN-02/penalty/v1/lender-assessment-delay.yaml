@@ -1,0 +1,87 @@
+iri: ion://policy/finance.penalty.lender-assessment-delay
+
+version: "1.0.0"
+
+versionEffectiveFrom: "2026-05-01"
+
+category: PENALTY
+
+subCategory: LENDER_ASSESSMENT_DELAY
+
+status: ratified
+
+ratifiedAt: "2026-04-15"
+
+displayText:
+  id: "Kompensasi keterlambatan penilaian kredit oleh pemberi pinjaman"
+  en: "Lender credit assessment delay compensation"
+
+penaltyType: LENDER_ASSESSMENT_DELAY
+
+assessmentSlasFromCompleteApplication:
+  digitalBnpl: 120
+  digitalBnplUnit: seconds
+  personalLoanFullyDigital: 24
+  personalLoanFullyDigitalUnit: hours
+  vehicleLoan: 48
+  vehicleLoanUnit: hours
+  businessLoanKur: 3
+  businessLoanKurUnit: days
+  mortgageKpr: 14
+  mortgageKprUnit: days
+
+penaltyForExceedingSla:
+  type: COMPENSATION_TO_BORROWER
+  ratePercentPerDay: 0.03
+  base: APPROVED_LOAN_AMOUNT
+  note: "Borrower entitled to compensation for each full business day of delay beyond SLA"
+
+completenessDefinition:
+  note: >
+    Application is considered complete when all required documents are submitted
+    and lender has confirmed receipt. Clock stops if lender requests additional
+    documents; restarts when borrower responds.
+
+exclusions:
+  - INCOMPLETE_APPLICATION_PENDING_BORROWER_RESPONSE
+  - DUKCAPIL_SYSTEM_DOWNTIME
+  - SLIK_SYSTEM_DOWNTIME
+  - FORCE_MAJEURE
+  - OJK_REGULATORY_HOLD
+
+compensationCap:
+  maxDaysCompensable: 30
+  maxCompensationPercentOfLoanAmount: 0.5
+
+borrowerRightToWithdraw:
+  allowed: true
+  withoutPenaltyIfSlaMissedBy: 7
+  withoutPenaltyIfSlaMissedByUnit: business_days
+
+disclosureRequired: true
+
+disclosureIn:
+  - LOAN_AGREEMENT
+  - APPLICATION_CONFIRMATION_EMAIL
+
+applicablePatterns:
+  - personal-loan
+  - mortgage
+  - vehicle-loan
+  - business-loan
+  - bnpl
+
+applicableLenderTypes:
+  - BANK_UMUM
+  - BPR
+  - MULTIFINANCE
+  - LPBBTI_P2P
+  - LPBBTI_DIGITAL
+
+regulatoryBasis:
+  - "OJK POJK 22/2023 tentang Perlindungan Konsumen dan Masyarakat di Sektor Jasa Keuangan"
+  - "OJK SE 17/SEOJK.07/2018 tentang Pedoman Layanan Pengaduan Konsumen"
+
+supersededBy: null
+
+deprecatedAt: null

@@ -1,0 +1,83 @@
+iri: ion://policy/finance.restructure.reconditioning-standard
+
+version: "1.0.0"
+
+versionEffectiveFrom: "2026-05-01"
+
+category: RESTRUCTURE
+
+subCategory: RECONDITIONING
+
+status: ratified
+
+ratifiedAt: "2026-04-15"
+
+displayText:
+  id: "Restrukturisasi kredit — perubahan persyaratan kredit"
+  en: "Credit restructuring — reconditioning (term modification)"
+
+restructureType: RECONDITIONING
+
+description: >
+  Reconditioning modifies one or more loan conditions: interest rate reduction,
+  partial interest capitalization, partial principal write-down, or conversion
+  from floating to fixed rate. Differs from rescheduling in that substantive
+  loan terms (not just schedule) are altered.
+
+modificationTypes:
+  - INTEREST_RATE_REDUCTION
+  - PARTIAL_INTEREST_WRITE_OFF
+  - PARTIAL_PRINCIPAL_WRITE_DOWN
+  - FLOATING_TO_FIXED_CONVERSION
+  - FEE_WAIVER
+
+eligibilityCriteria:
+  - borrowerExperiencingFinancialDifficulty: true
+  - minDpdForEligibility: 30
+  - requiresCreditCommitteeApproval: true
+  - requiresBoardOrSeniorManagementApproval: true
+
+applicationProcess:
+  borrowerRequestRequired: true
+  supportingDocumentsRequired:
+    - SURAT_PERMOHONAN_RESTRUKTURISASI
+    - LAPORAN_KEUANGAN_TERKINI
+    - BUKTI_KESULITAN_KEUANGAN
+  lenderResponseSlaDays: 21
+
+interestRateReductionLimits:
+  maxReductionBps: 300
+  minimumRateAfterReduction: 3.0
+
+partialWriteOffPolicy:
+  requiresProvisioningBeforeWriteOff: true
+  boardApprovalRequired: true
+  taxImplicationsApply: true
+
+sikLiReclassificationImpact:
+  reconditionedLoanQuality: DALAM_PERHATIAN_KHUSUS_MINIMUM
+  upgradeRestrictedMonths: 12
+
+processingFee:
+  applicable: false
+  note: "No processing fee for reconditioning — lender absorbs cost to recover NPL"
+
+applicablePatterns:
+  - personal-loan
+  - mortgage
+  - vehicle-loan
+  - business-loan
+
+applicableLenderTypes:
+  - BANK_UMUM
+  - BPR
+  - MULTIFINANCE
+
+regulatoryBasis:
+  - "OJK POJK 40/2019 tentang Penilaian Kualitas Aset Bank Umum"
+  - "OJK SE 43/SEOJK.03/2016 tentang Transparansi dan Publikasi Laporan Bank"
+  - "PSAK 71 tentang Instrumen Keuangan (IFRS 9 alignment)"
+
+supersededBy: null
+
+deprecatedAt: null

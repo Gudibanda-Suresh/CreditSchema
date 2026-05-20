@@ -1,0 +1,35 @@
+{
+  "$schema": "https://schema.ion.id/finance/participant/v1/schema.json",
+  "@context": "https://schema.ion.id/finance/participant/v1/context.jsonld",
+  "description": "Example: participants array inside Contract.participants[] for a KTA (unsecured personal loan) after on_confirm.",
+  "participants": [
+    {
+      "id": "PART-BOR-001",
+      "role": "BORROWER",
+      "participantAttributes": {
+        "@context": "https://schema.ion.id/finance/participant/v1/context.jsonld",
+        "@type": "ion:Borrower",
+        "fullName": "Budi Santoso",
+        "nik": "3273012505800001",
+        "npwp": "12.345.678.9-012.000",
+        "birthPlace": "Bandung",
+        "birthDate": "1980-05-25",
+        "registeredAddress": "Jl. Merdeka No. 10, RT 003/RW 005, Kel. Pasir Kaliki, Kec. Cicendo, Kota Bandung, Jawa Barat 40171",
+        "email": "budi.santoso@email.com",
+        "phone": "+6281234567890"
+      }
+    },
+    {
+      "id": "PART-LEN-001",
+      "role": "LENDER",
+      "participantAttributes": {
+        "@context": "https://schema.ion.id/finance/participant/v1/context.jsonld",
+        "@type": "ion:Lender",
+        "institutionName": "PT Bank Rakyat Indonesia (Persero) Tbk",
+        "ojkLicenseNumber": "KEP-046/DIR/1992",
+        "branchOffice": "KCP BRI Bandung Supratman",
+        "relationshipManagerName": "Dewi Rahmawati"
+      }
+    }
+  ]
+}

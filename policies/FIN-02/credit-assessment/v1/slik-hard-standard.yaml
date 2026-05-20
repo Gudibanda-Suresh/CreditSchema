@@ -1,0 +1,65 @@
+iri: ion://policy/finance.credit-assessment.slik-hard-standard
+
+version: "1.0.0"
+
+versionEffectiveFrom: "2026-05-01"
+
+category: CREDIT_ASSESSMENT
+
+subCategory: SLIK_INQUIRY
+
+status: ratified
+
+ratifiedAt: "2026-04-15"
+
+displayText:
+  id: "Pengecekan SLIK keras — standar"
+  en: "Hard SLIK inquiry — standard"
+
+inquiryType: HARD
+
+provider: OJK_SLIK
+
+collectabilityBlockThreshold: 3
+
+collectabilityAcceptThreshold:
+  - value: 1
+    label: Lancar
+  - value: 2
+    label: Dalam Perhatian Khusus
+    note: Accepted subject to lender's risk appetite and additional conditions
+
+collectabilityRejectThreshold:
+  - value: 3
+    label: Kurang Lancar
+  - value: 4
+    label: Diragukan
+  - value: 5
+    label: Macet
+
+cacheTtlHours: 24
+
+staleCacheAllowed: true
+
+staleCacheMaxAgeHours: 72
+
+staleCacheFlagRequired: true
+
+inquiryRecordedInSlik: true
+
+reInquiryCooldownDays: 30
+
+applicablePatterns:
+  - personal-loan
+  - mortgage
+  - vehicle-loan
+  - business-loan
+  - revolving-credit
+
+regulatoryBasis:
+  - "OJK POJK 64/2020 tentang Sistem Layanan Informasi Keuangan"
+  - "OJK SEOJK 15/2023 tentang Mekanisme Pelaporan SLIK"
+
+supersededBy: null
+
+deprecatedAt: null

@@ -1,0 +1,83 @@
+iri: ion://policy/finance.collateral.movable-asset-fiducia
+
+version: "1.0.0"
+
+versionEffectiveFrom: "2026-05-01"
+
+category: COLLATERAL
+
+subCategory: MOVABLE_ASSET_COLLATERAL
+
+status: ratified
+
+ratifiedAt: "2026-04-15"
+
+displayText:
+  id: "Jaminan aset bergerak — fidusia non-kendaraan"
+  en: "Movable asset collateral — non-vehicle fiducia"
+
+collateralType: MOVABLE_ASSET
+
+acceptedAssetTypes:
+  - MACHINERY_EQUIPMENT
+  - INVENTORY_STOCK
+  - RECEIVABLES_PIUTANG
+  - INTELLECTUAL_PROPERTY
+  - FUTURE_RECEIVABLES
+
+registrationPath:
+  - step: FIDUCIA_DEED
+    description: "Akta Jaminan Fidusia for movable assets"
+    executedBy: NOTARY
+    mustRegisterWithinDays: 30
+  - step: KEMENKUMHAM_REGISTRATION
+    description: "Registration at Ministry of Law via online fidusia system"
+    executedBy: NOTARY
+    maxProcessingDays: 3
+    resultDocument: SERTIFIKAT_JAMINAN_FIDUSIA
+
+assetValuationRequired: true
+
+valuationFrequency: ANNUALLY_OR_ON_MATERIAL_CHANGE
+
+minimumCoverageRatio: 1.25
+
+haircuts:
+  MACHINERY_EQUIPMENT: 0.50
+  INVENTORY_STOCK: 0.40
+  RECEIVABLES_PIUTANG: 0.70
+  INTELLECTUAL_PROPERTY: 0.30
+
+inventoryPledge:
+  floatingChargeAllowed: true
+  periodicReportingRequired: true
+  reportingFrequency: MONTHLY
+
+receivablesPledge:
+  debtorNotificationRequired: true
+  minReceivableAge: 0
+  maxReceivableAgeDays: 90
+
+lienReleaseProcess:
+  trigger: FULLY_REPAID
+  processedBy: NOTARY
+  kemenkumhamDeletionRequired: true
+  maxProcessingDays: 7
+
+applicablePatterns:
+  - business-loan
+  - revolving-credit
+
+applicableLenderTypes:
+  - BANK_UMUM
+  - MULTIFINANCE
+  - LPBBTI_P2P
+
+regulatoryBasis:
+  - "UU 42/1999 tentang Jaminan Fidusia"
+  - "PP 21/2015 tentang Tata Cara Pendaftaran Jaminan Fidusia"
+  - "OJK POJK 40/2019 tentang Penilaian Kualitas Aset Bank Umum"
+
+supersededBy: null
+
+deprecatedAt: null

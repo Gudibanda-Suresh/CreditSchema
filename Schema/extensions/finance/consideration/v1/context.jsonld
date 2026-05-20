@@ -1,0 +1,20 @@
+{
+  "@context": {
+    "@version": 1.1,
+    "@protected": true,
+
+    "ion":    "https://schema.ion.id/finance/consideration/v1#",
+    "beckn":  "https://spec.beckn.io/vocab/v2.0.0#",
+    "rdf":    "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdfs":   "http://www.w3.org/2000/01/rdf-schema#",
+    "xsd":    "http://www.w3.org/2001/XMLSchema#",
+    "schema": "https://schema.org/",
+
+    "LoanConsideration": "ion:LoanConsideration",
+
+    "approvedPrincipal":          { "@id": "ion:approvedPrincipal",          "@type": "xsd:decimal" },
+    "currency":                   { "@id": "ion:currency",                   "@type": "xsd:string" },
+    "totalFeesIDR":               { "@id": "ion:totalFeesIDR",               "@type": "xsd:decimal" },
+    "aprEquivalent":              { "@id": "ion:aprEquivalent",              "@type": "xsd:decimal" }
+  }
+}

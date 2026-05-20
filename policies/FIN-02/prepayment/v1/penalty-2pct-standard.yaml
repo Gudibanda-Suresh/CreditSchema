@@ -1,0 +1,49 @@
+iri: ion://policy/finance.prepayment.penalty-2pct-standard
+
+version: "1.0.0"
+
+versionEffectiveFrom: "2026-05-01"
+
+category: PREPAYMENT
+
+status: ratified
+
+ratifiedAt: "2026-04-15"
+
+displayText:
+  id: "Pelunasan dipercepat — penalti 2% dari sisa pokok"
+  en: "Early settlement — 2% penalty on outstanding principal"
+
+prepaymentPenaltyRate: 0.02
+
+penaltyBasis: OUTSTANDING_PRINCIPAL
+
+penaltyFreeAfterMonths: 12
+
+partialPrepaymentAllowed: true
+
+fullPrepaymentAllowed: true
+
+quoteValidityDays: 5
+
+penaltyWaivedIf:
+  - condition: AFTER_PENALTY_FREE_WINDOW
+    description: Zero penalty once loan has been outstanding for 12+ months
+  - condition: LENDER_INITIATED_RESTRUCTURE
+    description: Penalty waived when lender initiates restructuring without borrower fault
+
+applicablePatterns:
+  - mortgage
+  - vehicle-loan
+
+applicableLenderTypes:
+  - BANK_UMUM
+  - MULTIFINANCE
+
+regulatoryBasis:
+  - "OJK POJK 22/2023 Pasal 28"
+  - "BI Surat Edaran tentang Kredit Pemilikan Rumah"
+
+supersededBy: null
+
+deprecatedAt: null

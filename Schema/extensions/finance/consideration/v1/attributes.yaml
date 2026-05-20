@@ -1,0 +1,51 @@
+﻿openapi: "3.1.1"
+info:
+  title: "ION Finance Credit Consideration Extension (v1)"
+  version: 1.0.0
+  description: |
+    Credit consideration attributes for the Finance domain. Carries the principal
+    and total fee amounts exchanged under the contract. Attaches to: beckn:Consideration.considerationAttributes
+  license:
+    name: Apache-2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+  contact:
+    name: ION Network
+    url: https://schema.ion.id
+
+components:
+  schemas:
+
+    LoanConsideration:
+      type: object
+      description: |
+        Principal and fee amounts exchanged under the credit contract. Placed in
+        Beckn Contract.consideration[] with considerationAttributes["@type"] = "ion:LoanConsideration".
+      x-jsonld:
+        '@context': ./context.jsonld
+        '@type': ion:LoanConsideration
+      x-beckn-attaches-to: Consideration.considerationAttributes
+      additionalProperties: true
+      required:
+        - approvedPrincipal
+        - currency
+      properties:
+        approvedPrincipal:
+          type: number
+          description: Approved principal amount in IDR.
+          example: 450000000
+        currency:
+          type: string
+          description: ISO 4217 currency code. Always IDR for domestic credit.
+          default: "IDR"
+        totalFeesIDR:
+          type: number
+          description: Total upfront fees paid at akad signing in IDR.
+          example: 12955000
+        aprEquivalent:
+          type: number
+          description: All-in annualised cost of credit % (POJK 6/2022 RIPLAY disclosure).
+          example: 11.24
+      x-ion-closed-extensions: false
+      allOf:
+        - $ref: ../../../../../core/v2/api/v2.0.0/beckn.yaml#/components/schemas/Attributes
+

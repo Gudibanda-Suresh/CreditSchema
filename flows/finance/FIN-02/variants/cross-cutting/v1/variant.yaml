@@ -1,0 +1,316 @@
+id: ion-finance-variant-cross-cutting-v1
+version: "1.0.0"
+variantType: cross-cutting
+sector: ion:finance
+status: ready
+description: >
+  Branches available on all finance patterns throughout the loan lifecycle.
+  Mix of Beckn 2.0 native endpoints and ION-specific extension endpoints
+  (each clearly marked). context.try=true is supported on update, cancel,
+  rate, and support (Beckn 2.0) and on reconcile (ION extension).
+
+appliesTo:
+  - FNC-lending
+  - FNC-lending
+  - FNC-lending
+  - FNC-lending
+  - FNC-lending
+  - FNC-lending
+
+window:
+  earliest: on_confirm
+  latest: contract_COMPLETE
+
+subBranches:
+
+  status:
+    id: status
+    apis: [status, on_status]
+    endpointClass: BECKN_2_0_NATIVE
+    description: >
+      Point-in-time loan state query. BAP calls /status to get current
+      contract state, outstanding balance, next due date, and installment
+      schedule. BPP also sends unsolicited /on_status at every significant
+      state transition: disbursement, repayment receipt, overdue, restructure.
+    window:
+      earliest: on_confirm
+      latest: contract_COMPLETE
+    steps:
+      - step: status
+        from: BAP
+        to: BPP
+        direction: request
+        requiredFields:
+          - message.contract.id
+      - step: on_status
+        from: BPP
+        to: BAP
+        direction: callback_or_unsolicited
+        requiredFields:
+          - message.contract.id
+          - message.contract.status
+          - message.contract.performanceAttributes.outstandingPrincipal
+          - message.contract.performanceAttributes.nextDueDate
+          - message.contract.performanceAttributes.nextAmountDue
+          - message.contract.performanceAttributes.daysPastDue
+        conditionalFields:
+          - field: message.contract.performanceAttributes.delinquencyStatus
+            condition: returned when loan is overdue
+          - field: message.contract.performanceAttributes.availableCreditBalance
+            condition: returned for revolving-credit and bnpl patterns
+
+  support:
+    id: support
+    apis: [support, on_support]
+    endpointClass: BECKN_2_0_NATIVE
+    description: >
+      Customer-support channel for borrower enquiries. Supports
+      context.try=true to preview support channels without opening
+      a ticket. For commercial disputes and OJK-regulated complaint
+      handling, use the 'raise' sub-branch.
+    window:
+      earliest: on_confirm
+      latest: unbounded
+    steps:
+      - step: support
+        from: BAP_or_BPP
+        to: counterparty
+        direction: request
+        requiredFields:
+          - message.support.orderId
+        conditionalFields:
+          - field: context.try
+            condition: optional â€” returns support channels without opening ticket
+          - field: message.support.supportAttributes.supportCategory
+      - step: on_support
+        from: recipient
+        to: requester
+        direction: callback
+        requiredFields:
+          - message.support.callback_url
+    supportCategories:
+      - DISBURSEMENT_ENQUIRY
+      - REPAYMENT_RECEIPT_QUERY
+      - SCHEDULE_REQUEST
+      - STATEMENT_REQUEST
+      - INTEREST_CERTIFICATE_REQUEST
+      - SETTLEMENT_LETTER_REQUEST
+      - INSURANCE_CLAIM_QUERY
+      - COLLATERAL_STATUS_QUERY
+      - RESTRUCTURE_ENQUIRY
+      - GENERAL_ENQUIRY
+    extensionPacks:
+      - finance/support/v1
+
+  rate:
+    id: rate
+    apis: [rate, on_rate]
+    endpointClass: BECKN_2_0_NATIVE
+    description: >
+      Post-fulfilment borrower rating of the lending experience.
+      Supports context.try=true to preview the rating form.
+      Rating window opens after FULLY_REPAID or CREDIT_LINE_CLOSED.
+    window:
+      earliest: "on_status[FULLY_REPAID or CREDIT_LINE_CLOSED]"
+      latest: contract_COMPLETE
+    steps:
+      - step: rate
+        from: BAP
+        to: BPP
+        direction: request
+        requiredFields:
+          - message.ratingInput.target.id
+          - message.ratingInput.target.descriptor
+          - message.ratingInput.range
+        conditionalFields:
+          - field: context.try
+            condition: optional â€” returns form without recording
+          - field: message.ratingInput.target.targetAttributes
+            condition: ION finance rating extension â€” see finance/rating/v1
+      - step: on_rate
+        from: BPP
+        to: BAP
+        direction: callback
+        requiredFields:
+          - message.ratingInput.target.id
+    ratingTargetTypes:
+      - CONTRACT
+      - APPLICATION_PROCESS
+      - DISBURSEMENT_SPEED
+      - COLLECTIONS_CONDUCT
+      - PROVIDER
+
+  reconcile:
+    id: reconcile
+    apis: [reconcile, on_reconcile]
+    endpointClass: ION_EXTENSION
+    description: >
+      ION EXTENSION. Financial reconciliation for the full loan lifecycle.
+      BAP initiates after FULLY_REPAID (or during repayment for partial
+      period reconciliation). Covers principal recovered, interest
+      collected, fees, insurance premiums, penalties, and tax withholdings.
+      context.try=true previews reconciliation statement without committing.
+    window:
+      earliest: "on_status[DISBURSED]"
+      latest: settlementWindow_expiry
+    steps:
+      - step: reconcile
+        from: BAP
+        to: BPP
+        direction: request
+        additionalFields:
+          - context.try
+        requiredFields:
+          - message.contract.settlements[].settlementAttributes.reconId
+          - message.contract.settlements[].settlementAttributes.contractId
+          - message.contract.settlements[].settlementAttributes.settlementBasis
+          - message.contract.settlements[].settlementAttributes.settlementWindow
+          - message.contract.settlements[].settlementAttributes.amounts.principalRecovered
+          - message.contract.settlements[].settlementAttributes.amounts.interestCollected
+          - message.contract.settlements[].settlementAttributes.amounts.processingFeeCollected
+        conditionalFields:
+          - field: message.contract.settlements[].settlementAttributes.amounts.prepaymentPenaltyCollected
+            condition: if early settlement occurred
+          - field: message.contract.settlements[].settlementAttributes.amounts.lateFeeCollected
+            condition: if delinquency fees were charged
+          - field: message.contract.settlements[].settlementAttributes.amounts.insurancePremiumCollected
+            condition: if insurance was bundled
+          - field: message.contract.settlements[].settlementAttributes.amounts.recoveryAmount
+            condition: for post-default recovery
+          - field: message.contract.settlements[].settlementAttributes.taxWithholdings[].remittanceRef
+            condition: required for PPh 23 on interest income â€” ION-10006 if missing
+
+      - step: on_reconcile
+        from: BPP
+        to: BAP
+        direction: callback
+        requiredFields:
+          - message.contract.settlements[].settlementAttributes.reconId
+          - message.contract.settlements[].settlementAttributes.reconStatus
+          - message.contract.settlements[].settlementAttributes.netSettlementAmount
+        conditionalFields:
+          - field: message.contract.settlements[].settlementAttributes.disputeReason
+            condition: if reconStatus is DISPUTED
+        reconStatusValues:
+          - AGREED
+          - DISPUTED
+          - PENDING_ADJUSTMENT
+
+  raise:
+    id: raise
+    apis: [raise, on_raise, raise_status, on_raise_status, raise_details, on_raise_details]
+    endpointClass: ION_EXTENSION
+    description: >
+      ION EXTENSION. Network escalation for formal dispute adjudication.
+      Covers OJK-regulated complaints (wajib dijawab dalam 5 hari kerja,
+      diselesaikan dalam 20 hari kerja per POJK 18/2018), bilateral
+      commercial disputes, and BPSK/BANI arbitration triggers. Direction
+      is participant â†’ ION network, not BAPâ†”BPP bilateral.
+    window:
+      earliest: on_confirm
+      latest: unbounded
+    steps:
+      - step: raise
+        from: BAP_or_BPP
+        to: ION_GATEWAY
+        direction: escalation
+        requiredFields:
+          - message.ticket.title
+          - message.ticket.description
+          - message.ticket.type
+          - message.ticket.priority
+          - message.ticket.contractReference
+          - message.ticket.applicablePolicyIri
+          - message.ticket.bilateralAttemptLog[]
+        disputeTypes:
+          - DISBURSEMENT_FAILURE
+          - REPAYMENT_NOT_CREDITED
+          - INTEREST_OVERCHARGE
+          - PREPAYMENT_PENALTY_DISPUTE
+          - RESTRUCTURE_REJECTION_DISPUTE
+          - SLIK_DATA_ERROR
+          - KYC_REJECTION_DISPUTE
+          - COLLATERAL_VALUATION_DISPUTE
+          - LIEN_RELEASE_DELAY
+          - COLLECTIONS_MISCONDUCT
+          - INSURANCE_CLAIM_REJECTION
+          - GENERAL_COMMERCIAL
+
+      - step: on_raise
+        from: ION_GATEWAY
+        to: BAP_and_BPP
+        direction: notification
+        requiredFields:
+          - message.ticket.id
+          - message.ticket.status
+          - message.ticket.expectedResolutionTimeline
+
+      - step: raise_status
+        from: BAP_or_BPP
+        to: ION_GATEWAY
+        direction: request
+        requiredFields:
+          - message.ticket.id
+
+      - step: on_raise_status
+        from: ION_GATEWAY
+        to: requester
+        direction: callback
+        requiredFields:
+          - message.ticket.status
+          - message.ticket.stage
+
+      - step: raise_details
+        from: BAP_or_BPP
+        to: ION_GATEWAY
+        direction: request
+
+      - step: on_raise_details
+        from: ION_GATEWAY
+        to: requester
+        direction: callback
+        description: Full ticket with all thread messages and resolution notes
+
+    policyReferences:
+      - ion://policy/finance/dispute-resolution/ojk-pojk-18-2018/v1
+      - ion://policy/finance/dispute-resolution/consumer-bpsk/v1
+      - ion://policy/finance/dispute-resolution/commercial-bani/v1
+
+  cancel:
+    id: cancel
+    apis: [cancel, on_cancel]
+    endpointClass: BECKN_2_0_NATIVE
+    description: >
+      Loan application cancellation. Only valid before DISBURSED status.
+      After disbursement, early-settlement variant governs payoff.
+      Lender-initiated cancel is issued via unsolicited /on_cancel
+      (e.g., fraud detection, policy breach, application withdrawal).
+    window:
+      earliest: on_confirm
+      latest: "on_status[DISBURSEMENT_INITIATED]"
+    steps:
+      - step: cancel
+        from: BAP
+        to: BPP
+        direction: request
+        requiredFields:
+          - message.contract.id
+          - contractAttributes.cancellationReason.descriptor.code
+        cancellationReasonCodes:
+          FIN-CANCEL-001: Borrower changed mind â€” no longer needs the loan
+          FIN-CANCEL-002: Borrower found better offer elsewhere
+          FIN-CANCEL-003: Borrower cannot meet documentation requirements
+          FIN-CANCEL-004: Borrower disputes approved terms (rate, amount, tenure)
+          FIN-CANCEL-005: Technical error in application
+
+      - step: on_cancel
+        from: BPP
+        to: BAP
+        direction: callback
+        requiredFields:
+          - message.contract.status
+          - contractAttributes.cancellationReasonCode
+        conditionalFields:
+          - field: contractAttributes.processingFeeRefund
+            condition: if processing fee was pre-collected and is refundable per cancellationPolicy
+

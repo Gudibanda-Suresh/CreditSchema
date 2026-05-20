@@ -1,0 +1,30 @@
+{
+  "id": "ion-finance-participant-v1",
+  "version": "1.0.0",
+  "domain": "finance",
+  "type": "AttributePack",
+  "name": "ION Finance Credit Participant Extension (v1)",
+  "packSchema": "./schema.json",
+  "jsonldContext": "./context.jsonld",
+  "extends": "beckn:Participant",
+  "attachmentPoints": {
+    "participantAttributes": ["Borrower", "Lender"]
+  },
+  "indexing": {
+    "indexable": [
+      { "path": "$.fullName" },
+      { "path": "$.nik" },
+      { "path": "$.institutionName" },
+      { "path": "$.ojkLicenseNumber" }
+    ],
+    "filterable": [
+      { "path": "$.@type" }
+    ]
+  },
+  "minimalForDiscovery": ["fullName", "nik"],
+  "context": {
+    "schemaContext": [
+      "https://schema.ion.id/finance/participant/v1/context.jsonld"
+    ]
+  }
+}

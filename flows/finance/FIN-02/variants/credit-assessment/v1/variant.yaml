@@ -1,0 +1,169 @@
+id: ion-finance-variant-credit-assessment-v1
+version: "1.0.0"
+variantType: credit-assessment
+sector: ion:finance
+status: ready
+description: >
+  Hard credit assessment branch — SLIK inquiry, credit scoring, DTI
+  computation, and final eligibility determination. Triggered at /init
+  for all finance patterns. For revolving-credit and BNPL re-transactions,
+  a soft check (no SLIK inquiry) replaces the hard check if the borrower
+  is already onboarded within the credit-assessment staleness window.
+
+appliesTo:
+  - FNC-lending
+  - FNC-lending
+  - FNC-lending
+  - FNC-lending
+  - FNC-lending
+  - FNC-lending
+
+window:
+  earliest: init
+  latest: on_init
+
+subBranches:
+
+  slik-inquiry:
+    id: slik-inquiry
+    description: >
+      Hard SLIK (Sistem Layanan Informasi Keuangan) inquiry submitted to
+      OJK's data service. Returns collectability rating, existing facilities,
+      and total outstanding obligations across all OJK-supervised lenders.
+      Each hard inquiry is recorded in SLIK and visible to other lenders.
+    steps:
+      - step: slik-check
+        direction: BPP-internal (BPP queries OJK SLIK API)
+        requiredFields:
+          - participantAttributes.nik
+          - participantAttributes.person.name
+          - participantAttributes.person.dateOfBirth
+        returnedFields:
+          - participantAttributes.slikCollectability
+          - participantAttributes.existingFacilitiesCount
+          - participantAttributes.totalExistingDebt
+          - participantAttributes.slikInquiryRef
+          - participantAttributes.slikRetrievedAt
+        slikCollectabilityValues:
+          1: Current — all obligations on schedule
+          2: Special mention — 1–90 days overdue
+          3: Substandard — 91–120 days overdue
+          4: Doubtful — 121–180 days overdue
+          5: Bad debt — > 180 days overdue
+        blockingConditions:
+          - slikCollectability 4 or 5 → reject (ION-FIN-6011)
+          - result INCONCLUSIVE and not within cache window → ION-FIN-6001
+
+  credit-scoring:
+    id: credit-scoring
+    description: >
+      Internal scoring model applied after SLIK data is retrieved. Combines
+      SLIK collectability, income level, employment stability, age, credit
+      utilisation, and bureau history into a lender-proprietary credit score.
+      ION mandates that the minimum threshold be published in the offer catalog.
+    steps:
+      - step: score-compute
+        direction: BPP-internal
+        inputs:
+          - participantAttributes.slikCollectability
+          - participantAttributes.monthlyIncome
+          - participantAttributes.employmentStatus
+          - participantAttributes.employmentTenureMonths
+          - participantAttributes.totalExistingDebt
+          - participantAttributes.creditUtilizationRatio
+        output:
+          - participantAttributes.creditScore
+          - participantAttributes.creditScoreBand
+        scoreBands:
+          EXCELLENT: "≥ 750"
+          GOOD: "700 – 749"
+          FAIR: "650 – 699"
+          POOR: "600 – 649"
+          VERY_POOR: "< 600"
+        blockingConditions:
+          - creditScore < offerAttributes.creditPolicy.minCreditScore → ION-FIN-6000
+
+  dti-calculation:
+    id: dti-calculation
+    description: >
+      Debt-to-income ratio computed as total monthly obligations
+      (existing + new installment) divided by gross monthly income.
+      OJK guidelines recommend maximum 50–70% depending on income tier.
+    steps:
+      - step: dti-compute
+        direction: BPP-internal
+        inputs:
+          - participantAttributes.monthlyIncome
+          - participantAttributes.totalExistingDebt
+          - considerationAttributes.proposedMonthlyInstallment
+        formula: "(totalExistingDebt + proposedMonthlyInstallment) / monthlyIncome × 100"
+        output:
+          - participantAttributes.debtToIncomeRatio
+        blockingConditions:
+          - debtToIncomeRatio > offerAttributes.creditPolicy.maxDti → ION-FIN-6004
+
+  income-verification:
+    id: income-verification
+    description: >
+      Verification of declared income against submitted documents.
+      Accepted evidence types vary by employment status.
+    incomeEvidenceByEmploymentType:
+      KARYAWAN_TETAP:
+        - Slip gaji 3 bulan terakhir
+        - Surat keterangan kerja
+        - Rekening koran 3 bulan
+      WIRASWASTA:
+        - Laporan keuangan usaha 6 bulan
+        - Rekening koran bisnis 6 bulan
+        - SPT Tahunan terakhir
+      PROFESIONAL:
+        - SPT Tahunan
+        - Rekening koran 6 bulan
+        - Bukti penghasilan dari klien
+      UMKM:
+        - NIB
+        - Rekening koran usaha 6 bulan
+        - Laporan omzet / cash flow
+    blockingConditions:
+      - income not verifiable from documents → ION-FIN-6003
+      - declared income < offerAttributes.creditPolicy.minMonthlyIncome → ION-FIN-6003
+
+  assessment-result:
+    id: assessment-result
+    description: >
+      Final aggregation of SLIK, score, DTI, and income verification.
+      Result is embedded in on_init response. If APPROVED, final
+      approved amount and rate are confirmed. Lender may counter-offer
+      a lower amount than requested.
+    possibleOutcomes:
+      APPROVED: All checks passed — full requested amount approved
+      COUNTER_OFFER: Approved at lower amount (credit limit below requested)
+      REJECTED: One or more blocking conditions met
+      PENDING_REVIEW: Manual underwriting required (typically for large amounts)
+    on_init_fields:
+      requiredFields:
+        - message.contract.contractAttributes.assessmentStatus
+        - message.contract.contractAttributes.slikInquiryRef
+        - message.contract.contractAttributes.creditScoreAtAssessment
+      conditionalFields:
+        - field: message.contract.contractAttributes.assessmentRejectionReason
+          condition: returned if assessmentStatus is REJECTED
+        - field: message.contract.considerationAttributes.counterOfferAmount
+          condition: returned if assessmentStatus is COUNTER_OFFER
+        - field: message.contract.contractAttributes.manualReviewTimeline
+          condition: returned if assessmentStatus is PENDING_REVIEW
+
+  errors:
+    - ION-FIN-6000  # Credit score below minimum threshold
+    - ION-FIN-6001  # SLIK/credit bureau data unavailable
+    - ION-FIN-6003  # Income verification failed
+    - ION-FIN-6004  # DTI ratio exceeded
+    - ION-FIN-6011  # Adverse SLIK collectability (rating 4 or 5)
+    - ION-FIN-6019  # Credit utilization ratio too high
+
+policyReferences:
+  - ion://policy/finance/credit-assessment/v1
+  - ion://policy/finance/slik-inquiry/v1
+  - ion://policy/finance/dti-computation/v1
+
+

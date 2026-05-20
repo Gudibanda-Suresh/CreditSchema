@@ -1,0 +1,80 @@
+﻿iri: ion://policy/finance.disbursement.direct-to-account
+
+version: "1.0.0"
+
+versionEffectiveFrom: "2026-05-01"
+
+category: DISBURSEMENT
+
+subCategory: FUND_TRANSFER
+
+status: ratified
+
+ratifiedAt: "2026-04-15"
+
+displayText:
+  id: "Pencairan langsung ke rekening peminjam"
+  en: "Direct disbursement to borrower account"
+
+disbursementMethod: DIRECT_TO_BORROWER_ACCOUNT
+
+acceptedPaymentRails:
+  - rail: BI_FAST
+    maxAmountIDR: 250000000
+    processingTime: REAL_TIME
+    operatingHours: "24/7"
+  - rail: RTGS
+    minAmountIDR: 100000000
+    processingTime: SAME_DAY
+    operatingHours: "06:00-17:00 WIB"
+  - rail: SKN
+    maxAmountIDR: 999000000
+    processingTime: SAME_DAY
+    operatingHours: "08:00-15:00 WIB"
+
+accountValidationRequired: true
+
+accountValidationChecks:
+  - BANK_ACCOUNT_NAME_MATCH_BORROWER
+  - ACCOUNT_ACTIVE_STATUS
+  - ACCOUNT_NOT_BLOCKED
+
+disbursementToThirdPartyAllowed: false
+
+disbursementSlaHours: 1
+
+disbursementTrigger: LOAN_AGREEMENT_SIGNED_AND_ALL_CONDITIONS_MET
+
+dailyDisbursementLimitIDR: 5000000000
+
+singleDisbursementLimitIDR: 2000000000
+
+recordKeepingRequired: true
+
+disbursementConfirmationRequired: true
+
+applicablePatterns:
+  - personal-loan
+  - business-loan
+  - revolving-credit
+
+applicableLenderTypes:
+  - BANK_UMUM
+  - BPR
+  - MULTIFINANCE
+  - LPBBTI_P2P
+  - LPBBTI_DIGITAL
+
+errorRefs:
+  - ion://error/ION-FIN-6009
+  - ion://error/ION-FIN-6010
+
+regulatoryBasis:
+  - "OJK POJK 12/2018 tentang Layanan Perbankan Digital"
+  - "Peraturan BI tentang Penyelenggaraan Transfer Dana"
+  - "Peraturan BI tentang BI-FAST"
+
+supersededBy: null
+
+deprecatedAt: null
+

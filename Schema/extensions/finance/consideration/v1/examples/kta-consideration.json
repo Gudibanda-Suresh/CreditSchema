@@ -1,0 +1,18 @@
+{
+  "$schema": "https://schema.ion.id/finance/consideration/v1/schema.json",
+  "@context": "https://schema.ion.id/finance/consideration/v1/context.jsonld",
+  "description": "Example: LoanConsideration for a KTA — IDR 50jt principal, total upfront fees IDR 1,110,000, APR equivalent 24.8%.",
+  "consideration": [
+    {
+      "id": "CONSID-KTA-001",
+      "considerationAttributes": {
+        "@context": "https://schema.ion.id/finance/consideration/v1/context.jsonld",
+        "@type": "ion:LoanConsideration",
+        "approvedPrincipal": 50000000,
+        "currency": "IDR",
+        "totalFeesIDR": 1110000,
+        "aprEquivalent": 24.8
+      }
+    }
+  ]
+}

@@ -1,0 +1,71 @@
+{
+  "$schema": "https://schema.ion.id/finance/resource/v1/schema.json",
+  "@context": "https://schema.ion.id/finance/resource/v1/context.jsonld",
+  "description": "Example: CreditProduct template for a KTA (Kredit Tanpa Agunan — unsecured personal loan) offered by a BANK_UMUM via digital channel. Rate band 10–24% p.a. flat, IDR 5jt–300jt, 12–60 months.",
+  "id": "RES-BRI-KTA-001",
+  "descriptor": {
+    "name": "KTA BRI Ceria",
+    "shortDesc": "Kredit tanpa agunan untuk semua kebutuhan, proses digital cepat"
+  },
+  "resourceAttributes": {
+    "@context": "https://schema.ion.id/finance/resource/v1/context.jsonld",
+    "@type": "ion:CreditProduct",
+    "productIdentity": {
+      "productName": "KTA BRI Ceria",
+      "institutionName": "PT Bank Rakyat Indonesia (Persero) Tbk",
+      "productType": "KTA",
+      "financeType": "CONVENTIONAL",
+      "currency": "IDR",
+      "institutionType": "BANK_UMUM",
+      "bankCapitalTier": "BUKU_4",
+      "digitalOnly": false,
+      "distributionChannels": ["MOBILE_BANKING", "FINANCIAL_MARKETPLACE", "BRANCH_OFFICE"]
+    },
+    "principalRange": {
+      "minimum": { "value": 5000000, "currency": "IDR" },
+      "maximum": { "value": 300000000, "currency": "IDR" },
+      "denomination": 1000000
+    },
+    "tenor": {
+      "unit": "MONTHS",
+      "minimum": 12,
+      "maximum": 60
+    },
+    "costOfFund": {
+      "yieldType": "FIXED",
+      "calculationMethod": "FLAT",
+      "rateMinPercent": 10.0,
+      "rateMaxPercent": 24.0
+    },
+    "repaymentSchedule": {
+      "scheduleType": "MONTHLY",
+      "graceMonths": 0
+    },
+    "feeStructure": {
+      "provisionFeePercent": 1.0,
+      "adminFeeFixed": 150000
+    },
+    "collateral": {
+      "required": false
+    },
+    "borrowerCriteria": {
+      "applicantTypes": ["EMPLOYEE", "PROFESSIONAL", "SELF_EMPLOYED"],
+      "minimumMonthlyIncomeIDR": 3000000,
+      "minimumSLIKGrade": "1",
+      "serviceRegions": ["ID-JK", "ID-JB", "ID-JT", "ID-JI", "ID-SS", "ID-SU"],
+      "maxDSRPercent": 50
+    },
+    "regulatoryDeclaration": {
+      "ojkApprovedDate": "2024-01-15",
+      "productRegistrationNumber": "S-123/NB.111/2024",
+      "riskCategory": "MEDIUM",
+      "disclosureLanguage": "id"
+    },
+    "requiredDocuments": [
+      { "documentType": "IDENTITY", "documentCode": "KTP", "mandatory": true },
+      { "documentType": "TAX", "documentCode": "NPWP", "mandatory": false },
+      { "documentType": "INCOME", "documentCode": "SLIP_GAJI_3_BULAN", "mandatory": true },
+      { "documentType": "EMPLOYMENT", "documentCode": "SK_PENGANGKATAN_ATAU_SK_KARYAWAN", "mandatory": true }
+    ]
+  }
+}

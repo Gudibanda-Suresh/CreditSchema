@@ -1,0 +1,31 @@
+{
+  "$schema": "https://schema.ion.id/finance/contract/v1/schema.json",
+  "@context": "https://schema.ion.id/finance/contract/v1/context.jsonld",
+  "description": "Example: contractAttributes for an active KTA (unsecured personal loan) — IDR 50jt, 36 months, FLAT 12% p.a., signed 2026-05-20.",
+  "contractAttributes": {
+    "@context": "https://schema.ion.id/finance/contract/v1/context.jsonld",
+    "@type": "ion:LoanAgreement",
+    "contractNumber": "PKS-BRI-KTA-2026-00088211",
+    "loanAccountNumber": "100200345678901",
+    "agreementDate": "2026-05-20",
+    "maturityDate": "2029-05-20",
+    "loanStatus": "ACTIVE",
+    "loanTerms": {
+      "approvedPrincipal": 50000000,
+      "effectiveRatePercent": 12.0,
+      "calculationMethod": "FLAT",
+      "yieldType": "FIXED",
+      "tenorMonths": 36,
+      "monthlyInstallmentIDR": 1888889,
+      "monthlyDueDay": 20,
+      "outstandingPrincipal": 50000000,
+      "totalInterestPaid": 0
+    },
+    "legalDocuments": {
+      "creditAgreementUrl": "https://docs.bri.co.id/akad/PKS-BRI-KTA-2026-00088211.pdf",
+      "riplayDocumentUrl": "https://docs.bri.co.id/riplay/PKS-BRI-KTA-2026-00088211-riplay.pdf",
+      "approvalLetterUrl": "https://docs.bri.co.id/sppp/PKS-BRI-KTA-2026-00088211-sppp.pdf",
+      "eMateraiSerial": "EM-2026-987654321"
+    }
+  }
+}

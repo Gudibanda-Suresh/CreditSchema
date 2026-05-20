@@ -1,0 +1,64 @@
+{
+  "schemaId": "ion-finance-credit-offer-v1",
+  "version": "1.0.0",
+  "fieldGroups": [
+    {
+      "id": "offerDecision",
+      "label": "Offer Decision",
+      "icon": "check-circle",
+      "fields": ["offerStatus", "offerReference", "validUntil"]
+    },
+    {
+      "id": "approvedTerms",
+      "label": "Approved Terms",
+      "icon": "document-check",
+      "fields": ["approvedPrincipal.value", "approvedTenor.value", "approvedTenor.unit", "effectiveRate.percentPerYear", "effectiveRate.yieldType", "effectiveRate.method"]
+    },
+    {
+      "id": "installment",
+      "label": "Monthly Installment",
+      "icon": "calendar-check",
+      "fields": ["monthlyInstallment.totalIDR", "monthlyInstallment.principalIDR", "monthlyInstallment.interestIDR"]
+    },
+    {
+      "id": "fees",
+      "label": "Fees & Total Cost",
+      "icon": "receipt",
+      "fields": ["totalFees.provisionFeeIDR", "totalFees.administrationFeeIDR", "totalFees.appraisalFeeIDR", "totalFees.notaryFeeIDR", "totalFees.lifeInsurancePremiumIDR", "totalFees.annualFireInsuranceIDR", "totalFees.totalUpfrontCostsIDR", "totalFees.aprEquivalent"]
+    },
+    {
+      "id": "conditions",
+      "label": "Conditions",
+      "icon": "list-check",
+      "conditional": "offerStatus === 'CONDITIONALLY_APPROVED' || offerStatus === 'REJECTED'",
+      "fields": ["additionalConditions"]
+    },
+    {
+      "id": "disbursement",
+      "label": "Disbursement",
+      "icon": "arrow-right-circle",
+      "fields": ["disbursementSchedule.targetBusinessDays", "disbursementSchedule.disbursementMethod"]
+    },
+    {
+      "id": "creditScore",
+      "label": "Credit Assessment",
+      "icon": "chart-bar",
+      "fields": ["internalCreditScore.slikGrade", "internalCreditScore.category", "internalCreditScore.score"]
+    }
+  ],
+  "displayPreferences": {
+    "primaryFields": ["offerStatus", "approvedPrincipal.value", "approvedTenor.value", "effectiveRate.percentPerYear", "monthlyInstallment.totalIDR", "totalFees.aprEquivalent"],
+    "cardSummaryFields": ["offerStatus", "approvedPrincipal.value", "effectiveRate.percentPerYear", "monthlyInstallment.totalIDR"],
+    "statusColors": {
+      "APPROVED": "green",
+      "CONDITIONALLY_APPROVED": "yellow",
+      "UNDER_EVALUATION": "blue",
+      "REJECTED": "red",
+      "EXPIRED": "grey"
+    },
+    "currencyFields": ["approvedPrincipal.value", "monthlyInstallment.totalIDR", "monthlyInstallment.principalIDR", "monthlyInstallment.interestIDR", "totalFees.provisionFeeIDR", "totalFees.administrationFeeIDR", "totalFees.appraisalFeeIDR", "totalFees.notaryFeeIDR", "totalFees.lifeInsurancePremiumIDR", "totalFees.annualFireInsuranceIDR", "totalFees.totalUpfrontCostsIDR"],
+    "percentageFields": ["effectiveRate.percentPerYear", "totalFees.aprEquivalent", "effectiveRate.floatingRateAfterFixedPercent"],
+    "locale": "id-ID",
+    "currency": "IDR"
+  }
+}

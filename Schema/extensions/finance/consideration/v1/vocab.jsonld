@@ -1,0 +1,39 @@
+{
+  "@context": {
+    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "ion": "https://schema.ion.id/finance/consideration/v1#",
+    "schema": "https://schema.org/"
+  },
+  "@graph": [
+    {
+      "@id": "ion:LoanConsideration",
+      "rdf:type": "rdfs:Class",
+      "rdfs:comment": "Principal and fee amounts exchanged under the credit contract.",
+      "rdfs:subClassOf": {
+        "@id": "schema:MonetaryAmount"
+      }
+    },
+    {
+      "@id": "ion:approvedPrincipal",
+      "rdf:type": "rdf:Property",
+      "rdfs:comment": "Disbursed principal amount in IDR."
+    },
+    {
+      "@id": "ion:currency",
+      "rdf:type": "rdf:Property",
+      "rdfs:comment": "ISO 4217 currency code (always IDR for domestic credit)."
+    },
+    {
+      "@id": "ion:totalFeesIDR",
+      "rdf:type": "rdf:Property",
+      "rdfs:comment": "Total upfront fees at akad signing in IDR."
+    },
+    {
+      "@id": "ion:aprEquivalent",
+      "rdf:type": "rdf:Property",
+      "rdfs:comment": "All-in annualised cost of credit % per POJK 6/2022."
+    }
+  ]
+}

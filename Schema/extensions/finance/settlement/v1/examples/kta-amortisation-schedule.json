@@ -1,0 +1,69 @@
+{
+  "$schema": "https://schema.ion.id/finance/settlement/v1/schema.json",
+  "@context": "https://schema.ion.id/finance/settlement/v1/context.jsonld",
+  "description": "Example: first 4 rows of the amortisation schedule (settlements[]) for a KTA — IDR 50jt, 36 months, FLAT 12% p.a., monthly installment IDR 1,888,889. Row 1 is PAID, row 2 is PARTIAL, rows 3-4 are UNPAID.",
+  "settlements": [
+    {
+      "id": "SETTLE-001",
+      "status": "COMPLETE",
+      "settlementAttributes": {
+        "@context": "https://schema.ion.id/finance/settlement/v1/context.jsonld",
+        "@type": "ion:AmortisationRow",
+        "installmentNumber": 1,
+        "dueDate": "2026-06-20",
+        "installmentIDR": 1888889,
+        "principalIDR": 1388889,
+        "interestIDR": 500000,
+        "outstandingPrincipalIDR": 48611111,
+        "paymentStatus": "PAID",
+        "actualPaymentDate": "2026-06-18"
+      }
+    },
+    {
+      "id": "SETTLE-002",
+      "status": "COMMITTED",
+      "settlementAttributes": {
+        "@context": "https://schema.ion.id/finance/settlement/v1/context.jsonld",
+        "@type": "ion:AmortisationRow",
+        "installmentNumber": 2,
+        "dueDate": "2026-07-20",
+        "installmentIDR": 1888889,
+        "principalIDR": 1388889,
+        "interestIDR": 500000,
+        "outstandingPrincipalIDR": 47222222,
+        "paymentStatus": "PARTIAL",
+        "actualPaymentDate": "2026-07-22"
+      }
+    },
+    {
+      "id": "SETTLE-003",
+      "status": "DRAFT",
+      "settlementAttributes": {
+        "@context": "https://schema.ion.id/finance/settlement/v1/context.jsonld",
+        "@type": "ion:AmortisationRow",
+        "installmentNumber": 3,
+        "dueDate": "2026-08-20",
+        "installmentIDR": 1888889,
+        "principalIDR": 1388889,
+        "interestIDR": 500000,
+        "outstandingPrincipalIDR": 45833333,
+        "paymentStatus": "UNPAID"
+      }
+    },
+    {
+      "id": "SETTLE-004",
+      "status": "DRAFT",
+      "settlementAttributes": {
+        "@context": "https://schema.ion.id/finance/settlement/v1/context.jsonld",
+        "@type": "ion:AmortisationRow",
+        "installmentNumber": 4,
+        "dueDate": "2026-09-20",
+        "installmentIDR": 1888889,
+        "principalIDR": 1388889,
+        "interestIDR": 500000,
+        "outstandingPrincipalIDR": 44444444,
+        "paymentStatus": "UNPAID"
+      }
+    }
+  ]
+}

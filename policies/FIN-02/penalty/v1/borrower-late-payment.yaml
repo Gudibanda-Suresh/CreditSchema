@@ -1,0 +1,93 @@
+﻿iri: ion://policy/finance.penalty.borrower-late-payment
+
+version: "1.0.0"
+
+versionEffectiveFrom: "2026-05-01"
+
+category: PENALTY
+
+subCategory: LATE_PAYMENT
+
+status: ratified
+
+ratifiedAt: "2026-04-15"
+
+displayText:
+  id: "Denda keterlambatan pembayaran oleh peminjam"
+  en: "Late payment penalty charged to borrower"
+
+penaltyType: BORROWER_LATE_PAYMENT
+
+gracePeriodDays: 3
+
+penaltyTiers:
+  - dpdRange: "1-30"
+    penaltyPercentPerDay: 0.1
+    penaltyBase: OVERDUE_INSTALLMENT_AMOUNT
+    maxDailyPenaltyPercent: 3.0
+  - dpdRange: "31-60"
+    penaltyPercentPerDay: 0.15
+    penaltyBase: OVERDUE_INSTALLMENT_AMOUNT
+    maxDailyPenaltyPercent: 4.5
+  - dpdRange: "61+"
+    penaltyPercentPerDay: 0.2
+    penaltyBase: OUTSTANDING_PRINCIPAL_BALANCE
+    maxDailyPenaltyPercent: 6.0
+
+maxPenaltyCapPercent: 100
+note: "OJK POJK 22/2023 prohibits penalty exceeding outstanding obligation"
+
+penaltyWaiverAllowed: true
+
+penaltyWaiverConditions:
+  - FIRST_TIME_LATE_PAYMENT_WITHIN_12_MONTHS
+  - VERIFIED_FORCE_MAJEURE
+  - FORMAL_RESTRUCTURING_IN_PROGRESS
+
+penaltyDisclosureRequired: true
+
+penaltyDisclosureIn:
+  - LOAN_AGREEMENT
+  - PRODUCT_INFORMATION_SHEET
+
+ojkCapCompliance:
+  maxPenaltyPerDay: 0.3
+  note: "POJK 77/2016 caps P2P lending penalty at 0.3% per day; bank lenders apply internal policy within OJK guidance"
+
+smsEmailNotificationRequired: true
+
+notificationTiming:
+  - DUE_DATE_MINUS_3_DAYS
+  - ON_DUE_DATE
+  - DPD_1
+  - DPD_7
+  - DPD_14
+  - DPD_30
+
+applicablePatterns:
+  - personal-loan
+  - mortgage
+  - vehicle-loan
+  - business-loan
+  - revolving-credit
+  - bnpl
+
+applicableLenderTypes:
+  - BANK_UMUM
+  - BPR
+  - MULTIFINANCE
+  - LPBBTI_P2P
+  - LPBBTI_DIGITAL
+
+errorRefs:
+  - ion://error/ION-FIN-6016
+
+regulatoryBasis:
+  - "OJK POJK 22/2023 tentang Perlindungan Konsumen dan Masyarakat di Sektor Jasa Keuangan"
+  - "OJK POJK 77/2016 tentang Layanan Pinjam Meminjam Uang Berbasis Teknologi Informasi"
+  - "UU 8/1999 tentang Perlindungan Konsumen"
+
+supersededBy: null
+
+deprecatedAt: null
+

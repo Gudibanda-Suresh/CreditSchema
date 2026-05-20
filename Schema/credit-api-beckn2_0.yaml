@@ -1,0 +1,3464 @@
+openapi: "3.0.0"
+info:
+  title: ION Finance Credit Domain API
+  version: 2.0.0
+  description: >
+    **Beckn Protocol v2.0 — Credit Domain API Specification**
+
+    Generic open-network API for credit and financing products.
+    Implements all Beckn v2.0 protocol actions across the full loan lifecycle:
+    catalog publication → discovery → selection → application → confirmation
+    → servicing (status / update / cancel / track) → post-fulfillment (rate / support).
+
+    **Domain:** `ion:finance`
+
+    **ION Hierarchy:** `finance / FIN-02 / FNC-lending / loan-application / {variant}`
+    Pattern IRI: `ion://flow/finance/FIN-02/FNC-lending/loan-application/v1`
+
+    **Schema Pack:** Seven JSON-LD domain schema objects cover the full loan lifecycle:
+
+    | Stage | Schema | Beckn Slot |
+    |-------|--------|------------|
+    | on_discover | `ion:CreditProduct` | `catalog.resources[].resourceAttributes` |
+    | on_select   | `ion:CreditApproval`    | `contract.commitments[].offer.offerAttributes` |
+    | on_confirm  | `ion:LoanAgreement` | `contract.contractAttributes` |
+    | on_confirm  | `ion:Borrower` / `ion:Lender`  | `contract.participants[].participantAttributes` |
+    | on_status   | `ion:AmortisationRow`          | `settlement.settlementAttributes` |
+    | on_confirm  | `ion:DisbursementPerformance`  | `fulfillment.performanceAttributes` |
+    | on_confirm  | `ion:LoanConsideration`        | `consideration.considerationAttributes` |
+
+    **Schema context URIs:**
+    - resource/v1: `https://schema.ion.id/finance/resource/v1/context.jsonld`
+    - offer/v1: `https://schema.ion.id/finance/offer/v1/context.jsonld`
+    - contract/v1: `https://schema.ion.id/finance/contract/v1/context.jsonld`
+    - participant/v1: `https://schema.ion.id/finance/participant/v1/context.jsonld`
+    - settlement/v1: `https://schema.ion.id/finance/settlement/v1/context.jsonld`
+    - performance/v1: `https://schema.ion.id/finance/performance/v1/context.jsonld`
+    - consideration/v1: `https://schema.ion.id/finance/consideration/v1/context.jsonld`
+
+    **Flow:**
+    ```
+    BPP → CDS : /catalog/publish        BPP publishes CreditResource catalog
+    CDS → BPP : /catalog/on_publish     async per-catalog indexing result
+
+    BAP → BPP : /discover               BAP sends credit intent → ACK
+    BPP → BAP : /on_discover            catalogs with ion:CreditProduct
+
+    BAP → BPP : /select                 BAP selects resource + desired terms → ACK
+    BPP → BAP : /on_select              contract.DRAFT with ion:CreditApproval
+
+    BAP → BPP : /init                   BAP submits borrower KYC → ACK
+    BPP → BAP : /on_init                finalized contract terms + payment schedule
+
+    BAP → BPP : /confirm                BAP accepts terms, e-sign → ACK
+    BPP → BAP : /on_confirm             contract.ACTIVE with ion:LoanAgreement
+
+    BAP → BPP : /status                 poll loan status → ACK
+    BPP → BAP : /on_status              current contract state + collectibility
+
+    BAP → BPP : /update                 document upload / prepayment / restructure → ACK
+    BPP → BAP : /on_update              updated contract terms
+
+    BAP → BPP : /cancel                 withdraw application or foreclose → ACK
+    BPP → BAP : /on_cancel              cancellation confirmation
+
+    BAP → BPP : /track                  request disbursement tracking handle → ACK
+    BPP → BAP : /on_track               tracking URL / webhook
+
+    BAP → BPP : /rate                   submit experience rating → ACK
+    BPP → BAP : /on_rate                rating confirmation
+
+    BAP → BPP : /support                request support contact → ACK
+    BPP → BAP : /on_support             support contacts + GRO details
+    ```
+
+    **Authentication:** All requests MUST carry a valid Beckn HTTP Signature in the
+    `Authorization` header (Ed25519, registered in Beckn Registry / dedi.global).
+
+    **Callback pattern:** All BAP→BPP calls return `ACK` immediately. The BPP then
+    POSTs the actual response to the BAP's `context.bapUri` endpoint.
+
+  contact:
+    name: ION Network
+    url: https://schema.ion.id
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+
+  x-beckn-version: "2.0.0"
+  x-beckn-domain: "ion:finance"
+  x-beckn-schema-pack: "https://schema.ion.id/finance/"
+  x-beckn-registry: "https://dedi.global"
+
+servers:
+  - url: https://{subscriberUrl}
+    description: >
+      Base URL of the Beckn network participant (BAP or BPP).
+      Replace `{subscriberUrl}` with the URL registered in the Beckn Registry.
+    variables:
+      subscriberUrl:
+        default: example.beckn.io
+        description: Registered subscriber URL from the Beckn Registry (dedi.global)
+
+security:
+  - BeckSignature: []
+
+tags:
+  - name: Catalog Publishing
+    description: BPP publishes CreditResource catalog to Catalog Discovery Service (CDS)
+  - name: Discovery
+    description: BAP discovers credit products — async discover / on_discover flow
+  - name: Transaction
+    description: select / init / confirm — BAP selects, applies, and confirms credit
+  - name: Fulfillment
+    description: status / update / cancel / track — post-confirm loan servicing
+  - name: Post-Fulfillment
+    description: rate / support — ratings and grievance redressal
+
+# ─────────────────────────────────────────────────────────────────────────────
+# PATHS
+# ─────────────────────────────────────────────────────────────────────────────
+paths:
+
+  # ── CATALOG PUBLISH ──────────────────────────────────────────────────────
+  /catalog/publish:
+    post:
+      operationId: catalogPublish
+      tags: [Catalog Publishing]
+      summary: BPP submits one or more CreditResource catalogs to the CDS for indexing
+      description: >
+        The BPP (lender's system) calls this endpoint to register or refresh its
+        credit product catalog on the Beckn network. Each catalog entry wraps one
+        or more `ion:CreditProduct` objects. Returns ACK immediately; per-catalog
+        processing result arrives asynchronously via `/catalog/on_publish`.
+
+        **Context.action:** `catalog/publish` or `catalog_publish`
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [context, message]
+              properties:
+                context:
+                  allOf:
+                    - $ref: '#/components/schemas/Context'
+                    - type: object
+                      properties:
+                        action:
+                          type: string
+                          enum: [catalog/publish, catalog_publish]
+                message:
+                  $ref: '#/components/schemas/CatalogPublishAction'
+            example:
+              context:
+                version: "2.0.0"
+                action: "catalog/publish"
+                domain: "ion:finance"
+                location: { country: { code: "ID" } }
+                bapId: "cds.beckn.io"
+                bapUri: "https://cds.beckn.io/beckn"
+                bppId: "bri-bpp.co.id"
+                bppUri: "https://api.bri.co.id/beckn"
+                transactionId: "txn-a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+                messageId: "msg-11112222-3333-4444-5555-666677778888"
+                timestamp: "2024-05-01T08:00:00+07:00"
+                ttl: "PT30S"
+                schemaContext:
+                  - "https://schema.ion.id/finance/resource/v1/context.jsonld"
+              message:
+                catalogs:
+                  - id: "cat-bri-retail-credit-v1"
+                    descriptor:
+                      name: "BRI Retail Credit Products"
+                      shortDesc: "BRI unsecured personal loans (KTA), home mortgages (KPR), and KUR"
+                    provider:
+                      id: "bri-bpp-001"
+                      descriptor:
+                        name: "PT Bank Rakyat Indonesia (Persero) Tbk"
+                        shortDesc: "BUMN bank licensed by OJK — largest microfinance network in Indonesia"
+                    resources:
+                      - id: "bri-kta-v1"
+                        descriptor:
+                          name: "KTA BRI"
+                          shortDesc: "Unsecured personal loan IDR 5jt–300jt, tenor 12–60 months"
+                        resourceAttributes:
+                          "@context": "https://schema.ion.id/finance/resource/v1/context.jsonld"
+                          "@type": "ion:CreditProduct"
+                          crc: "FNC-lending"
+                          productIdentity:
+                            productName: "KTA BRI"
+                            institutionName: "PT Bank Rakyat Indonesia (Persero) Tbk"
+                            productType: "KTA"
+                            financeType: "CONVENTIONAL"
+                            currency: "IDR"
+                            institutionType: "BANK_UMUM"
+                          principalRange:
+                            minimum: { value: 5000000, currency: "IDR" }
+                            maximum: { value: 300000000, currency: "IDR" }
+                            denomination: 1000000
+                          tenor:
+                            unit: "MONTHS"
+                            minimum: 12
+                            maximum: 60
+                          costOfFund:
+                            yieldType: "FIXED"
+                            calculationMethod: "FLAT"
+                            rateMinPercent: 10.5
+                            rateMaxPercent: 24.0
+                          repaymentSchedule:
+                            frequency: "MONTHLY"
+                            paymentChannels: ["AUTODEBIT", "VIRTUAL_ACCOUNT", "BIFAST"]
+                          borrowerCriteria:
+                            applicantTypes: ["INDIVIDUAL"]
+                            minimumAge: 21
+                            maximumAgeAtMaturity: 60
+                            minimumSLIKGrade: 1
+                          regulatoryDeclaration:
+                            licenses:
+                              - regulatoryBody: "OJK_BANK_UMUM"
+                                licenseNumber: "KEP-046/DIR/1992"
+                                role: "DIRECT_LENDER"
+                          requiredDocuments:
+                            - documentType: "KTP"
+                              mandatory: true
+                            - documentType: "NPWP"
+                              mandatory: true
+                            - documentType: "SLIP_GAJI"
+                              mandatory: true
+      responses:
+        '200':
+          description: ACK — catalog accepted for processing; result follows via `/catalog/on_publish`
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AckResponse'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '409':
+          $ref: '#/components/responses/AckNoCallback'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /catalog/on_publish:
+    post:
+      operationId: catalogOnPublish
+      tags: [Catalog Publishing]
+      summary: CDS returns per-catalog indexing result to the BPP
+      description: >
+        Async callback from the Catalog Discovery Service (CDS) after processing
+        the `/catalog/publish` request. Contains `ACCEPTED`, `REJECTED`, or `PENDING`
+        status for each submitted catalog. The BPP confirms visibility by observing
+        `ion:CreditProduct` items returned in subsequent `/on_discover` callbacks.
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [context, message]
+              properties:
+                context:
+                  allOf:
+                    - $ref: '#/components/schemas/Context'
+                    - type: object
+                      properties:
+                        action:
+                          type: string
+                          enum: [catalog/on_publish, on_catalog_publish]
+                message:
+                  $ref: '#/components/schemas/CatalogOnPublishAction'
+            example:
+              context:
+                version: "2.0.0"
+                action: "catalog/on_publish"
+                domain: "ion:finance"
+                bppId: "bri-bpp.co.id"
+                bppUri: "https://api.bri.co.id/beckn"
+                transactionId: "txn-a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+                messageId: "msg-aaaabbbb-cccc-dddd-eeee-ffff00001111"
+                timestamp: "2024-05-01T08:00:05+07:00"
+                ttl: "PT30S"
+              message:
+                results:
+                  - catalogId: "cat-bri-retail-credit-v1"
+                    status: "ACCEPTED"
+                    indexedAt: "2024-05-01T08:00:04+07:00"
+      responses:
+        '200':
+          description: ACK from BPP — result received
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AckResponse'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  # ── DISCOVERY ─────────────────────────────────────────────────────────────
+  /discover:
+    post:
+      operationId: discover
+      tags: [Discovery]
+      summary: BAP sends a credit product discovery intent
+      description: >
+        The BAP sends a structured intent describing the borrower's credit need
+        (product type, desired principal, tenure, location) to discover matching
+        credit products on the Beckn network. Returns ACK immediately. The BPP or
+        CDS delivers matching catalogs asynchronously via `/on_discover`.
+
+        **Context.action:** `discover`
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [context, message]
+              properties:
+                context:
+                  allOf:
+                    - $ref: '#/components/schemas/Context'
+                    - type: object
+                      properties:
+                        action:
+                          type: string
+                          enum: [discover]
+                message:
+                  $ref: '#/components/schemas/DiscoverAction'
+            example:
+              context:
+                version: "2.0.0"
+                action: "discover"
+                domain: "ion:finance"
+                location: { country: { code: "ID" }, city: { code: "std:021" } }
+                bapId: "superapp.id"
+                bapUri: "https://superapp.id/beckn"
+                transactionId: "txn-a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+                messageId: "msg-22223333-4444-5555-6666-777788889999"
+                timestamp: "2024-05-10T09:00:00+07:00"
+                ttl: "PT30S"
+                schemaContext:
+                  - "https://schema.ion.id/finance/resource/v1/context.jsonld"
+              message:
+                intent:
+                  item:
+                    descriptor:
+                      name: "KTA"
+                    tags:
+                      - descriptor: { code: "productType" }
+                        list:
+                          - descriptor: { code: "value" }
+                            value: "KTA"
+                  fulfillment:
+                    customer:
+                      person:
+                        tags:
+                          - descriptor: { code: "desiredPrincipal" }
+                            list:
+                              - descriptor: { code: "value" }
+                                value: "50000000"
+                              - descriptor: { code: "currency" }
+                                value: "IDR"
+                          - descriptor: { code: "desiredTenorMonths" }
+                            list:
+                              - descriptor: { code: "value" }
+                                value: "48"
+      responses:
+        '200':
+          description: ACK — discover request received; matching catalogs follow via `/on_discover`
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AckResponse'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '409':
+          $ref: '#/components/responses/AckNoCallback'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /on_discover:
+    post:
+      operationId: onDiscover
+      tags: [Discovery]
+      summary: BPP/CDS returns matching catalogs with CreditResource objects to the BAP
+      description: >
+        Async callback from BPP or CDS. Contains one or more catalogs whose
+        `resources[].resourceAttributes` carry `ion:CreditProduct` objects
+        describing available credit products. The BAP presents these to the
+        borrower and calls `/select` on the chosen product.
+
+        **Context.action:** `on_discover`
+
+        **Schema placement:** `message.catalogs[].resources[].resourceAttributes`
+        → `{ "@type": "ion:CreditProduct", ... }`
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [context, message]
+              properties:
+                context:
+                  allOf:
+                    - $ref: '#/components/schemas/Context'
+                    - type: object
+                      properties:
+                        action:
+                          type: string
+                          enum: [on_discover]
+                message:
+                  $ref: '#/components/schemas/OnDiscoverAction'
+            example:
+              context:
+                version: "2.0.0"
+                action: "on_discover"
+                domain: "ion:finance"
+                location: { country: { code: "ID" } }
+                bapId: "superapp.id"
+                bapUri: "https://superapp.id/beckn"
+                bppId: "bmtap-gateway.co.id"
+                bppUri: "https://bmtap-gateway.co.id/beckn"
+                transactionId: "txn-a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+                messageId: "msg-33334444-5555-6666-7777-888899990000"
+                timestamp: "2024-05-10T09:00:02+07:00"
+                ttl: "PT30S"
+                schemaContext:
+                  - "https://schema.ion.id/finance/resource/v1/context.jsonld"
+              message:
+                catalogs:
+                  - id: "catalog-bmtap-retail-credit-2024"
+                    descriptor:
+                      name: "Bank Mandiri Taspen Pos — Produk Kredit"
+                      shortDesc: "KTA khusus ASN/PNS/TNI/Polri/Pensiunan"
+                    provider:
+                      id: "bmtap-bpp-001"
+                      descriptor:
+                        name: "PT Bank Mandiri Taspen Pos"
+                    resources:
+                      - id: "bmtap-kta-pns-v1"
+                        descriptor:
+                          name: "KTA Mandiri Taspen"
+                          shortDesc: "Kredit Tanpa Agunan khusus PNS — hingga IDR 350 jt, tenor s/d 120 bulan"
+                        resourceAttributes:
+                          "@context": "https://schema.ion.id/finance/resource/v1/context.jsonld"
+                          "@type": "ion:CreditProduct"
+                          crc: "FNC-lending"
+                          productIdentity:
+                            productName: "KTA Mandiri Taspen"
+                            institutionName: "PT Bank Mandiri Taspen Pos"
+                            productType: "KTA"
+                            financeType: "CONVENTIONAL"
+                            currency: "IDR"
+                            institutionType: "BANK_UMUM"
+                            bankCapitalTier: "BUKU_2"
+                            digitalOnly: false
+                            distributionChannels: ["BRANCH_OFFICE", "MOBILE_BANKING", "DIRECT_API"]
+                          principalRange:
+                            minimum: { value: 5000000, currency: "IDR" }
+                            maximum: { value: 350000000, currency: "IDR" }
+                            denomination: 1000000
+                          tenor:
+                            unit: "MONTHS"
+                            minimum: 12
+                            maximum: 120
+                          costOfFund:
+                            yieldType: "FIXED"
+                            calculationMethod: "FLAT"
+                            rateMinPercent: 6.99
+                            rateMaxPercent: 13.5
+                          repaymentSchedule:
+                            frequency: "MONTHLY"
+                            paymentChannels: ["AUTODEBIT", "VIRTUAL_ACCOUNT", "BIFAST"]
+                          borrowerCriteria:
+                            applicantTypes: ["INDIVIDUAL"]
+                            minimumAge: 21
+                            maximumAgeAtMaturity: 65
+                            employmentTypes: ["CIVIL_SERVANT", "MILITARY", "POLICE", "PENSIONER"]
+                            minimumSLIKGrade: 1
+                          regulatoryDeclaration:
+                            licenses:
+                              - regulatoryBody: "OJK_BANK_UMUM"
+                                licenseNumber: "KEP-67/DIR/1999"
+                                role: "DIRECT_LENDER"
+                          requiredDocuments:
+                            - documentType: "KTP"
+                              mandatory: true
+                            - documentType: "SK_PENGANGKATAN"
+                              mandatory: true
+                            - documentType: "SLIP_GAJI"
+                              mandatory: true
+      responses:
+        '200':
+          description: ACK from BAP — catalog received
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AckResponse'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  # ── TRANSACTION ───────────────────────────────────────────────────────────
+  /select:
+    post:
+      operationId: select
+      tags: [Transaction]
+      summary: BAP selects a credit resource and requests a personalised CreditOffer
+      description: >
+        The BAP sends the borrower's chosen `resourceId` and desired loan parameters
+        (principal, tenure). No PII is shared at this stage. The BPP evaluates
+        the request and responds asynchronously via `/on_select` with a DRAFT
+        contract containing a `ion:CreditApproval` object.
+
+        **Context.action:** `select`
+
+        **Contract model:** `message.contract` with `commitments[].resources[]`
+        referencing the selected `ion:CreditProduct`.
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [context, message]
+              properties:
+                context:
+                  allOf:
+                    - $ref: '#/components/schemas/Context'
+                    - type: object
+                      properties:
+                        action:
+                          type: string
+                          enum: [select]
+                message:
+                  $ref: '#/components/schemas/SelectAction'
+            example:
+              context:
+                version: "2.0.0"
+                action: "select"
+                domain: "ion:finance"
+                bapId: "superapp.id"
+                bapUri: "https://superapp.id/beckn"
+                bppId: "bmtap-gateway.co.id"
+                bppUri: "https://bmtap-gateway.co.id/beckn"
+                transactionId: "txn-a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+                messageId: "msg-44445555-6666-7777-8888-999900001111"
+                timestamp: "2024-05-10T10:30:00+07:00"
+                ttl: "PT30S"
+              message:
+                contract:
+                  commitments:
+                    - resources:
+                        - id: "bmtap-kta-pns-v1"
+                      tags:
+                        - descriptor: { code: "loanParams" }
+                          list:
+                            - descriptor: { code: "desiredPrincipal" }
+                              value: "50000000"
+                            - descriptor: { code: "desiredTenorMonths" }
+                              value: "48"
+                            - descriptor: { code: "currency" }
+                              value: "IDR"
+      responses:
+        '200':
+          description: ACK — BPP acknowledged; CreditOffer follows via `/on_select`
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AckResponse'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '409':
+          $ref: '#/components/responses/AckNoCallback'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /on_select:
+    post:
+      operationId: onSelect
+      tags: [Transaction]
+      summary: BPP returns DRAFT contract with ion:CreditApproval (async callback)
+      description: >
+        The BPP evaluates the borrower's request against the product template
+        and returns a DRAFT contract with `ion:CreditApproval` in
+        `commitments[].offer.offerAttributes`. The offer contains the exact
+        approved principal, tenure, rate, monthly installment, and fee breakdown.
+        The BAP must call `/init` to proceed and submit borrower KYC.
+
+        **Schema placement:** `message.contract.commitments[].offer.offerAttributes`
+        → `{ "@type": "ion:CreditApproval", "offerStatus": "APPROVED"|"CONDITIONALLY_APPROVED", ... }`
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [context, message]
+              properties:
+                context:
+                  allOf:
+                    - $ref: '#/components/schemas/Context'
+                    - type: object
+                      properties:
+                        action:
+                          type: string
+                          enum: [on_select]
+                message:
+                  $ref: '#/components/schemas/OnSelectAction'
+            example:
+              context:
+                version: "2.0.0"
+                action: "on_select"
+                domain: "ion:finance"
+                bapId: "superapp.id"
+                bapUri: "https://superapp.id/beckn"
+                bppId: "bmtap-gateway.co.id"
+                bppUri: "https://bmtap-gateway.co.id/beckn"
+                transactionId: "txn-a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+                messageId: "msg-55556666-7777-8888-9999-aaaabbbbcccc"
+                timestamp: "2024-05-10T10:45:00+07:00"
+                ttl: "PT30S"
+                schemaContext:
+                  - "https://schema.ion.id/finance/offer/v1/context.jsonld"
+              message:
+                contract:
+                  id: "contract-draft-bmtap-kta-2024-05-10-04421"
+                  status:
+                    code: "DRAFT"
+                    name: "KTA offer approved — awaiting borrower confirmation"
+                  commitments:
+                    - id: "commitment-bmtap-kta-04421"
+                      status:
+                        descriptor: { code: "ACTIVE", name: "KTA approved — no additional conditions" }
+                      resources:
+                        - id: "bmtap-kta-pns-v1"
+                          descriptor: { name: "KTA Mandiri Taspen" }
+                      offer:
+                        id: "BMTAP-KTA-2024-05-10-04421"
+                        resourceIds: ["bmtap-kta-pns-v1"]
+                        validity:
+                          endDate: "2024-06-09T23:59:59+07:00"
+                        offerAttributes:
+                          "@context": "https://schema.ion.id/finance/offer/v1/context.jsonld"
+                          "@type": "ion:CreditApproval"
+                          offerReference: "BMTAP-KTA-2024-05-10-04421"
+                          offerStatus: "APPROVED"
+                          approvedPrincipal: { value: 50000000, currency: "IDR" }
+                          approvedTenor: { value: 48, unit: "MONTHS" }
+                          effectiveRate: { percentPerYear: 9.5, method: "FLAT", yieldType: "FIXED" }
+                          monthlyInstallment:
+                            totalIDR: 1437500
+                            principalIDR: 1041667
+                            interestIDR: 395833
+                          totalFees:
+                            provisionFeeIDR: 500000
+                            administrationFeeIDR: 250000
+                          aprEquivalent: 18.98
+                          disbursableAmount: { value: 49250000, currency: "IDR" }
+      responses:
+        '200':
+          description: ACK from BAP — CreditOffer received
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AckResponse'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /init:
+    post:
+      operationId: init
+      tags: [Transaction]
+      summary: BAP submits borrower KYC details to open a credit application
+      description: >
+        The BAP submits the borrower's personal details (full name, NIK, NPWP,
+        employment, address) and references to uploaded KYC documents. The BPP
+        creates a credit application record and responds asynchronously via
+        `/on_init` with the formal document checklist and pre-sanction terms.
+
+        **Context.action:** `init`
+
+        **Schema placement:** `message.contract.participants[]` with role `BORROWER`
+        carrying `participantAttributes` → `{ "@type": "ion:Borrower", ... }`
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [context, message]
+              properties:
+                context:
+                  allOf:
+                    - $ref: '#/components/schemas/Context'
+                    - type: object
+                      properties:
+                        action:
+                          type: string
+                          enum: [init]
+                message:
+                  $ref: '#/components/schemas/InitAction'
+            example:
+              context:
+                version: "2.0.0"
+                action: "init"
+                domain: "ion:finance"
+                bapId: "superapp.id"
+                bapUri: "https://superapp.id/beckn"
+                bppId: "bmtap-gateway.co.id"
+                bppUri: "https://bmtap-gateway.co.id/beckn"
+                transactionId: "txn-a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+                messageId: "msg-66667777-8888-9999-aaaa-bbbbccccdddd"
+                timestamp: "2024-05-12T09:00:00+07:00"
+                ttl: "PT30S"
+                schemaContext:
+                  - "https://schema.ion.id/finance/contract/v1/context.jsonld"
+              message:
+                contract:
+                  id: "contract-draft-bmtap-kta-2024-05-10-04421"
+                  commitments:
+                    - id: "commitment-bmtap-kta-04421"
+                      offer:
+                        id: "BMTAP-KTA-2024-05-10-04421"
+                  participants:
+                    - id: "borrower-rini-ariani"
+                      descriptor: { name: "Rini Ariani", code: "BORROWER" }
+                      participantAttributes:
+                        "@context": "https://schema.ion.id/finance/participant/v1/context.jsonld"
+                        "@type": "ion:Borrower"
+                        fullName: "Rini Ariani"
+                        nik: "3578025505870003"
+                        npwp: "55.432.198.7-611.000"
+                        birthPlace: "Surabaya"
+                        birthDate: "1987-05-15"
+                        registeredAddress: "Jl. Raya Darmo No. 210, Surabaya, Jawa Timur 60264"
+                        email: "rini.ariani87@pns.go.id"
+                        phone: "+6281312345678"
+                        employmentType: "CIVIL_SERVANT"
+                        employer: "Dinas Pendidikan Kota Surabaya"
+      responses:
+        '200':
+          description: ACK — application opened; document checklist follows via `/on_init`
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AckResponse'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '409':
+          $ref: '#/components/responses/AckNoCallback'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /on_init:
+    post:
+      operationId: onInit
+      tags: [Transaction]
+      summary: BPP returns application reference, document checklist, and pre-sanction terms
+      description: >
+        The BPP returns the application reference number, required document
+        checklist, and pre-sanction terms. The contract remains in DRAFT status.
+        The BAP must collect all required documents and call `/confirm` to proceed.
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [context, message]
+              properties:
+                context:
+                  allOf:
+                    - $ref: '#/components/schemas/Context'
+                    - type: object
+                      properties:
+                        action:
+                          type: string
+                          enum: [on_init]
+                message:
+                  $ref: '#/components/schemas/OnInitAction'
+      responses:
+        '200':
+          description: ACK from BAP — pre-sanction terms received
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AckResponse'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /confirm:
+    post:
+      operationId: confirm
+      tags: [Transaction]
+      summary: BAP accepts offer terms, grants e-consent, and confirms the credit contract
+      description: >
+        The BAP indicates that the borrower has reviewed and accepted all terms
+        (Akad Kredit / Perjanjian Kredit), provided e-signature / e-consent, and
+        completed document submission. The BPP sanctions and disburses, then
+        responds asynchronously via `/on_confirm` with an ACTIVE contract
+        containing the signed `ion:LoanAgreement`.
+
+        **Context.action:** `confirm`
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [context, message]
+              properties:
+                context:
+                  allOf:
+                    - $ref: '#/components/schemas/Context'
+                    - type: object
+                      properties:
+                        action:
+                          type: string
+                          enum: [confirm]
+                message:
+                  $ref: '#/components/schemas/ConfirmAction'
+            example:
+              context:
+                version: "2.0.0"
+                action: "confirm"
+                domain: "ion:finance"
+                bapId: "superapp.id"
+                bapUri: "https://superapp.id/beckn"
+                bppId: "bmtap-gateway.co.id"
+                bppUri: "https://bmtap-gateway.co.id/beckn"
+                transactionId: "txn-a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+                messageId: "msg-77778888-9999-aaaa-bbbb-ccccddddeeee"
+                timestamp: "2024-05-15T10:00:00+07:00"
+                ttl: "PT30S"
+              message:
+                contract:
+                  id: "contract-draft-bmtap-kta-2024-05-10-04421"
+                  payments:
+                    - id: "payment-disbursement"
+                      type: "ON_FULFILLMENT"
+                      status: "PAID"
+                      params:
+                        accountNumber: "001234567890"
+                        bankCode: "002"
+                  tags:
+                    - descriptor: { code: "consent" }
+                      list:
+                        - descriptor: { code: "eConsentGranted" }
+                          value: "true"
+                        - descriptor: { code: "riplayAcknowledged" }
+                          value: "true"
+                        - descriptor: { code: "consentTimestamp" }
+                          value: "2024-05-15T10:00:00+07:00"
+      responses:
+        '200':
+          description: ACK — contract confirmed; signed CreditContract follows via `/on_confirm`
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AckResponse'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '409':
+          $ref: '#/components/responses/AckNoCallback'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /on_confirm:
+    post:
+      operationId: onConfirm
+      tags: [Transaction]
+      summary: BPP returns ACTIVE contract with signed ion:LoanAgreement (async callback)
+      description: >
+        The BPP confirms disbursement and returns an ACTIVE contract with
+        `ion:LoanAgreement` in `contractAttributes`. Contains the contract number,
+        loan account number, agreed terms, and disbursement details.
+
+        **Schema placement:**
+        - `message.contract.contractAttributes` → `{ "@type": "ion:LoanAgreement", ... }`
+        - `message.contract.participants[].participantAttributes` → `ion:Borrower`, `ion:Lender`
+        - `message.contract.settlements[].settlementAttributes` → `cc:AmortisationRow`
+        - `message.contract.performance[].performanceAttributes` → `cc:DisbursementPerformance`
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [context, message]
+              properties:
+                context:
+                  allOf:
+                    - $ref: '#/components/schemas/Context'
+                    - type: object
+                      properties:
+                        action:
+                          type: string
+                          enum: [on_confirm]
+                message:
+                  $ref: '#/components/schemas/OnConfirmAction'
+            example:
+              context:
+                version: "2.0.0"
+                action: "on_confirm"
+                domain: "ion:finance"
+                bapId: "superapp.id"
+                bapUri: "https://superapp.id/beckn"
+                bppId: "bmtap-gateway.co.id"
+                bppUri: "https://bmtap-gateway.co.id/beckn"
+                transactionId: "txn-a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+                messageId: "msg-88889999-aaaa-bbbb-cccc-ddddeeeefffff"
+                timestamp: "2024-05-15T11:00:00+07:00"
+                ttl: "PT30S"
+                schemaContext:
+                  - "https://schema.ion.id/finance/contract/v1/context.jsonld"
+              message:
+                contract:
+                  id: "d4e5f6a7-88ee-8d2f-4de6-1g95h4j30442"
+                  status:
+                    code: "ACTIVE"
+                    name: "KTA active — disbursed to borrower account 2024-05-15"
+                  contractAttributes:
+                    "@context": "https://schema.ion.id/finance/contract/v1/context.jsonld"
+                    "@type": "ion:LoanAgreement"
+                    contractNumber: "PKS-BMTAP-KTA-2024-00442"
+                    loanAccountNumber: "100200334455667"
+                    agreementDate: "2024-05-15"
+                    maturityDate: "2028-05-15"
+                    loanStatus: "ACTIVE"
+                    loanTerms:
+                      principalAmount: 50000000
+                      currency: "IDR"
+                      approvedTenorMonths: 48
+                      interestRatePercentPA: 9.5
+                      calculationMethod: "FLAT"
+                      yieldType: "FIXED"
+      responses:
+        '200':
+          description: ACK from BAP — CreditContract received
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AckResponse'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  # ── FULFILLMENT ───────────────────────────────────────────────────────────
+  /status:
+    post:
+      operationId: status
+      tags: [Fulfillment]
+      summary: BAP requests current loan status and collectibility
+      description: >
+        The BAP requests the latest state of an active loan contract. The BPP
+        responds via `/on_status` with the current `ion:LoanAgreement` including
+        OJK SLIK collectibility grade, outstanding balance, and next EMI details.
+        **BAPs SHOULD NOT long-poll** — use `/on_status` push for state changes.
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [context, message]
+              properties:
+                context:
+                  allOf:
+                    - $ref: '#/components/schemas/Context'
+                    - type: object
+                      properties:
+                        action:
+                          type: string
+                          enum: [status]
+                message:
+                  $ref: '#/components/schemas/StatusAction'
+            example:
+              context:
+                version: "2.0.0"
+                action: "status"
+                domain: "ion:finance"
+                bapId: "superapp.id"
+                bapUri: "https://superapp.id/beckn"
+                bppId: "bmtap-gateway.co.id"
+                bppUri: "https://bmtap-gateway.co.id/beckn"
+                transactionId: "txn-a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+                messageId: "msg-99990000-aaaa-bbbb-cccc-ddddeeeeffff"
+                timestamp: "2024-06-01T10:00:00+07:00"
+                ttl: "PT30S"
+              message:
+                contract:
+                  id: "d4e5f6a7-88ee-8d2f-4de6-1g95h4j30442"
+      responses:
+        '200':
+          description: ACK — status request received; current state follows via `/on_status`
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AckResponse'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '409':
+          $ref: '#/components/responses/AckNoCallback'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /on_status:
+    post:
+      operationId: onStatus
+      tags: [Fulfillment]
+      summary: BPP returns current loan state, collectibility, and outstanding balance
+      description: >
+        Returns the current `ion:LoanAgreement` state including OJK SLIK
+        collectibility grade (kolektibilitas 1–5), outstanding principal,
+        next EMI due date, overdue amount, and payment history summary.
+        The BPP MAY call this proactively (push) for significant state changes
+        without waiting for a `/status` request.
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [context, message]
+              properties:
+                context:
+                  allOf:
+                    - $ref: '#/components/schemas/Context'
+                    - type: object
+                      properties:
+                        action:
+                          type: string
+                          enum: [on_status]
+                message:
+                  $ref: '#/components/schemas/OnStatusAction'
+      responses:
+        '200':
+          description: ACK from BAP — status received
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AckResponse'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /update:
+    post:
+      operationId: update
+      tags: [Fulfillment]
+      summary: BAP requests a contract mutation (document upload, prepayment, restructure)
+      description: >
+        The BAP requests a change to an active contract. Supported update types:
+        - `DOCUMENT_UPLOAD` — submit additional KYC/collateral documents
+        - `PREPAYMENT` — partial or full early repayment (Pelunasan Dipercepat)
+        - `RESTRUCTURE_REQUEST` — request loan restructuring per POJK 40/2019
+        - `ADDRESS_CHANGE` — update borrower registered address
+        - `REPAYMENT_MODE_CHANGE` — change EMI payment method
+
+        Supports the `context.try` two-phase pattern:
+        `try: true` → preview updated terms without committing;
+        `try: false` → commit the update.
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [context, message]
+              properties:
+                context:
+                  allOf:
+                    - $ref: '#/components/schemas/Context'
+                    - type: object
+                      properties:
+                        action:
+                          type: string
+                          enum: [update]
+                        try:
+                          type: boolean
+                          default: false
+                          description: "true = preview only (no state change); false = commit"
+                message:
+                  $ref: '#/components/schemas/UpdateAction'
+            example:
+              context:
+                version: "2.0.0"
+                action: "update"
+                domain: "ion:finance"
+                try: false
+                bapId: "superapp.id"
+                bapUri: "https://superapp.id/beckn"
+                bppId: "bmtap-gateway.co.id"
+                bppUri: "https://bmtap-gateway.co.id/beckn"
+                transactionId: "txn-a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+                messageId: "msg-aaaabbbb-cccc-dddd-eeee-ffff00001111"
+                timestamp: "2024-08-01T09:00:00+07:00"
+                ttl: "PT30S"
+              message:
+                updateTarget: "contract"
+                contract:
+                  id: "d4e5f6a7-88ee-8d2f-4de6-1g95h4j30442"
+                  tags:
+                    - descriptor: { code: "updateRequest" }
+                      list:
+                        - descriptor: { code: "updateType" }
+                          value: "PREPAYMENT"
+                        - descriptor: { code: "prepaymentAmount" }
+                          value: "10000000"
+                        - descriptor: { code: "currency" }
+                          value: "IDR"
+                        - descriptor: { code: "requestedDate" }
+                          value: "2024-08-05"
+      responses:
+        '200':
+          description: ACK — update acknowledged; revised contract follows via `/on_update`
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AckResponse'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '409':
+          $ref: '#/components/responses/AckNoCallback'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /on_update:
+    post:
+      operationId: onUpdate
+      tags: [Fulfillment]
+      summary: BPP returns updated contract with revised terms (async callback)
+      description: >
+        If `context.try: true` — returns preview of updated terms without state change.
+        If `context.try: false` — returns the committed updated contract.
+        For prepayments: includes new outstanding balance and revised schedule.
+        The BPP MAY call this proactively without a BAP `/update` request.
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [context, message]
+              properties:
+                context:
+                  allOf:
+                    - $ref: '#/components/schemas/Context'
+                    - type: object
+                      properties:
+                        action:
+                          type: string
+                          enum: [on_update]
+                message:
+                  $ref: '#/components/schemas/OnUpdateAction'
+      responses:
+        '200':
+          description: ACK from BAP — update result received
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AckResponse'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /cancel:
+    post:
+      operationId: cancel
+      tags: [Fulfillment]
+      summary: BAP requests cancellation of a credit application or full loan foreclosure
+      description: >
+        Supports two scenarios:
+        - **Pre-disbursement**: withdraw a credit application (states: DRAFT / UNDER_EVALUATION)
+        - **Post-disbursement**: full early closure / foreclosure (Pelunasan Dipercepat)
+
+        Supports the `context.try` two-phase pattern:
+        `try: true` → preview cancellation terms (fees, refund) without committing;
+        `try: false` → commit the cancellation.
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [context, message]
+              properties:
+                context:
+                  allOf:
+                    - $ref: '#/components/schemas/Context'
+                    - type: object
+                      properties:
+                        action:
+                          type: string
+                          enum: [cancel]
+                        try:
+                          type: boolean
+                          default: false
+                message:
+                  $ref: '#/components/schemas/CancelAction'
+      responses:
+        '200':
+          description: ACK — cancellation request received; result follows via `/on_cancel`
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AckResponse'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '409':
+          $ref: '#/components/responses/AckNoCallback'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /on_cancel:
+    post:
+      operationId: onCancel
+      tags: [Fulfillment]
+      summary: BPP returns cancellation terms or confirms loan closure
+      description: >
+        If `context.try: true` — returns applicable cancellation policy, fees, and
+        refund timeline without changing state.
+        If `context.try: false` — returns CANCELLED contract with settlement details.
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [context, message]
+              properties:
+                context:
+                  allOf:
+                    - $ref: '#/components/schemas/Context'
+                    - type: object
+                      properties:
+                        action:
+                          type: string
+                          enum: [on_cancel]
+                message:
+                  $ref: '#/components/schemas/OnCancelAction'
+      responses:
+        '200':
+          description: ACK from BAP — cancellation result received
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AckResponse'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /track:
+    post:
+      operationId: track
+      tags: [Fulfillment]
+      summary: BAP requests a real-time tracking handle for disbursement or document processing
+      description: >
+        The BAP requests a tracking URL or webhook endpoint for real-time progress
+        tracking of an active fulfillment stage (e.g. disbursement processing,
+        SLIK verification, notarial deed registration). The BPP returns the
+        tracking handle asynchronously via `/on_track`.
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [context, message]
+              properties:
+                context:
+                  allOf:
+                    - $ref: '#/components/schemas/Context'
+                    - type: object
+                      properties:
+                        action:
+                          type: string
+                          enum: [track]
+                message:
+                  $ref: '#/components/schemas/TrackAction'
+      responses:
+        '200':
+          description: ACK — tracking request acknowledged; handle follows via `/on_track`
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AckResponse'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '409':
+          $ref: '#/components/responses/AckNoCallback'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /on_track:
+    post:
+      operationId: onTrack
+      tags: [Fulfillment]
+      summary: BPP returns real-time tracking handle for the fulfillment stage
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [context, message]
+              properties:
+                context:
+                  allOf:
+                    - $ref: '#/components/schemas/Context'
+                    - type: object
+                      properties:
+                        action:
+                          type: string
+                          enum: [on_track]
+                message:
+                  $ref: '#/components/schemas/OnTrackAction'
+      responses:
+        '200':
+          description: ACK from BAP — tracking handle received
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AckResponse'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  # ── POST-FULFILLMENT ──────────────────────────────────────────────────────
+  /rate:
+    post:
+      operationId: rate
+      tags: [Post-Fulfillment]
+      summary: BAP submits borrower rating for the credit product and service experience
+      description: >
+        Submits a rating (1–5) for any ratable entity: the loan product, the
+        lender service, the disbursement experience, or the BAP platform itself.
+
+        Supports `context.try` pattern:
+        `try: true` → preview rating form/criteria without recording;
+        `try: false` → record the rating and return confirmation via `/on_rate`.
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [context, message]
+              properties:
+                context:
+                  allOf:
+                    - $ref: '#/components/schemas/Context'
+                    - type: object
+                      properties:
+                        action:
+                          type: string
+                          enum: [rate]
+                message:
+                  $ref: '#/components/schemas/RateAction'
+            example:
+              context:
+                version: "2.0.0"
+                action: "rate"
+                domain: "ion:finance"
+                bapId: "superapp.id"
+                bapUri: "https://superapp.id/beckn"
+                bppId: "bmtap-gateway.co.id"
+                bppUri: "https://bmtap-gateway.co.id/beckn"
+                transactionId: "txn-a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+                messageId: "msg-bbbbcccc-dddd-eeee-ffff-000011112222"
+                timestamp: "2024-06-30T14:00:00+07:00"
+                ttl: "PT30S"
+              message:
+                ratings:
+                  - id: "d4e5f6a7-88ee-8d2f-4de6-1g95h4j30442"
+                    ratingCategory: "Contract"
+                    value: "4"
+                    feedback: "Fast disbursement but document upload UX needs improvement"
+      responses:
+        '200':
+          description: ACK — rating received; confirmation follows via `/on_rate`
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AckResponse'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '409':
+          $ref: '#/components/responses/AckNoCallback'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /on_rate:
+    post:
+      operationId: onRate
+      tags: [Post-Fulfillment]
+      summary: BPP acknowledges rating and optionally returns aggregate or feedback form
+      description: >
+        If `context.try: true` — returns rating form / criteria (preview mode).
+        If `context.try: false` — confirms the rating was recorded; optionally
+        returns an aggregate rating snapshot. If rating ≤ 2, may include a
+        grievance submission link.
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [context, message]
+              properties:
+                context:
+                  allOf:
+                    - $ref: '#/components/schemas/Context'
+                    - type: object
+                      properties:
+                        action:
+                          type: string
+                          enum: [on_rate]
+                message:
+                  $ref: '#/components/schemas/OnRateAction'
+      responses:
+        '200':
+          description: ACK from BAP — rating acknowledgement received
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AckResponse'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /support:
+    post:
+      operationId: support
+      tags: [Post-Fulfillment]
+      summary: BAP requests support contact or raises a grievance ticket
+      description: >
+        The BAP requests support channels or submits a grievance for a specific
+        contract. Supports the `context.try` pattern:
+        `try: true` → returns available support channels without creating a ticket;
+        `try: false` → creates/links a support ticket and returns contact details.
+
+        Regulatory basis: lenders must provide accessible grievance redressal per
+        POJK 18/POJK.07/2023 (OJK Consumer Protection).
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [context, message]
+              properties:
+                context:
+                  allOf:
+                    - $ref: '#/components/schemas/Context'
+                    - type: object
+                      properties:
+                        action:
+                          type: string
+                          enum: [support]
+                message:
+                  $ref: '#/components/schemas/SupportAction'
+      responses:
+        '200':
+          description: ACK — support request received; contact details follow via `/on_support`
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AckResponse'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '409':
+          $ref: '#/components/responses/AckNoCallback'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /on_support:
+    post:
+      operationId: onSupport
+      tags: [Post-Fulfillment]
+      summary: BPP returns support contacts, ticket reference, and GRO details
+      description: >
+        If `context.try: true` — returns available support channels (preview mode).
+        If `context.try: false` — returns support contact details with ticket number
+        and Grievance Redressal Officer (GRO) information.
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [context, message]
+              properties:
+                context:
+                  allOf:
+                    - $ref: '#/components/schemas/Context'
+                    - type: object
+                      properties:
+                        action:
+                          type: string
+                          enum: [on_support]
+                message:
+                  $ref: '#/components/schemas/OnSupportAction'
+      responses:
+        '200':
+          description: ACK from BAP — support contact details received
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AckResponse'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+# ─────────────────────────────────────────────────────────────────────────────
+# COMPONENTS
+# ─────────────────────────────────────────────────────────────────────────────
+components:
+
+  parameters:
+    AuthorizationHeader:
+      name: Authorization
+      in: header
+      required: true
+      description: >
+        Beckn HTTP Signature (Ed25519) as required by the Beckn Protocol spec.
+        All requests MUST carry a valid signature. The `Ack` response body MUST
+        carry a `CounterSignature` proving receipt.
+        Format: `Signature keyId="<subscriberId>|<keyId>|ed25519",
+        algorithm="ed25519",created="<epoch>",expires="<epoch>",
+        headers="(created) (expires) digest",signature="<base64>"`
+      schema:
+        type: string
+
+  responses:
+    NackBadRequest:
+      description: NACK — Bad request (malformed context, missing required fields, or invalid action)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AckResponse'
+    NackUnauthorized:
+      description: NACK — Unauthorized (invalid or missing Authorization signature)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AckResponse'
+    AckNoCallback:
+      description: NACK — No callback available for this request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AckResponse'
+    ServerError:
+      description: Server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AckResponse'
+
+  schemas:
+
+    # ── CONTEXT ──────────────────────────────────────────────────────────────
+    Context:
+      type: object
+      description: >
+        Base Beckn v2.0 context block for all API calls. Carries addressing
+        information (BAP/BPP identifiers and URIs), protocol version, the action
+        being called, transaction and message IDs, TTL, and schema context URIs.
+        No required-field constraints are imposed here — endpoint-specific
+        validation is defined inline per operation.
+      properties:
+        domain:
+          type: string
+          description: Domain code for this transaction
+          example: "ion:finance"
+        location:
+          type: object
+          description: Geographic scope of the transaction
+          properties:
+            country:
+              type: object
+              properties:
+                code:
+                  type: string
+                  description: ISO 3166-1 alpha-2 country code
+                  example: "ID"
+            city:
+              type: object
+              properties:
+                code:
+                  type: string
+                  description: Beckn city registry code
+                  example: "std:021"
+        action:
+          type: string
+          description: The Beckn protocol action being called
+          enum:
+            - catalog/publish
+            - catalog_publish
+            - discover
+            - on_discover
+            - select
+            - on_select
+            - init
+            - on_init
+            - confirm
+            - on_confirm
+            - status
+            - on_status
+            - update
+            - on_update
+            - cancel
+            - on_cancel
+            - track
+            - on_track
+            - rate
+            - on_rate
+            - support
+            - on_support
+        version:
+          type: string
+          description: Beckn protocol version
+          enum: ["2.0.0"]
+          example: "2.0.0"
+        bapId:
+          type: string
+          description: Subscriber ID of the BAP as registered on dedi.global
+          example: "superapp.id"
+        bapUri:
+          type: string
+          format: uri
+          description: Callback URL of the BAP (must match registry record)
+          example: "https://superapp.id/beckn"
+        bppId:
+          type: string
+          description: Subscriber ID of the BPP as registered on dedi.global
+          example: "bmtap-gateway.co.id"
+        bppUri:
+          type: string
+          format: uri
+          description: Request URL of the BPP (must match registry record)
+          example: "https://bmtap-gateway.co.id/beckn"
+        transactionId:
+          type: string
+          format: uuid
+          description: >
+            Stable UUID that spans the full loan lifecycle from discover through
+            all servicing actions. Generated once per borrower session and reused
+            across all messages in that flow.
+          example: "txn-a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+        messageId:
+          type: string
+          format: uuid
+          description: >
+            Unique UUID for this specific message. Must differ from `transactionId`
+            and from every other `messageId` in the transaction. Used for
+            idempotency and deduplication.
+          example: "msg-11112222-3333-4444-5555-666677778888"
+        timestamp:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp of message generation including timezone offset
+          example: "2024-05-10T09:00:00+07:00"
+        ttl:
+          type: string
+          description: Message TTL in ISO 8601 duration format
+          example: "PT30S"
+          default: "PT30S"
+        try:
+          type: boolean
+          description: >
+            Sandbox / two-phase flag. `true` = preview mode (no state change);
+            `false` (default) = commit the action. Applicable to `update`,
+            `cancel`, `rate`, and `support` actions.
+          default: false
+        networkId:
+          type: string
+          description: >
+            Unique identifier of the Beckn network (registry namespace).
+            Format: `{namespace_id}/{registry_id}@{dedi-host}`
+          example: "financial-services/credit-net"
+        schemaContext:
+          type: array
+          description: JSON-LD context URIs for the domain schemas in this message
+          items:
+            type: string
+            format: uri
+          example:
+            - "https://schema.ion.id/finance/resource/v1/context.jsonld"
+            - "https://schema.ion.id/finance/offer/v1/context.jsonld"
+
+    # ── ACK RESPONSE ─────────────────────────────────────────────────────────
+    AckResponse:
+      type: object
+      description: Standard synchronous Beckn response envelope
+      required: [message]
+      properties:
+        context:
+          $ref: '#/components/schemas/Context'
+        message:
+          type: object
+          required: [ack]
+          properties:
+            ack:
+              type: object
+              required: [status]
+              properties:
+                status:
+                  type: string
+                  enum: [ACK, NACK]
+                  example: "ACK"
+                tags:
+                  type: array
+                  description: Additional metadata on the ACK (e.g. error codes for NACK)
+                  items:
+                    $ref: '#/components/schemas/TagGroup'
+        error:
+          $ref: '#/components/schemas/Error'
+
+    # ── ERROR ─────────────────────────────────────────────────────────────────
+    Error:
+      type: object
+      description: Error details returned with a NACK
+      properties:
+        code:
+          type: string
+          example: "CONTEXT-ERROR"
+        type:
+          type: string
+          enum: [CONTEXT-ERROR, CORE-ERROR, DOMAIN-ERROR, POLICY-ERROR]
+        message:
+          type: string
+          example: "Invalid transactionId format"
+        path:
+          type: string
+          example: "context.transactionId"
+
+    # ── TAG GROUP ─────────────────────────────────────────────────────────────
+    TagGroup:
+      type: object
+      properties:
+        descriptor:
+          type: object
+          properties:
+            code: { type: string }
+            name: { type: string }
+        display:
+          type: boolean
+          default: true
+        list:
+          type: array
+          items:
+            type: object
+            properties:
+              descriptor:
+                type: object
+                properties:
+                  code: { type: string }
+                  name: { type: string }
+              value: { type: string }
+              display: { type: boolean }
+
+    # ── CREDIT RESOURCE (ion:CreditProduct) ──────────────────────────────────
+    CreditProduct:
+      type: object
+      description: >
+        `ion:CreditProduct` — Beckn v2.0 credit product catalog template.
+        Placed in `catalog.resources[].resourceAttributes` in `on_discover`.
+        CRC: `FNC-lending` (FIN-02 Lending & Consumer Credit).
+        Full schema: https://schema.ion.id/finance/resource/v1/schema.json
+      required:
+        - "@context"
+        - "@type"
+        - productIdentity
+        - principalRange
+        - tenor
+        - costOfFund
+        - repaymentSchedule
+        - borrowerCriteria
+        - regulatoryDeclaration
+        - requiredDocuments
+      properties:
+        "@context":
+          type: string
+          example: "https://schema.ion.id/finance/resource/v1/context.jsonld"
+        "@type":
+          type: string
+          enum: ["ion:CreditProduct"]
+        crc:
+          type: string
+          description: ION Catalogue Resource Category — always FNC-lending for credit products
+          enum: ["FNC-lending"]
+          example: "FNC-lending"
+        productIdentity:
+          $ref: '#/components/schemas/ProductIdentity'
+        principalRange:
+          $ref: '#/components/schemas/PrincipalRange'
+        tenor:
+          $ref: '#/components/schemas/Tenor'
+        costOfFund:
+          $ref: '#/components/schemas/CostOfFundMechanism'
+        repaymentSchedule:
+          $ref: '#/components/schemas/RepaymentSchedule'
+        feeStructure:
+          $ref: '#/components/schemas/FeeStructure'
+        collateral:
+          $ref: '#/components/schemas/Collateral'
+        borrowerCriteria:
+          $ref: '#/components/schemas/BorrowerCriteria'
+        regulatoryDeclaration:
+          $ref: '#/components/schemas/RegulatoryDeclaration'
+        requiredDocuments:
+          type: array
+          items:
+            $ref: '#/components/schemas/RequiredDocument'
+          description: Checklist of documents required from the borrower
+        islamicFinance:
+          $ref: '#/components/schemas/IslamicFinanceStructure'
+          description: Present only when productIdentity.financeType = ISLAMIC
+        governmentProgram:
+          $ref: '#/components/schemas/GovernmentProgram'
+          description: Present for government programs (KUR, FLPP, UMi, BPUM)
+        paylaterService:
+          $ref: '#/components/schemas/PaylaterService'
+          description: Present only for productType = PAYLATER or BNPL
+
+    ProductIdentity:
+      type: object
+      description: Product identity, classification, and provider information
+      required: [productName, institutionName, productType, financeType, currency, institutionType]
+      properties:
+        productName:
+          type: string
+          example: "KTA BRI"
+        institutionName:
+          type: string
+          example: "PT Bank Rakyat Indonesia (Persero) Tbk"
+        productType:
+          type: string
+          enum: [KPR, KPA, KKB, KTA, CREDIT_CARD, PAYLATER, MULTIPURPOSE_LOAN, CASH_ADVANCE,
+                 KUR_SUPER_MIKRO, KUR_MIKRO, KUR_KECIL, KUR_TKI, WORKING_CAPITAL,
+                 INVESTMENT_LOAN, MICRO_BUSINESS_LOAN, INVOICE_FINANCING, SUPPLY_CHAIN_FINANCE,
+                 LINKAGE, P2P_PRODUCTIVE, P2P_CONSUMER, KPR_SYARIAH, KKB_SYARIAH,
+                 ISLAMIC_BUSINESS, RAHN, QARDH_HASAN, FLPP, TAPERA, BPUM, UMI,
+                 ALSINTAN, CONVENTIONAL_PAWN, OTHER]
+          example: "KTA"
+        financeType:
+          type: string
+          enum: [CONVENTIONAL, ISLAMIC]
+          example: "CONVENTIONAL"
+        currency:
+          type: string
+          enum: [IDR, USD, SGD, EUR]
+          default: "IDR"
+        institutionType:
+          type: string
+          enum: [BANK_UMUM, BPR, BPRS, PERUSAHAAN_PEMBIAYAAN, KOPERASI_SIMPAN_PINJAM,
+                 P2P_LENDING, PEGADAIAN, BMT, MODAL_VENTURA, LEMBAGA_KEUANGAN_MIKRO]
+          example: "BANK_UMUM"
+        bankCapitalTier:
+          type: string
+          enum: [BUKU_1, BUKU_2, BUKU_3, BUKU_4]
+        digitalOnly:
+          type: boolean
+          default: false
+        distributionChannels:
+          type: array
+          items:
+            type: string
+            enum: [BRANCH_OFFICE, MOBILE_BANKING, INTERNET_BANKING,
+                   BRANCHLESS_BANKING_AGENT, FINANCIAL_MARKETPLACE,
+                   WHATSAPP_BANKING, DIRECT_API, FIELD_SALES_AGENT]
+
+    MonetaryAmount:
+      type: object
+      description: Reusable monetary amount with value and ISO 4217 currency
+      required: [value, currency]
+      properties:
+        value:
+          type: number
+          minimum: 0
+          example: 50000000
+        currency:
+          type: string
+          default: IDR
+          example: "IDR"
+
+    PrincipalRange:
+      type: object
+      description: Loan/financing principal amount range
+      required: [minimum, maximum]
+      properties:
+        minimum:
+          $ref: '#/components/schemas/MonetaryAmount'
+          description: Minimum principal offered
+        maximum:
+          $ref: '#/components/schemas/MonetaryAmount'
+          description: Maximum principal offered
+        maximumKUROfficial:
+          type: number
+          description: Official KUR program cap per government regulation
+          example: 100000000
+        denomination:
+          type: number
+          description: Allowed amount must be a multiple of this value
+          example: 500000
+
+    Tenor:
+      type: object
+      description: Loan or financing tenure (maturity) range
+      required: [unit, minimum, maximum]
+      properties:
+        unit:
+          type: string
+          enum: [DAYS, MONTHS, YEARS]
+          example: "MONTHS"
+        minimum:
+          type: integer
+          minimum: 1
+          example: 12
+        maximum:
+          type: integer
+          minimum: 1
+          example: 60
+        availableTenors:
+          type: array
+          items: { type: integer }
+          example: [3, 6, 12, 24, 36, 48, 60]
+
+    CostOfFundMechanism:
+      type: object
+      description: Interest mechanics (conventional) or profit mechanics (Islamic)
+      required: [yieldType]
+      properties:
+        yieldType:
+          type: string
+          enum: [FIXED, FLOATING, COMBINED, MARGIN, NISBAH, UJRAH, ZERO_COST]
+          example: "FIXED"
+        calculationMethod:
+          type: string
+          enum: [ANNUITY, FLAT, EFFECTIVE, DECLINING_BALANCE]
+          example: "FLAT"
+        rateMinPercent: { type: number, example: 10.5 }
+        rateMaxPercent: { type: number, example: 24.0 }
+        rateReference:
+          type: string
+          enum: [BI_RATE, JIBOR, SOFR, SBDK, PRIME_RATE]
+          example: "BI_RATE"
+        spreadPercent:
+          type: number
+          description: Spread above benchmark for floating products (% p.a.)
+          example: 3.5
+        fixedPeriodYears:
+          type: integer
+          description: For COMBINED — fixed-rate period in years before switching to floating
+          example: 3
+        governmentSubsidyPercent:
+          type: number
+          description: Government interest subsidy (% p.a.) deducted from bank's market rate
+          example: 10.5
+        effectiveRatePercent:
+          type: number
+          description: Final rate paid by borrower after government subsidy
+          example: 6.0
+        creditCardMonthlyRatePercent:
+          type: number
+          description: Monthly revolving interest rate for credit card products (%)
+          example: 1.75
+
+    RepaymentSchedule:
+      type: object
+      description: Repayment schedule, frequency, and accepted payment channels
+      required: [frequency, paymentChannels]
+      properties:
+        frequency:
+          type: string
+          enum: [DAILY, WEEKLY, BIWEEKLY, MONTHLY, QUARTERLY, SEMIANNUAL, ANNUAL, BULLET, SEASONAL]
+          example: "MONTHLY"
+        paymentChannels:
+          type: array
+          items:
+            type: string
+            enum: [AUTODEBIT, VIRTUAL_ACCOUNT, MOBILE_BANKING, INTERNET_BANKING, ATM,
+                   BANK_TELLER, BIFAST, RTGS, KLIRING, QRIS, GOPAY, OVO, DANA, LINKAJA,
+                   SHOPEEPAY, SAKUKU, ALFAMART, INDOMARET]
+          example: ["AUTODEBIT", "VIRTUAL_ACCOUNT", "QRIS", "BIFAST"]
+        gracePeriodDays:
+          type: integer
+          minimum: 0
+          default: 0
+          example: 3
+        earlySettlementAllowed:
+          type: boolean
+          default: true
+        earlySettlementPenalty:
+          type: boolean
+          default: false
+        restructuringAllowed:
+          type: boolean
+          default: true
+        seasonalArrangement:
+          type: string
+          example: "Principal repaid after harvest; interest paid monthly"
+
+    FeeStructure:
+      type: object
+      description: All fees and charges associated with this credit product
+      properties:
+        provisionFeePercent:
+          type: number
+          minimum: 0
+          example: 1.0
+        administrationFeeIDR:
+          type: number
+          minimum: 0
+          example: 200000
+        appraisalFeeIDR:
+          type: number
+          minimum: 0
+          example: 500000
+        notaryFeeIDR:
+          type: number
+          minimum: 0
+          example: 3000000
+        insurancePremiumPercent:
+          type: number
+          minimum: 0
+          example: 0.35
+        mandatoryInsurance:
+          type: boolean
+          default: false
+        mandatoryInsuranceTypes:
+          type: array
+          items:
+            type: string
+            enum: [LIFE_INSURANCE, CREDIT_INSURANCE, FIRE_INSURANCE, VEHICLE_INSURANCE,
+                   EMPLOYMENT_INSURANCE, PROPERTY_INSURANCE, BUSINESS_INSURANCE]
+          example: ["LIFE_INSURANCE", "FIRE_INSURANCE"]
+        latePenaltyPercentPerDay:
+          type: number
+          minimum: 0
+          example: 0.1
+        prepaymentPenaltyPercent:
+          type: number
+          minimum: 0
+          example: 1.0
+        stampDutyIDR:
+          type: integer
+          default: 10000
+          example: 10000
+        maxTotalCostPercent:
+          type: number
+          description: All-in cost cap as % of principal (APR equivalent per POJK 6/2022)
+          example: 24.0
+
+    Collateral:
+      type: object
+      description: Collateral and security requirements
+      required: [required]
+      properties:
+        required:
+          type: boolean
+          example: true
+        collateralTypes:
+          type: array
+          items:
+            type: string
+            enum: [UNSECURED, PROPERTY, APARTMENT, MOTOR_VEHICLE_CAR, MOTOR_VEHICLE_MOTORCYCLE,
+                   GOLD, FIXED_DEPOSIT, LISTED_SHARES, GOVERNMENT_BONDS, TRADE_RECEIVABLES,
+                   INVENTORY, MACHINERY_AND_EQUIPMENT, VESSEL, AIRCRAFT, RIGHTS_OF_CLAIM,
+                   PERSONAL_GUARANTOR, CORPORATE_GUARANTOR, GOVERNMENT_GUARANTOR]
+          example: ["PROPERTY"]
+        maxLTVPercent:
+          type: number
+          minimum: 0
+          maximum: 100
+          example: 80.0
+        appraisalRequired:
+          type: boolean
+          default: false
+        guarantorInstitution:
+          type: string
+          enum: [JAMKRINDO, ASKRINDO, JAMKRIDA, PERUM_JAMKRINDO]
+          example: "JAMKRINDO"
+
+    BorrowerCriteria:
+      type: object
+      description: Borrower eligibility and qualification criteria
+      required: [applicantTypes]
+      properties:
+        applicantTypes:
+          type: array
+          items:
+            type: string
+            enum: [INDIVIDUAL, MARRIED_COUPLE, MICRO_ENTERPRISE, SMALL_ENTERPRISE,
+                   MEDIUM_ENTERPRISE, CORPORATION, COOPERATIVE, FOUNDATION,
+                   STATE_OWNED_ENTERPRISE, REGIONAL_STATE_ENTERPRISE]
+          example: ["INDIVIDUAL"]
+        minimumAge:
+          type: integer
+          minimum: 17
+          example: 21
+        maximumAgeAtMaturity:
+          type: integer
+          maximum: 80
+          example: 65
+        minimumMonthlyIncomeIDR:
+          type: number
+          minimum: 0
+          example: 3000000
+        minimumSLIKGrade:
+          type: integer
+          minimum: 1
+          maximum: 5
+          example: 1
+        requiredCollectibilityGrade:
+          type: integer
+          enum: [1, 2]
+          default: 1
+        employmentTypes:
+          type: array
+          items:
+            type: string
+            enum: [CIVIL_SERVANT, MILITARY, POLICE, PERMANENT_EMPLOYEE, CONTRACT_EMPLOYEE,
+                   SELF_EMPLOYED, PROFESSIONAL, FARMER, FISHERMAN, LIVESTOCK_BREEDER,
+                   PENSIONER, STUDENT, HOMEMAKER, TRADER, RIDEHAILING_DRIVER]
+          example: ["CIVIL_SERVANT", "PERMANENT_EMPLOYEE", "SELF_EMPLOYED", "PROFESSIONAL"]
+        citizenship:
+          type: array
+          items:
+            type: string
+            enum: [NATIONAL_CITIZEN, FOREIGN_KITAS, FOREIGN_KITAP, LEGAL_ENTITY, FOREIGN_LEGAL_ENTITY]
+          example: ["NATIONAL_CITIZEN"]
+        serviceRegions:
+          type: array
+          description: ISO 3166-2:ID provinces. NATIONAL = all 38 provinces.
+          items:
+            type: string
+            enum: [NATIONAL, ID-AC, ID-BA, ID-BB, ID-BE, ID-GO, ID-JA, ID-JB, ID-JI, ID-JK,
+                   ID-JT, ID-KB, ID-KI, ID-KR, ID-KS, ID-KT, ID-KU, ID-LA, ID-MA, ID-MU,
+                   ID-NB, ID-NT, ID-PA, ID-PB, ID-PD, ID-PS, ID-PT, ID-RI, ID-SA, ID-SB,
+                   ID-SG, ID-SN, ID-SR, ID-SS, ID-ST, ID-SU, ID-YO]
+          example: ["NATIONAL"]
+        maxDSRPercent:
+          type: number
+          minimum: 0
+          maximum: 100
+          example: 70.0
+        cleanCreditHistoryRequired:
+          type: boolean
+          default: false
+
+    RegulatoryDeclaration:
+      type: object
+      description: OJK/BI license declarations, required disclosures, and consumer protection
+      required: [licenses]
+      properties:
+        licenses:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/License'
+        disclosures:
+          type: array
+          items:
+            $ref: '#/components/schemas/Disclosure'
+        complaintService:
+          $ref: '#/components/schemas/ComplaintService'
+        privacyPolicyUrl:
+          type: string
+          format: uri
+
+    License:
+      type: object
+      description: Single regulatory license / registration record
+      required: [regulatoryBody, licenseNumber, role]
+      properties:
+        regulatoryBody:
+          type: string
+          enum: [OJK_BANK_UMUM, OJK_BPR, OJK_BPRS, OJK_PERUSAHAAN_PEMBIAYAAN, OJK_P2P_LENDING,
+                 OJK_MODAL_VENTURA, OJK_LKM, BI_SISTEM_PEMBAYARAN, KEMENKOP_KOPERASI,
+                 DSN_MUI, AFPI, APPI]
+          example: "OJK_BANK_UMUM"
+        licenseNumber:
+          type: string
+          example: "KEP-046/DIR/1992"
+        role:
+          type: string
+          enum: [DIRECT_LENDER, KUR_CHANNEL_BANK, DISTRIBUTION_PARTNER, MARKETING_AGENT,
+                 LOAN_SERVICE_PROVIDER, GUARANTOR]
+          example: "DIRECT_LENDER"
+        verificationUrl:
+          type: string
+          format: uri
+
+    Disclosure:
+      type: object
+      description: Required disclosure document reference
+      required: [disclosureType, url]
+      properties:
+        disclosureType:
+          type: string
+          enum: [PRODUCT_SUMMARY, INSTALLMENT_SIMULATOR, TERMS_AND_CONDITIONS, PRIVACY_POLICY,
+                 COMPLAINT_PROCEDURE, DISPUTE_RESOLUTION, REGULATORY_REFERENCE, DSN_MUI_FATWA,
+                 SLIK_CONSENT_FORM]
+          example: "PRODUCT_SUMMARY"
+        url:
+          type: string
+          format: uri
+        language:
+          type: string
+          default: "id"
+          enum: ["id", "en"]
+
+    ComplaintService:
+      type: object
+      description: Customer complaint contacts per POJK 6/2022
+      properties:
+        tollFreePhone:
+          type: string
+          example: "1500017"
+        email:
+          type: string
+          format: email
+          example: "callcenter@bri.co.id"
+        complaintUrl:
+          type: string
+          format: uri
+        ojkConsumerPortal:
+          type: string
+          format: uri
+          default: "https://konsumen.ojk.go.id"
+
+    RequiredDocument:
+      type: object
+      description: A single document required for the credit application
+      required: [documentType, mandatory]
+      properties:
+        documentType:
+          type: string
+          enum: [KTP, KK, PASPOR, KITAS, KITAP, BUKU_NIKAH, AKTA_CERAI, AKTA_KEMATIAN,
+                 SLIP_GAJI, SK_PENGANGKATAN, SURAT_KONTRAK_KERJA, SURAT_KETERANGAN_KERJA,
+                 ID_CARD_PEGAWAI, NPWP, SPT_TAHUNAN_PPH, REKENING_KORAN, LAPORAN_KEUANGAN,
+                 LAPORAN_LABA_RUGI, NERACA_KEUANGAN, CASHFLOW, NIB, SIUP, SKDU,
+                 AKTA_PENDIRIAN, AKTA_PERUBAHAN, SK_KEMENKUMHAM, SURAT_IZIN_USAHA,
+                 SHM, SHGB, SHP, BPKB, STNK, IMB_PBG, PBB_TERAKHIR, FOTO_AGUNAN,
+                 FOTO_USAHA, SLIK_CONSENT, DATA_SLIK_IDEB, INVOICE_TAGIHAN,
+                 PURCHASE_ORDER, KONTRAK_PENJUALAN, SERTIFIKAT_HALAL, AKAD_SYARIAH_DRAFT,
+                 SURAT_PERNYATAAN_KUR, SURAT_BELUM_DAPAT_KUR, SKU_DESA]
+          example: "KTP"
+        mandatory:
+          type: boolean
+          example: true
+        issuer:
+          type: string
+          example: "DUKCAPIL / Disdukcapil"
+        digitalVerification:
+          type: boolean
+          default: false
+        notes:
+          type: string
+
+    IslamicFinanceStructure:
+      type: object
+      description: Islamic finance akad details. Present only when financeType = ISLAMIC.
+      required: [contractType, dsnMuiFatwaNumber]
+      properties:
+        contractType:
+          type: string
+          enum: [MURABAHAH, MUSHARAKAH_MUTANAQISAH, MUDHARABAH, MUSHARAKAH, IJARAH,
+                 IJARAH_MUNTAHIA_BITTAMLIK, ISTISHNA, SALAM, QARDH, RAHN,
+                 WAKALAH_BIL_ISTITHMAR, KAFALAH, HIWALAH]
+          example: "MURABAHAH"
+        dsnMuiFatwaNumber:
+          type: string
+          example: "DSN-MUI/IV/2000 No. 04"
+        marginPercentPerYear:
+          type: number
+          example: 9.5
+        bankProfitSharePercent:
+          type: number
+          minimum: 0
+          maximum: 100
+          example: 70
+        customerProfitSharePercent:
+          type: number
+          minimum: 0
+          maximum: 100
+          example: 30
+        annualUjrahIDR:
+          type: number
+          example: 6000000
+        shariahBoardSupervision:
+          type: object
+          properties:
+            chairmanName: { type: string }
+            dsnMuiCertNumber: { type: string }
+        halalCertified:
+          type: boolean
+          default: true
+
+    GovernmentProgram:
+      type: object
+      description: Government subsidy and support program details (KUR, FLPP, UMi, BPUM)
+      required: [programType]
+      properties:
+        programType:
+          type: string
+          enum: [KUR_SUPER_MIKRO, KUR_MIKRO, KUR_KECIL, KUR_TKI, FLPP, TAPERA, BPUM, UMI,
+                 ALSINTAN, GERAK_UMi]
+          example: "KUR_MIKRO"
+        responsibleMinistry:
+          type: string
+          example: "Kementerian Koordinator Bidang Perekonomian"
+        subsidyPercent:
+          type: number
+          example: 10.5
+        effectiveRatePercent:
+          type: number
+          example: 6.0
+        targetBusinessSectors:
+          type: array
+          items:
+            type: string
+            enum: [AGRICULTURE, FISHERIES, LIVESTOCK, FORESTRY, MANUFACTURING, TRADE,
+                   GENERAL_SERVICES, TOURISM, CONSTRUCTION, TRANSPORTATION, EDUCATION,
+                   HEALTHCARE, ALL_SECTORS]
+          example: ["TRADE", "AGRICULTURE", "GENERAL_SERVICES"]
+        authorizedDistributingBanks:
+          type: array
+          items: { type: string }
+          example: ["BRI", "BNI", "Bank Mandiri", "BSI"]
+        officialGuarantorInstitution:
+          type: string
+          enum: [JAMKRINDO, ASKRINDO, JAMKRIDA, PERUM_JAMKRINDO]
+          example: "JAMKRINDO"
+        specialRequirements:
+          type: array
+          items: { type: string }
+        regulatoryReference:
+          type: string
+          example: "Permenko Perekonomian No. 1 Tahun 2023 tentang Pedoman KUR"
+
+    PaylaterService:
+      type: object
+      description: Buy-Now-Pay-Later and Paylater specific attributes
+      properties:
+        maxCreditLimitIDR:
+          type: number
+          example: 20000000
+        maxTransactionIDR:
+          type: number
+          example: 10000000
+        billingCycle:
+          type: string
+          enum: [FIXED_INSTALLMENT, MONTHLY_BILLING]
+          example: "FIXED_INSTALLMENT"
+        interestFreePeriodDays:
+          type: integer
+          example: 30
+        availableInstallmentTenors:
+          type: array
+          items: { type: integer }
+          example: [3, 6, 12, 24]
+        merchantCategories:
+          type: array
+          items:
+            type: string
+            enum: [E_COMMERCE, FASHION_RETAIL, ELECTRONICS, HEALTH_PHARMACY, EDUCATION,
+                   TRAVEL_TOURISM, FOOD_BEVERAGE, AUTOMOTIVE, HOME_FURNITURE, ENTERTAINMENT,
+                   ALL_MERCHANTS]
+          example: ["E_COMMERCE", "ALL_MERCHANTS"]
+        integratedPlatforms:
+          type: array
+          items: { type: string }
+          example: ["Tokopedia", "Shopee", "Lazada", "Bukalapak", "Blibli"]
+        usesInternalCreditScore:
+          type: boolean
+          default: false
+
+    # ── CREDIT OFFER (ion:CreditApproval) ─────────────────────────────────────────
+    CreditApproval:
+      type: object
+      description: >
+        `ion:CreditApproval` — Per-applicant credit offer with exact approved terms.
+        Placed in `contract.commitments[].offer.offerAttributes` in `on_select`.
+        Full schema: https://schema.ion.id/finance/offer/v1/schema.json
+      required: ["@context", "@type", offerReference, validUntil, offerStatus,
+                 approvedPrincipal, approvedTenor, effectiveRate, monthlyInstallment, totalFees]
+      properties:
+        "@context":
+          type: string
+          example: "https://schema.ion.id/finance/offer/v1/context.jsonld"
+        "@type":
+          type: string
+          enum: ["ion:CreditApproval"]
+        offerReference:
+          type: string
+          example: "BMTAP-KTA-2024-05-10-04421"
+        validUntil:
+          type: string
+          format: date-time
+          example: "2024-06-09T23:59:59+07:00"
+        offerStatus:
+          type: string
+          enum: [UNDER_EVALUATION, APPROVED, CONDITIONALLY_APPROVED, REJECTED, EXPIRED]
+          example: "APPROVED"
+        approvedPrincipal:
+          type: object
+          required: [value, currency]
+          properties:
+            value: { type: number, example: 50000000 }
+            currency: { type: string, default: "IDR" }
+        approvedTenor:
+          type: object
+          required: [value, unit]
+          properties:
+            value: { type: integer, example: 48 }
+            unit: { type: string, enum: [DAYS, MONTHS, YEARS], example: "MONTHS" }
+        effectiveRate:
+          type: object
+          required: [percentPerYear, method]
+          properties:
+            percentPerYear: { type: number, example: 9.5 }
+            method: { type: string, enum: [ANNUITY, FLAT, EFFECTIVE], example: "FLAT" }
+            yieldType: { type: string, enum: [FIXED, FLOATING, COMBINED, MARGIN, NISBAH] }
+            fixedPeriodYears: { type: integer }
+            floatingRateAfterFixedPercent: { type: number }
+        monthlyInstallment:
+          type: object
+          properties:
+            totalIDR: { type: number, example: 1437500 }
+            principalIDR: { type: number, example: 1041667 }
+            interestIDR: { type: number, example: 395833 }
+        totalFees:
+          type: object
+          properties:
+            provisionFeeIDR: { type: number, example: 500000 }
+            administrationFeeIDR: { type: number, example: 250000 }
+            appraisalFeeIDR: { type: number, example: 0 }
+            insurancePremiumIDR: { type: number }
+        aprEquivalent:
+          type: number
+          description: Annualised Percentage Rate (APR) equivalent for consumer disclosure (POJK 6/2022)
+          example: 18.98
+        disbursableAmount:
+          type: object
+          properties:
+            value: { type: number, example: 49250000 }
+            currency: { type: string, default: "IDR" }
+        additionalConditions:
+          type: array
+          description: Conditions to be met (for CONDITIONALLY_APPROVED) or rejection reasons
+          items: { type: string }
+
+    # ── CREDIT CONTRACT (ion:LoanAgreement) ───────────────────────────────────
+    LoanAgreement:
+      type: object
+      description: >
+        `ion:LoanAgreement` — Signed loan agreement attributes.
+        Placed in `contract.contractAttributes` in `on_confirm` and `on_status`.
+        Full schema: https://schema.ion.id/finance/contract/v1/schema.json
+      required: ["@context", "@type", contractNumber, loanAccountNumber, agreementDate, loanTerms, legalDocuments]
+      properties:
+        "@context":
+          type: string
+          example: "https://schema.ion.id/finance/contract/v1/context.jsonld"
+        "@type":
+          type: string
+          enum: ["ion:LoanAgreement"]
+        contractNumber:
+          type: string
+          description: Perjanjian Kredit / Akad Pembiayaan number (primary key in core banking)
+          example: "PKS-BMTAP-KTA-2024-00442"
+        loanAccountNumber:
+          type: string
+          description: Loan account number for payment reconciliation and SLIK reporting
+          example: "100200334455667"
+        agreementDate:
+          type: string
+          format: date
+          description: Akad Kredit signing date (ISO 8601)
+          example: "2024-05-15"
+        maturityDate:
+          type: string
+          format: date
+          example: "2028-05-15"
+        loanStatus:
+          type: string
+          description: OJK SLIK collectibility grade (domain-level, separate from Beckn contract.status)
+          enum: [ACTIVE, SPECIAL_MENTION, SUBSTANDARD, DOUBTFUL, LOSS, SETTLED, RESTRUCTURED]
+          default: "ACTIVE"
+        loanTerms:
+          type: object
+          description: Core loan terms frozen at akad signing — immutable unless restructured
+          required: [principalAmount, currency, approvedTenorMonths, interestRatePercentPA, calculationMethod]
+          properties:
+            principalAmount: { type: number, example: 50000000 }
+            currency: { type: string, default: "IDR" }
+            approvedTenorMonths: { type: integer, example: 48 }
+            interestRatePercentPA: { type: number, example: 9.5 }
+            calculationMethod: { type: string, enum: [ANNUITY, FLAT, EFFECTIVE] }
+            yieldType: { type: string, enum: [FIXED, FLOATING, COMBINED, MARGIN, NISBAH] }
+            monthlyInstallmentIDR: { type: number, example: 1437500 }
+            firstInstallmentDate: { type: string, format: date }
+        legalDocuments:
+          type: object
+          description: Legal document references retained per POJK 6/2022
+          properties:
+            signedAkadUrl: { type: string, format: uri }
+            eMeteraiSerial: { type: string }
+            riplayCopyUrl: { type: string, format: uri }
+            collateralRegistrationRef: { type: string }
+            notarialDeedRef: { type: string }
+
+    # ── BORROWER (ion:Borrower) ───────────────────────────────────────────────
+    BorrowerAttributes:
+      type: object
+      description: >
+        `ion:Borrower` — Borrower identity placed in
+        `contract.participants[].participantAttributes` with descriptor.code = "BORROWER".
+        Full schema: https://schema.ion.id/finance/participant/v1/schema.json
+      required: ["@context", "@type", fullName, nik]
+      properties:
+        "@context":
+          type: string
+          example: "https://schema.ion.id/finance/participant/v1/context.jsonld"
+        "@type":
+          type: string
+          enum: ["ion:Borrower"]
+        fullName:
+          type: string
+          description: Full legal name as printed on the National ID
+          example: "Rini Ariani"
+        nik:
+          type: string
+          pattern: "^[0-9]{16}$"
+          description: 16-digit National ID number
+          example: "3578025505870003"
+        npwp:
+          type: string
+          description: Tax Identification Number
+          example: "55.432.198.7-611.000"
+        birthPlace: { type: string, example: "Surabaya" }
+        birthDate: { type: string, format: date, example: "1987-05-15" }
+        registeredAddress: { type: string }
+        email: { type: string, format: email }
+        phone: { type: string, example: "+6281312345678" }
+        employmentType:
+          type: string
+          enum: [SALARIED, CIVIL_SERVANT, MILITARY, POLICE, PENSIONER, SELF_EMPLOYED,
+                 ENTREPRENEUR, FARMER, FISHERMAN, INFORMAL_WORKER, UNEMPLOYED]
+
+
+    # ── LENDER (ion:Lender) ───────────────────────────────────────────────────
+    LenderAttributes:
+      type: object
+      description: >
+        `ion:Lender` — Lender institution identity placed in
+        `contract.participants[].participantAttributes` with descriptor.code = "LENDER".
+        Full schema: https://schema.ion.id/finance/participant/v1/schema.json
+      required: ["@context", "@type", institutionName, ojkLicenseNumber]
+      properties:
+        "@context":
+          type: string
+          example: "https://schema.ion.id/finance/participant/v1/context.jsonld"
+        "@type":
+          type: string
+          enum: ["ion:Lender"]
+        institutionName:
+          type: string
+          description: Official registered name of the lending institution
+          example: "PT Bank Mandiri Taspen (Persero)"
+        ojkLicenseNumber:
+          type: string
+          description: OJK operating license number
+          example: "KEP-42/D.05/2016"
+        branchName:
+          type: string
+          example: "Kantor Cabang Surabaya Darmo"
+        branchCode:
+          type: string
+          example: "SBY-001"
+        relationshipManagerName:
+          type: string
+          example: "Budi Santoso"
+        relationshipManagerPhone:
+          type: string
+          example: "+628123456789"
+
+    # ── AMORTISATION ROW (ion:AmortisationRow) ───────────────────────────────
+    AmortisationRow:
+      type: object
+      description: >
+        `ion:AmortisationRow` — Single instalment row in the amortisation schedule.
+        Placed in `settlement.settlementAttributes` in `/on_status` and `/on_update`.
+        Full schema: https://schema.ion.id/finance/settlement/v1/schema.json
+      required: ["@context", "@type", installmentSequence, dueDate, totalInstallmentIDR, paymentStatus]
+      properties:
+        "@context":
+          type: string
+          example: "https://schema.ion.id/finance/settlement/v1/context.jsonld"
+        "@type":
+          type: string
+          enum: ["ion:AmortisationRow"]
+        installmentSequence:
+          type: integer
+          description: 1-based instalment sequence number
+          example: 1
+        dueDate:
+          type: string
+          format: date
+          example: "2024-06-15"
+        totalInstallmentIDR:
+          type: number
+          example: 1437500
+        principalComponentIDR:
+          type: number
+          example: 1041667
+        interestComponentIDR:
+          type: number
+          example: 395833
+        outstandingPrincipalIDR:
+          type: number
+          example: 48958333
+        paymentStatus:
+          type: string
+          enum: [UNPAID, PAID, OVERDUE, PARTIAL]
+          example: "UNPAID"
+        actualPaymentDate:
+          type: string
+          format: date
+
+    # ── DISBURSEMENT PERFORMANCE (ion:DisbursementPerformance) ───────────────
+    DisbursementPerformance:
+      type: object
+      description: >
+        `ion:DisbursementPerformance` — Loan disbursement execution record.
+        Placed in `fulfillment.performanceAttributes` in `/on_confirm` and `/on_track`.
+        Full schema: https://schema.ion.id/finance/performance/v1/schema.json
+      required: ["@context", "@type", disbursementDate, disbursementMethod]
+      properties:
+        "@context":
+          type: string
+          example: "https://schema.ion.id/finance/performance/v1/context.jsonld"
+        "@type":
+          type: string
+          enum: ["ion:DisbursementPerformance"]
+        disbursementDate:
+          type: string
+          format: date
+          example: "2024-05-15"
+        targetSLABusinessDays:
+          type: integer
+          description: Target SLA in business days from akad signing to disbursement
+          example: 3
+        disbursementMethod:
+          type: string
+          enum: [BANK_TRANSFER, DEVELOPER_TRANSFER, DEALER_TRANSFER, CASH, VIRTUAL_ACCOUNT]
+          example: "BANK_TRANSFER"
+        disbursementBankName:
+          type: string
+          example: "BRI"
+        disbursementAccountNumber:
+          type: string
+          example: "0019483756001"
+
+    # ── LOAN CONSIDERATION (ion:LoanConsideration) ────────────────────────────
+    LoanConsideration:
+      type: object
+      description: >
+        `ion:LoanConsideration` — Monetary exchange under the loan contract.
+        Placed in `consideration.considerationAttributes` in `/on_confirm`.
+        Full schema: https://schema.ion.id/finance/consideration/v1/schema.json
+      required: ["@context", "@type", approvedPrincipal, currency]
+      properties:
+        "@context":
+          type: string
+          example: "https://schema.ion.id/finance/consideration/v1/context.jsonld"
+        "@type":
+          type: string
+          enum: ["ion:LoanConsideration"]
+        approvedPrincipal:
+          type: number
+          description: Disbursed principal amount in IDR
+          example: 50000000
+        currency:
+          type: string
+          default: "IDR"
+          example: "IDR"
+        totalFeesIDR:
+          type: number
+          description: Total upfront fees in IDR (provision + administration + appraisal)
+          example: 750000
+        aprEquivalent:
+          type: number
+          description: Annualised Percentage Rate for POJK 6/2022 RIPLAY consumer disclosure
+          example: 18.98
+
+    # ── ACTION MESSAGE SCHEMAS ────────────────────────────────────────────────
+    CatalogPublishAction:
+      type: object
+      required: [catalogs]
+      properties:
+        catalogs:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            required: [id, descriptor, provider, resources]
+            properties:
+              id: { type: string }
+              descriptor:
+                type: object
+                properties:
+                  name: { type: string }
+                  shortDesc: { type: string }
+              provider:
+                type: object
+                required: [id, descriptor]
+                properties:
+                  id: { type: string }
+                  descriptor:
+                    type: object
+                    properties:
+                      name: { type: string }
+                      shortDesc: { type: string }
+              resources:
+                type: array
+                items:
+                  type: object
+                  required: [id, descriptor, resourceAttributes]
+                  properties:
+                    id: { type: string }
+                    descriptor:
+                      type: object
+                      properties:
+                        name: { type: string }
+                        shortDesc: { type: string }
+                        longDesc: { type: string }
+                    resourceAttributes:
+                      $ref: '#/components/schemas/CreditProduct'
+
+    CatalogOnPublishAction:
+      type: object
+      required: [results]
+      properties:
+        results:
+          type: array
+          items:
+            type: object
+            required: [catalogId, status]
+            properties:
+              catalogId: { type: string }
+              status:
+                type: string
+                enum: [ACCEPTED, REJECTED, PENDING]
+              indexedAt: { type: string, format: date-time }
+              errors:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    code: { type: string }
+                    message: { type: string }
+
+    DiscoverAction:
+      type: object
+      required: [intent]
+      properties:
+        intent:
+          type: object
+          properties:
+            item:
+              type: object
+              properties:
+                descriptor:
+                  type: object
+                  properties:
+                    name: { type: string }
+                tags:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/TagGroup'
+            fulfillment:
+              type: object
+              properties:
+                customer:
+                  type: object
+                  properties:
+                    person:
+                      type: object
+                      properties:
+                        tags:
+                          type: array
+                          items:
+                            $ref: '#/components/schemas/TagGroup'
+            provider:
+              type: object
+              properties:
+                id: { type: string }
+                descriptor:
+                  type: object
+                  properties:
+                    name: { type: string }
+        textSearch: { type: string }
+
+    OnDiscoverAction:
+      type: object
+      required: [catalogs]
+      properties:
+        catalogs:
+          type: array
+          items:
+            type: object
+            properties:
+              id: { type: string }
+              descriptor:
+                type: object
+                properties:
+                  name: { type: string }
+                  shortDesc: { type: string }
+              provider:
+                type: object
+                properties:
+                  id: { type: string }
+                  descriptor:
+                    type: object
+                    properties:
+                      name: { type: string }
+                      shortDesc: { type: string }
+                      longDesc: { type: string }
+              resources:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id: { type: string }
+                    descriptor:
+                      type: object
+                      properties:
+                        name: { type: string }
+                        shortDesc: { type: string }
+                        longDesc: { type: string }
+                    resourceAttributes:
+                      $ref: '#/components/schemas/CreditProduct'
+
+    SelectAction:
+      type: object
+      required: [contract]
+      properties:
+        contract:
+          type: object
+          properties:
+            commitments:
+              type: array
+              items:
+                type: object
+                properties:
+                  resources:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id: { type: string }
+                  tags:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TagGroup'
+
+    OnSelectAction:
+      type: object
+      required: [contract]
+      properties:
+        contract:
+          type: object
+          properties:
+            id: { type: string }
+            status:
+              type: object
+              properties:
+                code: { type: string, enum: [DRAFT, ACTIVE, CANCELLED, COMPLETE] }
+                name: { type: string }
+            commitments:
+              type: array
+              items:
+                type: object
+                properties:
+                  id: { type: string }
+                  status:
+                    type: object
+                    properties:
+                      descriptor:
+                        type: object
+                        properties:
+                          code: { type: string }
+                          name: { type: string }
+                  resources:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id: { type: string }
+                        descriptor:
+                          type: object
+                          properties:
+                            name: { type: string }
+                            shortDesc: { type: string }
+                  offer:
+                    type: object
+                    properties:
+                      id: { type: string }
+                      resourceIds:
+                        type: array
+                        items: { type: string }
+                      validity:
+                        type: object
+                        properties:
+                          endDate: { type: string, format: date-time }
+                      offerAttributes:
+                        $ref: '#/components/schemas/CreditApproval'
+
+    InitAction:
+      type: object
+      required: [contract]
+      properties:
+        contract:
+          type: object
+          properties:
+            id: { type: string }
+            commitments:
+              type: array
+              items:
+                type: object
+                properties:
+                  id: { type: string }
+                  offer:
+                    type: object
+                    properties:
+                      id: { type: string }
+            participants:
+              type: array
+              description: Must include at least one participant with descriptor.code = "BORROWER"
+              items:
+                type: object
+                properties:
+                  id: { type: string }
+                  descriptor:
+                    type: object
+                    properties:
+                      name: { type: string }
+                      code:
+                        type: string
+                        enum: [BORROWER, CO_BORROWER, GUARANTOR]
+                  participantAttributes:
+                    $ref: '#/components/schemas/BorrowerAttributes'
+
+    OnInitAction:
+      type: object
+      required: [contract]
+      properties:
+        contract:
+          type: object
+          properties:
+            id: { type: string }
+            status:
+              type: object
+              properties:
+                code: { type: string }
+                name: { type: string }
+            payments:
+              type: array
+              items:
+                type: object
+                properties:
+                  id: { type: string }
+                  type:
+                    type: string
+                    enum: [PRE_FULFILLMENT, ON_FULFILLMENT, POST_FULFILLMENT]
+                  params:
+                    type: object
+                    properties:
+                      accountNumber: { type: string }
+                      bankCode: { type: string }
+                      bankName: { type: string }
+                      virtualAccountNumber: { type: string }
+            tags:
+              type: array
+              description: Document checklist and pre-sanction terms
+              items:
+                $ref: '#/components/schemas/TagGroup'
+
+    ConfirmAction:
+      type: object
+      required: [contract]
+      properties:
+        contract:
+          type: object
+          required: [id]
+          properties:
+            id: { type: string }
+            payments:
+              type: array
+              items:
+                type: object
+                properties:
+                  id: { type: string }
+                  type: { type: string }
+                  status:
+                    type: string
+                    enum: [NOT-PAID, PAID, PENDING]
+                  params:
+                    type: object
+                    properties:
+                      accountNumber: { type: string }
+                      bankCode: { type: string }
+            tags:
+              type: array
+              items:
+                $ref: '#/components/schemas/TagGroup'
+
+    OnConfirmAction:
+      type: object
+      required: [contract]
+      properties:
+        contract:
+          type: object
+          properties:
+            id: { type: string }
+            status:
+              type: object
+              properties:
+                code: { type: string, enum: [ACTIVE] }
+                name: { type: string }
+            descriptor:
+              type: object
+              properties:
+                name: { type: string }
+                shortDesc: { type: string }
+            commitments:
+              type: array
+              items:
+                type: object
+                properties:
+                  id: { type: string }
+                  status:
+                    type: object
+                    properties:
+                      descriptor:
+                        type: object
+                        properties:
+                          code: { type: string }
+                          name: { type: string }
+                  resources:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id: { type: string }
+                        descriptor:
+                          type: object
+                          properties:
+                            name: { type: string }
+                  offer:
+                    type: object
+                    properties:
+                      id: { type: string }
+                      resourceIds:
+                        type: array
+                        items: { type: string }
+            contractAttributes:
+              $ref: '#/components/schemas/LoanAgreement'
+            participants:
+              type: array
+              items:
+                type: object
+                properties:
+                  id: { type: string }
+                  descriptor:
+                    type: object
+                    properties:
+                      name: { type: string }
+                      code: { type: string }
+                  participantAttributes:
+                    type: object
+                    description: ion:Borrower or ion:Lender object depending on descriptor.code
+                    additionalProperties: true
+            settlements:
+              type: array
+              description: Amortisation schedule rows (cc:AmortisationRow)
+              items:
+                type: object
+                properties:
+                  id: { type: string }
+                  settlementAttributes:
+                    type: object
+                    description: cc:AmortisationRow — instalment number, due date, amounts
+                    additionalProperties: true
+            performance:
+              type: array
+              description: Disbursement execution details (cc:DisbursementPerformance)
+              items:
+                type: object
+                properties:
+                  id: { type: string }
+                  performanceAttributes:
+                    type: object
+                    description: cc:DisbursementPerformance — disbursement date, amount, account
+                    additionalProperties: true
+
+    StatusAction:
+      type: object
+      required: [contract]
+      properties:
+        contract:
+          type: object
+          required: [id]
+          properties:
+            id: { type: string }
+
+    OnStatusAction:
+      type: object
+      required: [contract]
+      properties:
+        contract:
+          type: object
+          properties:
+            id: { type: string }
+            status:
+              type: object
+              properties:
+                code: { type: string, enum: [DRAFT, ACTIVE, CANCELLED, COMPLETE] }
+                name: { type: string }
+            contractAttributes:
+              $ref: '#/components/schemas/LoanAgreement'
+            tags:
+              type: array
+              description: Extended status details (outstanding balance, next EMI, overdue)
+              items:
+                $ref: '#/components/schemas/TagGroup'
+
+    UpdateAction:
+      type: object
+      required: [updateTarget, contract]
+      properties:
+        updateTarget:
+          type: string
+          enum: [contract, participants, settlements]
+          description: The part of the contract being updated
+        contract:
+          type: object
+          required: [id]
+          properties:
+            id: { type: string }
+            participants:
+              type: array
+              items:
+                type: object
+                properties:
+                  id: { type: string }
+                  participantAttributes:
+                    type: object
+                    additionalProperties: true
+            tags:
+              type: array
+              description: Update request parameters (updateType, amounts, documents)
+              items:
+                $ref: '#/components/schemas/TagGroup'
+
+    OnUpdateAction:
+      type: object
+      required: [contract]
+      properties:
+        contract:
+          type: object
+          properties:
+            id: { type: string }
+            status:
+              type: object
+              properties:
+                code: { type: string }
+                name: { type: string }
+            contractAttributes:
+              $ref: '#/components/schemas/LoanAgreement'
+            tags:
+              type: array
+              items:
+                $ref: '#/components/schemas/TagGroup'
+
+    CancelAction:
+      type: object
+      required: [contract]
+      properties:
+        contract:
+          type: object
+          required: [id]
+          properties:
+            id: { type: string }
+            cancellationReasonId:
+              type: string
+              description: Cancellation reason code from the BPP's cancellation reason list
+            descriptor:
+              type: object
+              properties:
+                shortDesc: { type: string }
+
+    OnCancelAction:
+      type: object
+      required: [contract]
+      properties:
+        contract:
+          type: object
+          properties:
+            id: { type: string }
+            status:
+              type: object
+              properties:
+                code: { type: string, enum: [CANCELLED] }
+                name: { type: string }
+            contractAttributes:
+              $ref: '#/components/schemas/LoanAgreement'
+            tags:
+              type: array
+              description: Cancellation details (effective date, fees, refund)
+              items:
+                $ref: '#/components/schemas/TagGroup'
+
+    TrackAction:
+      type: object
+      required: [contract]
+      properties:
+        contract:
+          type: object
+          required: [id]
+          properties:
+            id: { type: string }
+            fulfillmentId:
+              type: string
+              description: ID of the specific fulfillment stage to track
+
+    OnTrackAction:
+      type: object
+      required: [tracking]
+      properties:
+        tracking:
+          type: object
+          required: [id, status]
+          properties:
+            id:
+              type: string
+              description: Fulfillment / performance ID being tracked
+            url:
+              type: string
+              format: uri
+              description: URL to poll for real-time tracking updates
+            status:
+              type: string
+              enum: [active, inactive]
+
+    RateAction:
+      type: object
+      required: [ratings]
+      properties:
+        ratings:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            required: [id, ratingCategory, value]
+            properties:
+              id:
+                type: string
+                description: Contract ID, resource ID, or provider ID being rated
+              ratingCategory:
+                type: string
+                enum: [Contract, Resource, Provider, Fulfillment, Agent]
+              value:
+                type: string
+                description: Rating value 1–5
+                pattern: "^[1-5]$"
+              feedback:
+                type: string
+                description: Optional text feedback
+
+    OnRateAction:
+      type: object
+      required: [ratings]
+      properties:
+        ratings:
+          type: array
+          items:
+            type: object
+            properties:
+              id: { type: string }
+              ratingCategory: { type: string }
+              value: { type: string }
+              aggregateRating: { type: number }
+              feedbackForm:
+                type: object
+                properties:
+                  url: { type: string, format: uri }
+                  mimeType: { type: string }
+                  required: { type: boolean }
+
+    SupportAction:
+      type: object
+      required: [support]
+      properties:
+        support:
+          type: object
+          required: [refId, refType]
+          properties:
+            refId:
+              type: string
+              description: ID of the entity (contract, provider, resource) requiring support
+            refType:
+              type: string
+              enum: [contract, resource, provider, agent, fulfillment]
+              description: Type of entity being referenced
+            issueType:
+              type: string
+              enum: [DOCUMENT_QUERY, EMI_QUERY, DISBURSEMENT_QUERY, PREPAYMENT_REQUEST,
+                     RESTRUCTURE_REQUEST, GRIEVANCE, GENERAL, FRAUD_REPORT]
+            description: { type: string }
+
+    OnSupportAction:
+      type: object
+      required: [support]
+      properties:
+        support:
+          type: object
+          properties:
+            refId: { type: string }
+            ticketId: { type: string, description: "Support ticket reference number" }
+            phone: { type: string, example: "14017" }
+            email: { type: string, format: email }
+            url: { type: string, format: uri }
+            chatUrl: { type: string, format: uri }
+            hours: { type: string, example: "24/7" }
+            groContact:
+              type: object
+              description: Grievance Redressal Officer details (per POJK 18/2023)
+              properties:
+                name: { type: string }
+                email: { type: string, format: email }
+                regulatoryPortal: { type: string, format: uri }
+
+  securitySchemes:
+    BeckSignature:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: >
+        Beckn Ed25519 HTTP Signature. All requests and responses must be signed.
+        The Ack response MUST carry a CounterSignature.
+        Format: `Signature keyId="<subscriberId>|<keyId>|ed25519",
+        algorithm="ed25519",created="<epoch>",expires="<epoch>",
+        headers="(created) (expires) digest",signature="<base64>"`
+        Keys must be registered at https://dedi.global.

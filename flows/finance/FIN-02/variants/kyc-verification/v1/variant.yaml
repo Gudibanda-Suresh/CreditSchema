@@ -1,0 +1,163 @@
+id: ion-finance-variant-kyc-verification-v1
+version: "1.0.0"
+variantType: kyc-verification
+sector: ion:finance
+status: ready
+description: >
+  Borrower identity verification sub-flow. Triggered at /init when the
+  borrower's kycStatus â‰  APPROVED, or when the existing KYC record has
+  expired. Comprises Dukcapil data matching, liveness detection, and
+  optional face-match against KTP photo. Result is returned embedded in
+  on_init. POJK 12/2018 (e-KYC) and POJK 13/2018 (KYC risk-based)
+  apply. First-time borrowers always trigger this branch. Returning
+  borrowers within the kycExpiry window skip it.
+
+appliesTo:
+  - FNC-lending
+  - FNC-lending
+  - FNC-lending
+  - FNC-lending
+  - FNC-lending
+  - FNC-lending
+
+window:
+  earliest: init
+  latest: on_init
+  condition: Triggered when borrower participantAttributes.kycStatus â‰  APPROVED or kycExpiry is past
+
+subBranches:
+
+  dukcapil-match:
+    id: dukcapil-match
+    description: >
+      NIK, name, and date of birth matched against Dukcapil (Ditjen Dukcapil
+      Kemendagri) national identity database. Must return MATCH.
+    steps:
+      - step: dukcapil-query
+        direction: BPP-internal (BPP queries Dukcapil API)
+        requiredFields:
+          - participantAttributes.nik
+          - participantAttributes.person.name
+          - participantAttributes.person.dateOfBirth
+        returnedFields:
+          - contractAttributes.dukcapilMatchResult
+          - contractAttributes.dukcapilMatchRef
+          - contractAttributes.dukcapilMatchedAt
+        outcomes:
+          MATCH: Identity confirmed by Dukcapil
+          MISMATCH: Data does not match Dukcapil record â†’ ION-10007
+          NOT_FOUND: NIK not in Dukcapil â†’ ION-10007
+          SERVICE_UNAVAILABLE: Dukcapil API down â†’ retry
+
+  liveness-check:
+    id: liveness-check
+    description: >
+      Real-time selfie liveness detection to confirm borrower is physically
+      present (anti-spoofing). BAP captures liveness video/frame and submits
+      the liveness session token to BPP. BPP validates via OJK-compliant
+      liveness provider.
+    steps:
+      - step: liveness-capture
+        from: BAP
+        to: BPP
+        direction: within-init request
+        requiredFields:
+          - contractAttributes.ekycFormReference
+          - contractAttributes.livenessSessionToken
+          - contractAttributes.livenessProvider
+        outcomes:
+          PASS: Liveness confirmed
+          FAIL_SPOOF: Spoofing attempt detected
+          FAIL_QUALITY: Image quality insufficient â€” retry
+          FAIL_TIMEOUT: Session expired
+
+  face-match:
+    id: face-match
+    description: >
+      Biometric face comparison between the liveness selfie and the KTP
+      photo retrieved from Dukcapil. Required for OJK Tier 3 KYC level.
+      Confidence threshold must meet offerAttributes.kycPolicy.minFaceMatchScore.
+    steps:
+      - step: face-match-compute
+        direction: BPP-internal
+        inputs:
+          - contractAttributes.livenessFrameRef
+          - contractAttributes.dukcapilKtpPhotoRef
+        output:
+          - contractAttributes.faceMatchScore
+          - contractAttributes.faceMatchResult
+        outcomes:
+          MATCH: Score â‰¥ minFaceMatchScore
+          LOW_CONFIDENCE: Score below threshold â€” manual review or retry
+          MISMATCH: Score far below threshold â†’ reject
+
+  document-verification:
+    id: document-verification
+    description: >
+      OCR and authenticity check on KTP, NPWP, and supporting income
+      documents. MRZ/barcode validation where applicable.
+    documentTypes:
+      KTP:
+        requiredFields: [nik, name, dateOfBirth, address, photo]
+        checks: [OCR, tampering-detection, chip-read-if-available]
+      NPWP:
+        requiredFields: [npwpNumber, name, address]
+        checks: [format-validation, DJP-lookup]
+      SLIP_GAJI:
+        checks: [OCR, employer-npwp-validation, date-within-3-months]
+      REKENING_KORAN:
+        checks: [OCR, bank-stamp-present, date-range-adequate]
+
+  kyc-risk-classification:
+    id: kyc-risk-classification
+    description: >
+      Risk-based KYC classification per POJK 13/2018. Determines which
+      documents and verification depth are required.
+    riskTiers:
+      TIER_1_LOW:
+        maxLoanAmount: IDR 5.000.000
+        requiredChecks: [dukcapil-match]
+        selfie: false
+      TIER_2_MEDIUM:
+        maxLoanAmount: IDR 50.000.000
+        requiredChecks: [dukcapil-match, liveness-check]
+        selfie: true
+        faceMatch: false
+      TIER_3_HIGH:
+        maxLoanAmount: unlimited
+        requiredChecks: [dukcapil-match, liveness-check, face-match, document-verification]
+        selfie: true
+        faceMatch: true
+
+  kyc-result:
+    id: kyc-result
+    description: >
+      Aggregated KYC result embedded in on_init response. On APPROVED,
+      lender sets kycStatus=APPROVED with kycExpiry. Subsequent transactions
+      within the validity window skip this branch.
+    on_init_fields:
+      requiredFields:
+        - contractAttributes.ekycStatus
+        - contractAttributes.kycRiskTier
+      conditionalFields:
+        - field: contractAttributes.kycExpiry
+          condition: set on APPROVED â€” typically 1â€“3 years per lender policy
+        - field: contractAttributes.kycRejectionReason
+          condition: returned if ekycStatus is REJECTED or MANUAL_REVIEW_REQUIRED
+        - field: contractAttributes.manualKycReviewTimeline
+          condition: returned if ekycStatus is MANUAL_REVIEW_REQUIRED
+    ekycStatusValues:
+      APPROVED: KYC passed â€” borrower identity verified
+      REJECTED: Verification failed â€” transaction blocked
+      MANUAL_REVIEW_REQUIRED: Borderline case sent for human review
+      EXPIRED: Prior KYC approval expired â€” re-verification required
+
+  errors:
+    - ION-10006  # KYC expired or not approved
+    - ION-10007  # KYC identity mismatch (NIK/Dukcapil)
+
+policyReferences:
+  - ion://policy/finance/ekyc/v1
+  - ion://policy/finance/kyc-risk-classification/v1
+  - ion://policy/finance/dukcapil-matching/v1
+

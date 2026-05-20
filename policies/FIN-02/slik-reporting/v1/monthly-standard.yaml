@@ -1,0 +1,91 @@
+iri: ion://policy/finance.slik-reporting.monthly-standard
+
+version: "1.0.0"
+
+versionEffectiveFrom: "2026-05-01"
+
+category: SLIK_REPORTING
+
+subCategory: OJK_CREDIT_BUREAU_REPORTING
+
+status: ratified
+
+ratifiedAt: "2026-04-15"
+
+displayText:
+  id: "Pelaporan SLIK OJK — standar bulanan"
+  en: "OJK SLIK credit bureau reporting — monthly standard"
+
+reportingBody: OJK_SLIK
+
+sikliSystemRef: "idebplus.ojk.go.id"
+
+reportingFrequency: MONTHLY
+
+reportingDeadline:
+  submissionDeadlineDayOfMonth: 12
+  note: "Data as of end of previous month; submitted by the 12th of following month"
+
+reportableEvents:
+  - NEW_LOAN_ORIGINATION
+  - MONTHLY_OUTSTANDING_BALANCE_UPDATE
+  - REPAYMENT_RECEIVED
+  - DPD_STATUS_CHANGE
+  - LOAN_RESTRUCTURING
+  - LOAN_WRITE_OFF
+  - LOAN_CLOSURE_FULL_REPAYMENT
+  - COLLATERAL_INFORMATION_CHANGE
+  - GUARANTOR_CHANGE
+
+collectabilityMapping:
+  LANCAR: "DPD 0 — current, no arrears"
+  DALAM_PERHATIAN_KHUSUS: "DPD 1-90 — special mention"
+  KURANG_LANCAR: "DPD 91-120 — substandard"
+  DIRAGUKAN: "DPD 121-180 — doubtful"
+  MACET: "DPD > 180 — bad debt / loss"
+
+reclassificationRules:
+  afterRestructuring:
+    minimumClassification: DALAM_PERHATIAN_KHUSUS
+    upgradeRestrictedMonths: 6
+  afterFullSettlement:
+    reportedAs: LUNAS
+    historicalRecordRetainedYears: 5
+
+consentRequirements:
+  borrowerConsentForInitialReport: true
+  consentRecordedIn: LOAN_AGREEMENT
+  borrowerCanCheckOwnSlik: true
+
+dataCorrectionProcess:
+  borrowerCanRequestCorrection: true
+  lenderMustRespondSlaDays: 14
+  disputeEscalationTo: OJK_PENGADUAN_PORTAL
+
+penaltyForNonReporting:
+  administrativeSanction: true
+  note: "OJK may impose administrative sanctions for late or inaccurate SLIK reporting"
+
+applicablePatterns:
+  - personal-loan
+  - mortgage
+  - vehicle-loan
+  - business-loan
+  - revolving-credit
+  - bnpl
+
+applicableLenderTypes:
+  - BANK_UMUM
+  - BPR
+  - MULTIFINANCE
+  - LPBBTI_P2P
+  - LPBBTI_DIGITAL
+
+regulatoryBasis:
+  - "OJK POJK 18/2017 tentang Pelaporan dan Permintaan Informasi Debitur melalui Sistem Layanan Informasi Keuangan"
+  - "OJK SE 50/SEOJK.03/2017 tentang Pelaporan Data Debitur"
+  - "OJK POJK 40/2019 tentang Penilaian Kualitas Aset Bank Umum"
+
+supersededBy: null
+
+deprecatedAt: null

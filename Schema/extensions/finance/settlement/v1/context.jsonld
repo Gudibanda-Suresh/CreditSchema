@@ -1,0 +1,24 @@
+{
+  "@context": {
+    "@version": 1.1,
+    "@protected": true,
+
+    "ion":    "https://schema.ion.id/finance/settlement/v1#",
+    "beckn":  "https://spec.beckn.io/vocab/v2.0.0#",
+    "rdf":    "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdfs":   "http://www.w3.org/2000/01/rdf-schema#",
+    "xsd":    "http://www.w3.org/2001/XMLSchema#",
+    "schema": "https://schema.org/",
+
+    "AmortisationRow": "ion:AmortisationRow",
+
+    "installmentNumber":          { "@id": "ion:installmentNumber",          "@type": "xsd:integer" },
+    "dueDate":                    { "@id": "ion:dueDate",                    "@type": "xsd:date" },
+    "installmentIDR":             { "@id": "ion:installmentIDR",             "@type": "xsd:decimal" },
+    "principalIDR":               { "@id": "ion:principalIDR",               "@type": "xsd:decimal" },
+    "interestIDR":                { "@id": "ion:interestIDR",                "@type": "xsd:decimal" },
+    "outstandingPrincipalIDR":    { "@id": "ion:outstandingPrincipalIDR",    "@type": "xsd:decimal" },
+    "paymentStatus":              { "@id": "ion:paymentStatus",              "@type": "xsd:string" },
+    "actualPaymentDate":          { "@id": "ion:actualPaymentDate",          "@type": "xsd:date" }
+  }
+}

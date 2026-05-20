@@ -1,0 +1,103 @@
+﻿openapi: "3.1.1"
+info:
+  title: "ION Finance Credit Participant Extension (v1)"
+  version: 1.0.0
+  description: |
+    Credit participant identity attributes for the Finance domain. Carries
+    borrower and lender identity after on_confirm. Attaches to: beckn:Participant.participantAttributes
+  license:
+    name: Apache-2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+  contact:
+    name: ION Network
+    url: https://schema.ion.id
+
+components:
+  schemas:
+
+    Borrower:
+      type: object
+      description: |
+        Borrower identity attributes. Placed in Beckn Contract.participants[]
+        with participantAttributes["@type"] = "ion:Borrower".
+      x-jsonld:
+        '@context': ./context.jsonld
+        '@type': ion:Borrower
+      x-beckn-attaches-to: Participant.participantAttributes
+      additionalProperties: true
+      required:
+        - fullName
+        - nik
+      properties:
+        fullName:
+          type: string
+          description: Full legal name exactly as printed on the borrower's KTP.
+          example: "Budi Santoso"
+        nik:
+          type: string
+          description: Nomor Induk Kependudukan â€” 16-digit National ID from KTP.
+          pattern: "^[0-9]{16}$"
+          example: "3273012505800001"
+        npwp:
+          type: string
+          description: Nomor Pokok Wajib Pajak â€” Tax Identification Number.
+          example: "12.345.678.9-012.000"
+        birthPlace:
+          type: string
+          description: City / regency of birth as printed on KTP.
+          example: "Bandung"
+        birthDate:
+          type: string
+          format: date
+          description: Date of birth in ISO 8601 format (YYYY-MM-DD).
+          example: "1980-05-25"
+        registeredAddress:
+          type: string
+          description: Full residential address as printed on KTP.
+          example: "Jl. Merdeka No. 10, RT 003/RW 005, Kel. Pasir Kaliki, Kec. Cicendo, Kota Bandung, Jawa Barat 40171"
+        email:
+          type: string
+          format: email
+          description: Active email for digital correspondence and OTP.
+        phone:
+          type: string
+          description: Mobile phone in E.164 format (+62XXXXXXXX). Verified via OTP.
+          example: "+6281234567890"
+      x-ion-closed-extensions: false
+      allOf:
+        - $ref: ../../../../../core/v2/api/v2.0.0/beckn.yaml#/components/schemas/Attributes
+
+    Lender:
+      type: object
+      description: |
+        Lending institution identity attributes. Placed in Beckn Contract.participants[]
+        with participantAttributes["@type"] = "ion:Lender".
+      x-jsonld:
+        '@context': ./context.jsonld
+        '@type': ion:Lender
+      x-beckn-attaches-to: Participant.participantAttributes
+      additionalProperties: true
+      required:
+        - institutionName
+        - ojkLicenseNumber
+      properties:
+        institutionName:
+          type: string
+          description: Full legal entity name as registered with Kemenkumham and OJK.
+          example: "PT Bank Rakyat Indonesia (Persero) Tbk"
+        ojkLicenseNumber:
+          type: string
+          description: OJK operating license number.
+          example: "KEP-046/DIR/1992"
+        branchOffice:
+          type: string
+          description: Name of the branch handling this loan account.
+          example: "KCP BRI Bandung Supratman"
+        relationshipManagerName:
+          type: string
+          description: Relationship Manager / Account Officer responsible for this loan.
+          example: "Dewi Rahmawati"
+      x-ion-closed-extensions: false
+      allOf:
+        - $ref: ../../../../../core/v2/api/v2.0.0/beckn.yaml#/components/schemas/Attributes
+

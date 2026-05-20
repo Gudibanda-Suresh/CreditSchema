@@ -1,0 +1,20 @@
+{
+  "schemaId": "ion-finance-performance-v1",
+  "version": "1.0.0",
+  "slots": {
+    "performanceAttributes": {
+      "fieldGroups": [
+        {
+          "id": "disbursement",
+          "label": "Disbursement",
+          "icon": "arrow-right-circle",
+          "fields": ["disbursementDate", "targetBusinessDays", "disbursementMethod"]
+        }
+      ]
+    }
+  },
+  "displayPreferences": {
+    "primaryFields": ["disbursementMethod", "disbursementDate"],
+    "locale": "id-ID"
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "id": "ion-finance-settlement-v1",
+  "version": "1.0.0",
+  "domain": "finance",
+  "type": "AttributePack",
+  "name": "ION Finance Credit Settlement Extension (v1)",
+  "packSchema": "./schema.json",
+  "jsonldContext": "./context.jsonld",
+  "extends": "beckn:Settlement",
+  "attachmentPoints": {
+    "settlementAttributes": ["AmortisationRow"]
+  },
+  "indexing": {
+    "indexable": [
+      { "path": "$.installmentNumber" },
+      { "path": "$.dueDate" },
+      { "path": "$.installmentIDR" },
+      { "path": "$.paymentStatus" }
+    ],
+    "filterable": [
+      { "path": "$.paymentStatus" },
+      { "path": "$.dueDate" }
+    ],
+    "sortable": [
+      { "path": "$.installmentNumber" },
+      { "path": "$.dueDate" }
+    ]
+  },
+  "minimalForDiscovery": ["installmentNumber", "dueDate", "installmentIDR", "paymentStatus"],
+  "context": {
+    "schemaContext": [
+      "https://schema.ion.id/finance/settlement/v1/context.jsonld"
+    ]
+  }
+}

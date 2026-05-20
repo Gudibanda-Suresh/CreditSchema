@@ -1,0 +1,209 @@
+﻿openapi: "3.1.1"
+info:
+  title: "ION Finance Credit Contract Extension (v1)"
+  version: 1.0.0
+  description: |
+    Credit contract attributes for the Finance domain. Carries the immutable
+    signed loan agreement record after on_confirm. Attaches to: beckn:Contract.contractAttributes
+  license:
+    name: Apache-2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+  contact:
+    name: ION Network
+    url: https://schema.ion.id
+
+components:
+  schemas:
+
+    CreditContractAttributes:
+      type: object
+      description: |
+        Core loan agreement attributes placed in Beckn Contract.contractAttributes.
+        Contains contract reference numbers, dates, frozen loan terms, legal
+        document references, OJK collectibility status, and restructuring history.
+      x-jsonld:
+        '@context': ./context.jsonld
+        '@type': ion:LoanAgreement
+      x-beckn-attaches-to: Contract.contractAttributes
+      additionalProperties: true
+      required:
+        - contractNumber
+        - loanAccountNumber
+        - agreementDate
+        - loanTerms
+        - legalDocuments
+      properties:
+        contractNumber:
+          type: string
+          description: |
+            Unique Perjanjian Kredit / Akad Pembiayaan number assigned by the lender.
+            Primary key for the loan facility in the lender's core banking system.
+          example: "PKS-BRI-KPR-2024-00012345"
+        loanAccountNumber:
+          type: string
+          description: Loan account number assigned by the core banking system.
+          example: "100100123456789"
+        agreementDate:
+          type: string
+          format: date
+          description: Date the Akad Kredit was formally signed by all parties (YYYY-MM-DD).
+          example: "2024-03-20"
+        maturityDate:
+          type: string
+          format: date
+          description: Final maturity date â€” all obligations must be fully repaid by this date.
+          example: "2044-03-21"
+        loanStatus:
+          type: string
+          description: |
+            OJK SLIK collectibility status. Reported to OJK SLIK monthly.
+            Separate from Beckn Contract.status.code (ACTIVE/COMPLETE/CANCELLED).
+          enum:
+            - ACTIVE
+            - SPECIAL_MENTION
+            - SUBSTANDARD
+            - DOUBTFUL
+            - LOSS
+            - SETTLED
+            - RESTRUCTURED
+          default: "ACTIVE"
+        loanTerms:
+          $ref: '#/components/schemas/ActiveLoanTerms'
+          description: Core loan parameters frozen at akad signing. Immutable unless formally restructured.
+        legalDocuments:
+          $ref: '#/components/schemas/LegalDocuments'
+          description: Legal document references â€” signed akad URL, collateral registration, e-Meterai, RIPLAY.
+        restructuring:
+          $ref: '#/components/schemas/LoanRestructuring'
+          description: Present only if the loan has undergone formal restructuring per POJK 40/POJK.03/2019.
+      x-ion-closed-extensions: false
+      allOf:
+        - $ref: ../../../../../core/v2/api/v2.0.0/beckn.yaml#/components/schemas/Attributes
+
+    ActiveLoanTerms:
+      type: object
+      description: Active loan parameters frozen at akad signing. Reported to OJK SLIK monthly.
+      required:
+        - approvedPrincipal
+        - effectiveRatePercent
+        - tenorMonths
+        - monthlyInstallmentIDR
+        - monthlyDueDay
+      properties:
+        approvedPrincipal:
+          type: number
+          description: Approved and disbursed principal in IDR (plafond kredit per SLIK).
+          example: 450000000
+        effectiveRatePercent:
+          type: number
+          description: Annual interest rate (% p.a.) frozen at akad signing.
+          example: 9.5
+        calculationMethod:
+          type: string
+          description: Amortisation method (ANNUITY, FLAT, EFFECTIVE).
+          enum: [ANNUITY, FLAT, EFFECTIVE]
+          example: "ANNUITY"
+        yieldType:
+          type: string
+          description: Cost-of-fund mechanism frozen at akad.
+          enum: [FIXED, COMBINED, FLOATING, MARGIN, NISBAH]
+          example: "FIXED"
+        tenorMonths:
+          type: integer
+          description: Total approved tenure in months (jangka waktu kredit per SLIK).
+          example: 240
+        monthlyInstallmentIDR:
+          type: number
+          description: Fixed monthly installment in IDR for the current rate period.
+          example: 4193000
+        monthlyDueDay:
+          type: integer
+          description: Day of month (1â€“31) on which installments are due.
+          example: 20
+        outstandingPrincipal:
+          type: number
+          description: Outstanding principal balance after the most recent payment, in IDR.
+          example: 449369500
+        totalInterestPaid:
+          type: number
+          description: Cumulative interest / margin paid to date in IDR.
+          example: 3562500
+        islamicContractType:
+          type: string
+          description: For Islamic products â€” akad type governing this contract.
+          example: "MURABAHAH"
+
+    LegalDocuments:
+      type: object
+      description: |
+        Legal document references for this credit contract.
+        All URLs must be HTTPS, stable, and accessible for 10 years post-closure
+        per OJK archiving rules (POJK 6/2022).
+      required:
+        - creditAgreementUrl
+      properties:
+        creditAgreementUrl:
+          type: string
+          format: uri
+          description: URL to the signed Akad Kredit / Perjanjian Kredit PDF.
+          example: "https://docs.bri.co.id/akad/PKS-BRI-KPR-2024-00012345.pdf"
+        collateralCertificateUrl:
+          type: string
+          format: uri
+          description: URL to the registered collateral certificate (SHM/SHGB with HT, or BPKB with Fidusia).
+        notarialDeedNumber:
+          type: string
+          description: Notarised deed reference number (Nomor Akta Notaris / PPAT).
+          example: "Akta No. 45/2024/Notaris Suhendi, SH"
+        mortgageLienNumber:
+          type: string
+          description: Hak Tanggungan (HT) registration certificate number from BPN.
+          example: "HT-2024-BDG-000123"
+        riplayDocumentUrl:
+          type: string
+          format: uri
+          description: URL to the signed RIPLAY per POJK 6/POJK.07/2022. Retained 10 years post-closure.
+        approvalLetterUrl:
+          type: string
+          format: uri
+          description: URL to the SPPP (Surat Pemberitahuan Persetujuan Permohonan Pinjaman) per POJK 6/2022.
+        eMateraiSerial:
+          type: string
+          description: e-Meterai serial number per UU No. 10/2020 (IDR 10,000 per document).
+          example: "EM-2024-123456789"
+
+    LoanRestructuring:
+      type: object
+      description: |
+        Formal loan restructuring record per POJK 40/POJK.03/2019.
+        Restructuring modifies tenor, rate, or principal schedule.
+      properties:
+        restructuringDate:
+          type: string
+          format: date
+          description: Date the restructuring agreement was signed (ISO 8601 YYYY-MM-DD).
+        restructuringType:
+          type: string
+          description: Type of loan modification per POJK 40/2019 Article 52.
+          enum:
+            - TENOR_EXTENSION
+            - RATE_REDUCTION
+            - ARREARS_WAIVER
+            - PRINCIPAL_CONVERSION
+            - NEW_FACILITY
+            - COMBINED
+        regulatoryBasis:
+          type: string
+          description: OJK regulation or circular authorising this restructuring.
+          example: "POJK 11/POJK.03/2020 (COVID relief)"
+        newTenorMonths:
+          type: integer
+          description: New total tenor in months after restructuring.
+        newRatePercent:
+          type: number
+          description: New annual interest rate (% p.a.) applicable after restructuring.
+        restructuringReason:
+          type: string
+          description: Plain-language reason for restructuring (audit trail per POJK 40/2019).
+          example: "Impact of COVID-19 pandemic â€” business revenue declined > 50%"
+

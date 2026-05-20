@@ -1,0 +1,792 @@
+{
+  "@context": {
+    "ion": "https://schema.ion.id/finance/contract/v1#",
+    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "schema": "https://schema.org/",
+    "skos": "http://www.w3.org/2004/02/skos/core#"
+  },
+  "@graph": [
+    {
+      "@id": "ion:LoanAgreement",
+      "@type": "rdfs:Class",
+      "rdfs:label": "LoanAgreement",
+      "rdfs:comment": "Core loan agreement attributes placed in Beckn Contract.contractAttributes. Frozen at akad signing and reported to OJK SLIK.",
+      "rdfs:subClassOf": {
+        "@id": "schema:LoanOrCredit"
+      }
+    },
+    {
+      "@id": "ion:contractNumber",
+      "@type": "rdf:Property",
+      "rdfs:label": "contractNumber",
+      "rdfs:comment": "Unique Perjanjian Kredit / Akad Pembiayaan number assigned by the lender. Primary key in the core banking system.",
+      "rdfs:domain": {
+        "@id": "ion:LoanAgreement"
+      },
+      "rdfs:range": {
+        "@id": "xsd:string"
+      }
+    },
+    {
+      "@id": "ion:loanAccountNumber",
+      "@type": "rdf:Property",
+      "rdfs:label": "loanAccountNumber",
+      "rdfs:comment": "Loan account number assigned by the core banking system.",
+      "rdfs:domain": {
+        "@id": "ion:LoanAgreement"
+      },
+      "rdfs:range": {
+        "@id": "xsd:string"
+      }
+    },
+    {
+      "@id": "ion:agreementDate",
+      "@type": "rdf:Property",
+      "rdfs:label": "agreementDate",
+      "rdfs:comment": "Date the Akad Kredit was formally signed by all parties (YYYY-MM-DD).",
+      "rdfs:domain": {
+        "@id": "ion:LoanAgreement"
+      },
+      "rdfs:range": {
+        "@id": "xsd:date"
+      }
+    },
+    {
+      "@id": "ion:maturityDate",
+      "@type": "rdf:Property",
+      "rdfs:label": "maturityDate",
+      "rdfs:comment": "Final maturity date — all obligations must be fully repaid by this date.",
+      "rdfs:domain": {
+        "@id": "ion:LoanAgreement"
+      },
+      "rdfs:range": {
+        "@id": "xsd:date"
+      }
+    },
+    {
+      "@id": "ion:loanStatus",
+      "@type": "rdf:Property",
+      "rdfs:label": "loanStatus",
+      "rdfs:comment": "OJK SLIK collectibility status. Values: ACTIVE, SPECIAL_MENTION, SUBSTANDARD, DOUBTFUL, LOSS, SETTLED, RESTRUCTURED.",
+      "rdfs:domain": {
+        "@id": "ion:LoanAgreement"
+      },
+      "rdfs:range": {
+        "@id": "xsd:string"
+      }
+    },
+    {
+      "@id": "ion:loanTerms",
+      "@type": "rdf:Property",
+      "rdfs:label": "loanTerms",
+      "rdfs:comment": "Core loan parameters frozen at akad signing (ActiveLoanTerms). Immutable unless formally restructured.",
+      "rdfs:domain": {
+        "@id": "ion:LoanAgreement"
+      },
+      "rdfs:range": {
+        "@id": "ion:ActiveLoanTerms"
+      }
+    },
+    {
+      "@id": "ion:legalDocuments",
+      "@type": "rdf:Property",
+      "rdfs:label": "legalDocuments",
+      "rdfs:comment": "Legal document references — signed akad URL, collateral registration, e-Meterai, RIPLAY.",
+      "rdfs:domain": {
+        "@id": "ion:LoanAgreement"
+      },
+      "rdfs:range": {
+        "@id": "ion:LegalDocuments"
+      }
+    },
+    {
+      "@id": "ion:restructuring",
+      "@type": "rdf:Property",
+      "rdfs:label": "restructuring",
+      "rdfs:comment": "Present only if the loan has undergone formal restructuring per POJK 40/POJK.03/2019.",
+      "rdfs:domain": {
+        "@id": "ion:LoanAgreement"
+      },
+      "rdfs:range": {
+        "@id": "ion:LoanRestructuring"
+      }
+    },
+    {
+      "@id": "ion:Borrower",
+      "@type": "rdfs:Class",
+      "rdfs:label": "Borrower",
+      "rdfs:comment": "Borrower identity attributes placed in Beckn Contract.participants[] with participantAttributes[@type] = ion:Borrower.",
+      "rdfs:subClassOf": {
+        "@id": "schema:Person"
+      }
+    },
+    {
+      "@id": "ion:fullName",
+      "@type": "rdf:Property",
+      "rdfs:label": "fullName",
+      "rdfs:comment": "Full legal name exactly as printed on the borrower's KTP.",
+      "rdfs:domain": {
+        "@id": "ion:Borrower"
+      },
+      "rdfs:range": {
+        "@id": "xsd:string"
+      }
+    },
+    {
+      "@id": "ion:nik",
+      "@type": "rdf:Property",
+      "rdfs:label": "nik",
+      "rdfs:comment": "Nomor Induk Kependudukan — 16-digit National ID from KTP.",
+      "rdfs:domain": {
+        "@id": "ion:Borrower"
+      },
+      "rdfs:range": {
+        "@id": "xsd:string"
+      }
+    },
+    {
+      "@id": "ion:npwp",
+      "@type": "rdf:Property",
+      "rdfs:label": "npwp",
+      "rdfs:comment": "Nomor Pokok Wajib Pajak — Tax Identification Number.",
+      "rdfs:domain": {
+        "@id": "ion:Borrower"
+      },
+      "rdfs:range": {
+        "@id": "xsd:string"
+      }
+    },
+    {
+      "@id": "ion:birthPlace",
+      "@type": "rdf:Property",
+      "rdfs:label": "birthPlace",
+      "rdfs:comment": "City / regency of birth as printed on KTP.",
+      "rdfs:domain": {
+        "@id": "ion:Borrower"
+      },
+      "rdfs:range": {
+        "@id": "xsd:string"
+      }
+    },
+    {
+      "@id": "ion:birthDate",
+      "@type": "rdf:Property",
+      "rdfs:label": "birthDate",
+      "rdfs:comment": "Date of birth in ISO 8601 format (YYYY-MM-DD).",
+      "rdfs:domain": {
+        "@id": "ion:Borrower"
+      },
+      "rdfs:range": {
+        "@id": "xsd:date"
+      }
+    },
+    {
+      "@id": "ion:registeredAddress",
+      "@type": "rdf:Property",
+      "rdfs:label": "registeredAddress",
+      "rdfs:comment": "Full residential address as printed on KTP (RT/RW, Kelurahan, Kecamatan, etc.).",
+      "rdfs:domain": {
+        "@id": "ion:Borrower"
+      },
+      "rdfs:range": {
+        "@id": "xsd:string"
+      }
+    },
+    {
+      "@id": "ion:Lender",
+      "@type": "rdfs:Class",
+      "rdfs:label": "Lender",
+      "rdfs:comment": "Lending institution identity attributes placed in Beckn Contract.participants[] with participantAttributes[@type] = ion:Lender.",
+      "rdfs:subClassOf": {
+        "@id": "schema:FinancialService"
+      }
+    },
+    {
+      "@id": "ion:institutionName",
+      "@type": "rdf:Property",
+      "rdfs:label": "institutionName",
+      "rdfs:comment": "Full legal entity name as registered with Kemenkumham and OJK.",
+      "rdfs:domain": {
+        "@id": "ion:Lender"
+      },
+      "rdfs:range": {
+        "@id": "xsd:string"
+      }
+    },
+    {
+      "@id": "ion:ojkLicenseNumber",
+      "@type": "rdf:Property",
+      "rdfs:label": "ojkLicenseNumber",
+      "rdfs:comment": "OJK operating license number. Must match licenses[] in CreditProduct.",
+      "rdfs:domain": {
+        "@id": "ion:Lender"
+      },
+      "rdfs:range": {
+        "@id": "xsd:string"
+      }
+    },
+    {
+      "@id": "ion:branchOffice",
+      "@type": "rdf:Property",
+      "rdfs:label": "branchOffice",
+      "rdfs:comment": "Name of the branch handling this loan account.",
+      "rdfs:domain": {
+        "@id": "ion:Lender"
+      },
+      "rdfs:range": {
+        "@id": "xsd:string"
+      }
+    },
+    {
+      "@id": "ion:relationshipManagerName",
+      "@type": "rdf:Property",
+      "rdfs:label": "relationshipManagerName",
+      "rdfs:comment": "Relationship Manager / Account Officer responsible for this loan.",
+      "rdfs:domain": {
+        "@id": "ion:Lender"
+      },
+      "rdfs:range": {
+        "@id": "xsd:string"
+      }
+    },
+    {
+      "@id": "ion:ActiveLoanTerms",
+      "@type": "rdfs:Class",
+      "rdfs:label": "ActiveLoanTerms",
+      "rdfs:comment": "Active loan parameters frozen at akad signing. Reported to OJK SLIK monthly.",
+      "rdfs:subClassOf": {
+        "@id": "schema:LoanOrCredit"
+      }
+    },
+    {
+      "@id": "ion:approvedPrincipal",
+      "@type": "rdf:Property",
+      "rdfs:label": "approvedPrincipal",
+      "rdfs:comment": "Approved and disbursed principal in IDR (plafond kredit per SLIK).",
+      "rdfs:range": {
+        "@id": "xsd:decimal"
+      }
+    },
+    {
+      "@id": "ion:effectiveRatePercent",
+      "@type": "rdf:Property",
+      "rdfs:label": "effectiveRatePercent",
+      "rdfs:comment": "Annual interest rate (% p.a.) frozen at akad signing.",
+      "rdfs:domain": {
+        "@id": "ion:ActiveLoanTerms"
+      },
+      "rdfs:range": {
+        "@id": "xsd:decimal"
+      }
+    },
+    {
+      "@id": "ion:calculationMethod",
+      "@type": "rdf:Property",
+      "rdfs:label": "calculationMethod",
+      "rdfs:comment": "Amortisation method. Values: ANNUITY, FLAT, EFFECTIVE.",
+      "rdfs:domain": {
+        "@id": "ion:ActiveLoanTerms"
+      },
+      "rdfs:range": {
+        "@id": "xsd:string"
+      }
+    },
+    {
+      "@id": "ion:yieldType",
+      "@type": "rdf:Property",
+      "rdfs:label": "yieldType",
+      "rdfs:comment": "Cost-of-fund mechanism frozen at akad. Values: FIXED, COMBINED, FLOATING, MARGIN, NISBAH.",
+      "rdfs:domain": {
+        "@id": "ion:ActiveLoanTerms"
+      },
+      "rdfs:range": {
+        "@id": "xsd:string"
+      }
+    },
+    {
+      "@id": "ion:tenorMonths",
+      "@type": "rdf:Property",
+      "rdfs:label": "tenorMonths",
+      "rdfs:comment": "Total approved tenure in months (jangka waktu kredit per SLIK).",
+      "rdfs:range": {
+        "@id": "xsd:integer"
+      }
+    },
+    {
+      "@id": "ion:monthlyInstallmentIDR",
+      "@type": "rdf:Property",
+      "rdfs:label": "monthlyInstallmentIDR",
+      "rdfs:comment": "Fixed monthly installment in IDR for the current rate period.",
+      "rdfs:domain": {
+        "@id": "ion:ActiveLoanTerms"
+      },
+      "rdfs:range": {
+        "@id": "xsd:decimal"
+      }
+    },
+    {
+      "@id": "ion:monthlyDueDay",
+      "@type": "rdf:Property",
+      "rdfs:label": "monthlyDueDay",
+      "rdfs:comment": "Day of month (1–31) on which installments are due.",
+      "rdfs:domain": {
+        "@id": "ion:ActiveLoanTerms"
+      },
+      "rdfs:range": {
+        "@id": "xsd:integer"
+      }
+    },
+    {
+      "@id": "ion:outstandingPrincipal",
+      "@type": "rdf:Property",
+      "rdfs:label": "outstandingPrincipal",
+      "rdfs:comment": "Outstanding principal balance after the most recent payment, in IDR.",
+      "rdfs:domain": {
+        "@id": "ion:ActiveLoanTerms"
+      },
+      "rdfs:range": {
+        "@id": "xsd:decimal"
+      }
+    },
+    {
+      "@id": "ion:totalInterestPaid",
+      "@type": "rdf:Property",
+      "rdfs:label": "totalInterestPaid",
+      "rdfs:comment": "Cumulative interest / margin paid to date in IDR.",
+      "rdfs:domain": {
+        "@id": "ion:ActiveLoanTerms"
+      },
+      "rdfs:range": {
+        "@id": "xsd:decimal"
+      }
+    },
+    {
+      "@id": "ion:islamicContractType",
+      "@type": "rdf:Property",
+      "rdfs:label": "islamicContractType",
+      "rdfs:comment": "For Islamic products — akad type governing this contract (e.g., MURABAHAH, MUSYARAKAH).",
+      "rdfs:domain": {
+        "@id": "ion:ActiveLoanTerms"
+      },
+      "rdfs:range": {
+        "@id": "xsd:string"
+      }
+    },
+    {
+      "@id": "ion:AmortisationRow",
+      "@type": "rdfs:Class",
+      "rdfs:label": "AmortisationRow",
+      "rdfs:comment": "A single installment row placed in Beckn Contract.settlements[] with settlementAttributes[@type] = ion:AmortisationRow.",
+      "rdfs:subClassOf": {
+        "@id": "schema:RepaymentSpecification"
+      }
+    },
+    {
+      "@id": "ion:installmentNumber",
+      "@type": "rdf:Property",
+      "rdfs:label": "installmentNumber",
+      "rdfs:comment": "Installment sequence number (1-based).",
+      "rdfs:domain": {
+        "@id": "ion:AmortisationRow"
+      },
+      "rdfs:range": {
+        "@id": "xsd:integer"
+      }
+    },
+    {
+      "@id": "ion:dueDate",
+      "@type": "rdf:Property",
+      "rdfs:label": "dueDate",
+      "rdfs:comment": "Due date for this installment (ISO 8601 YYYY-MM-DD).",
+      "rdfs:domain": {
+        "@id": "ion:AmortisationRow"
+      },
+      "rdfs:range": {
+        "@id": "xsd:date"
+      }
+    },
+    {
+      "@id": "ion:installmentIDR",
+      "@type": "rdf:Property",
+      "rdfs:label": "installmentIDR",
+      "rdfs:comment": "Total installment due for this period in IDR.",
+      "rdfs:domain": {
+        "@id": "ion:AmortisationRow"
+      },
+      "rdfs:range": {
+        "@id": "xsd:decimal"
+      }
+    },
+    {
+      "@id": "ion:principalIDR",
+      "@type": "rdf:Property",
+      "rdfs:label": "principalIDR",
+      "rdfs:comment": "Principal repayment component in IDR (ANNUITY: increases; FLAT: constant).",
+      "rdfs:domain": {
+        "@id": "ion:AmortisationRow"
+      },
+      "rdfs:range": {
+        "@id": "xsd:decimal"
+      }
+    },
+    {
+      "@id": "ion:interestIDR",
+      "@type": "rdf:Property",
+      "rdfs:label": "interestIDR",
+      "rdfs:comment": "Interest / margin component in IDR (ANNUITY: decreases; FLAT: constant).",
+      "rdfs:domain": {
+        "@id": "ion:AmortisationRow"
+      },
+      "rdfs:range": {
+        "@id": "xsd:decimal"
+      }
+    },
+    {
+      "@id": "ion:outstandingPrincipalIDR",
+      "@type": "rdf:Property",
+      "rdfs:label": "outstandingPrincipalIDR",
+      "rdfs:comment": "Remaining principal after this installment in IDR. Zero at final row.",
+      "rdfs:domain": {
+        "@id": "ion:AmortisationRow"
+      },
+      "rdfs:range": {
+        "@id": "xsd:decimal"
+      }
+    },
+    {
+      "@id": "ion:paymentStatus",
+      "@type": "rdf:Property",
+      "rdfs:label": "paymentStatus",
+      "rdfs:comment": "Real-time payment status for this installment row. Values: UNPAID, PAID, OVERDUE, PARTIAL.",
+      "rdfs:domain": {
+        "@id": "ion:AmortisationRow"
+      },
+      "rdfs:range": {
+        "@id": "xsd:string"
+      }
+    },
+    {
+      "@id": "ion:actualPaymentDate",
+      "@type": "rdf:Property",
+      "rdfs:label": "actualPaymentDate",
+      "rdfs:comment": "Actual payment receipt date. Populated only when paymentStatus is PAID, OVERDUE, or PARTIAL.",
+      "rdfs:domain": {
+        "@id": "ion:AmortisationRow"
+      },
+      "rdfs:range": {
+        "@id": "xsd:date"
+      }
+    },
+    {
+      "@id": "ion:DisbursementPerformance",
+      "@type": "rdfs:Class",
+      "rdfs:label": "DisbursementPerformance",
+      "rdfs:comment": "Loan disbursement execution details placed in Beckn Contract.performance[] with performanceAttributes[@type] = ion:DisbursementPerformance.",
+      "rdfs:subClassOf": {
+        "@id": "schema:PaymentMethod"
+      }
+    },
+    {
+      "@id": "ion:disbursementDate",
+      "@type": "rdf:Property",
+      "rdfs:label": "disbursementDate",
+      "rdfs:comment": "Actual date funds were disbursed (ISO 8601 YYYY-MM-DD).",
+      "rdfs:domain": {
+        "@id": "ion:DisbursementPerformance"
+      },
+      "rdfs:range": {
+        "@id": "xsd:date"
+      }
+    },
+    {
+      "@id": "ion:targetBusinessDays",
+      "@type": "rdf:Property",
+      "rdfs:label": "targetBusinessDays",
+      "rdfs:comment": "Target business days from complete documentation to disbursement.",
+      "rdfs:range": {
+        "@id": "xsd:integer"
+      }
+    },
+    {
+      "@id": "ion:disbursementMethod",
+      "@type": "rdf:Property",
+      "rdfs:label": "disbursementMethod",
+      "rdfs:comment": "Mechanism through which funds are transferred. Values: BANK_TRANSFER, DEVELOPER_TRANSFER, DEALER_TRANSFER, CASH, VIRTUAL_ACCOUNT.",
+      "rdfs:range": {
+        "@id": "xsd:string"
+      }
+    },
+    {
+      "@id": "ion:LoanConsideration",
+      "@type": "rdfs:Class",
+      "rdfs:label": "LoanConsideration",
+      "rdfs:comment": "Principal and fee amounts exchanged under the contract, placed in Beckn Contract.consideration[] with considerationAttributes[@type] = ion:LoanConsideration.",
+      "rdfs:subClassOf": {
+        "@id": "schema:MonetaryAmount"
+      }
+    },
+    {
+      "@id": "ion:currency",
+      "@type": "rdf:Property",
+      "rdfs:label": "currency",
+      "rdfs:comment": "ISO 4217 currency code. Always IDR for domestic credit.",
+      "rdfs:domain": {
+        "@id": "ion:LoanConsideration"
+      },
+      "rdfs:range": {
+        "@id": "xsd:string"
+      }
+    },
+    {
+      "@id": "ion:totalFeesIDR",
+      "@type": "rdf:Property",
+      "rdfs:label": "totalFeesIDR",
+      "rdfs:comment": "Total upfront fees paid at akad signing in IDR.",
+      "rdfs:domain": {
+        "@id": "ion:LoanConsideration"
+      },
+      "rdfs:range": {
+        "@id": "xsd:decimal"
+      }
+    },
+    {
+      "@id": "ion:aprEquivalent",
+      "@type": "rdf:Property",
+      "rdfs:label": "aprEquivalent",
+      "rdfs:comment": "All-in annualised cost of credit % (POJK 6/2022 RIPLAY disclosure mandatory item).",
+      "rdfs:range": {
+        "@id": "xsd:decimal"
+      }
+    },
+    {
+      "@id": "ion:LegalDocuments",
+      "@type": "rdfs:Class",
+      "rdfs:label": "LegalDocuments",
+      "rdfs:comment": "Legal document references for this credit contract. All URLs HTTPS, stable, accessible 10 years post-closure per POJK 6/2022.",
+      "rdfs:subClassOf": {
+        "@id": "schema:CreativeWork"
+      }
+    },
+    {
+      "@id": "ion:creditAgreementUrl",
+      "@type": "rdf:Property",
+      "rdfs:label": "creditAgreementUrl",
+      "rdfs:comment": "URL to the signed Akad Kredit / Perjanjian Kredit PDF.",
+      "rdfs:domain": {
+        "@id": "ion:LegalDocuments"
+      },
+      "rdfs:range": {
+        "@id": "xsd:anyURI"
+      }
+    },
+    {
+      "@id": "ion:collateralCertificateUrl",
+      "@type": "rdf:Property",
+      "rdfs:label": "collateralCertificateUrl",
+      "rdfs:comment": "URL to the registered collateral certificate (SHM/SHGB with HT, or BPKB with Fidusia).",
+      "rdfs:domain": {
+        "@id": "ion:LegalDocuments"
+      },
+      "rdfs:range": {
+        "@id": "xsd:anyURI"
+      }
+    },
+    {
+      "@id": "ion:notarialDeedNumber",
+      "@type": "rdf:Property",
+      "rdfs:label": "notarialDeedNumber",
+      "rdfs:comment": "Notarised deed reference number (Nomor Akta Notaris / PPAT).",
+      "rdfs:domain": {
+        "@id": "ion:LegalDocuments"
+      },
+      "rdfs:range": {
+        "@id": "xsd:string"
+      }
+    },
+    {
+      "@id": "ion:mortgageLienNumber",
+      "@type": "rdf:Property",
+      "rdfs:label": "mortgageLienNumber",
+      "rdfs:comment": "Hak Tanggungan (HT) registration certificate number from BPN.",
+      "rdfs:domain": {
+        "@id": "ion:LegalDocuments"
+      },
+      "rdfs:range": {
+        "@id": "xsd:string"
+      }
+    },
+    {
+      "@id": "ion:riplayDocumentUrl",
+      "@type": "rdf:Property",
+      "rdfs:label": "riplayDocumentUrl",
+      "rdfs:comment": "URL to the signed RIPLAY document per POJK 6/POJK.07/2022. Retained 10 years post-closure.",
+      "rdfs:domain": {
+        "@id": "ion:LegalDocuments"
+      },
+      "rdfs:range": {
+        "@id": "xsd:anyURI"
+      }
+    },
+    {
+      "@id": "ion:approvalLetterUrl",
+      "@type": "rdf:Property",
+      "rdfs:label": "approvalLetterUrl",
+      "rdfs:comment": "URL to the SPPP (Surat Pemberitahuan Persetujuan Permohonan Pinjaman) per POJK 6/2022.",
+      "rdfs:domain": {
+        "@id": "ion:LegalDocuments"
+      },
+      "rdfs:range": {
+        "@id": "xsd:anyURI"
+      }
+    },
+    {
+      "@id": "ion:eMateraiSerial",
+      "@type": "rdf:Property",
+      "rdfs:label": "eMateraiSerial",
+      "rdfs:comment": "e-Meterai serial number per UU No. 10/2020 (IDR 10,000 per document).",
+      "rdfs:domain": {
+        "@id": "ion:LegalDocuments"
+      },
+      "rdfs:range": {
+        "@id": "xsd:string"
+      }
+    },
+    {
+      "@id": "ion:LoanRestructuring",
+      "@type": "rdfs:Class",
+      "rdfs:label": "LoanRestructuring",
+      "rdfs:comment": "Formal loan restructuring record per POJK 40/POJK.03/2019. Restructuring modifies tenor, rate, or principal schedule.",
+      "rdfs:subClassOf": {
+        "@id": "schema:LoanOrCredit"
+      }
+    },
+    {
+      "@id": "ion:restructuringDate",
+      "@type": "rdf:Property",
+      "rdfs:label": "restructuringDate",
+      "rdfs:comment": "Date the restructuring agreement was signed (ISO 8601 YYYY-MM-DD).",
+      "rdfs:domain": {
+        "@id": "ion:LoanRestructuring"
+      },
+      "rdfs:range": {
+        "@id": "xsd:date"
+      }
+    },
+    {
+      "@id": "ion:restructuringType",
+      "@type": "rdf:Property",
+      "rdfs:label": "restructuringType",
+      "rdfs:comment": "Type of loan modification per POJK 40/2019 Article 52. Values: TENOR_EXTENSION, RATE_REDUCTION, ARREARS_WAIVER, PRINCIPAL_CONVERSION, NEW_FACILITY, COMBINED.",
+      "rdfs:domain": {
+        "@id": "ion:LoanRestructuring"
+      },
+      "rdfs:range": {
+        "@id": "xsd:string"
+      }
+    },
+    {
+      "@id": "ion:regulatoryBasis",
+      "@type": "rdf:Property",
+      "rdfs:label": "regulatoryBasis",
+      "rdfs:comment": "OJK regulation or circular authorising this restructuring (e.g., POJK 11/POJK.03/2020).",
+      "rdfs:domain": {
+        "@id": "ion:LoanRestructuring"
+      },
+      "rdfs:range": {
+        "@id": "xsd:string"
+      }
+    },
+    {
+      "@id": "ion:newTenorMonths",
+      "@type": "rdf:Property",
+      "rdfs:label": "newTenorMonths",
+      "rdfs:comment": "New total tenor in months after restructuring.",
+      "rdfs:domain": {
+        "@id": "ion:LoanRestructuring"
+      },
+      "rdfs:range": {
+        "@id": "xsd:integer"
+      }
+    },
+    {
+      "@id": "ion:newRatePercent",
+      "@type": "rdf:Property",
+      "rdfs:label": "newRatePercent",
+      "rdfs:comment": "New annual interest rate (% p.a.) applicable after restructuring.",
+      "rdfs:domain": {
+        "@id": "ion:LoanRestructuring"
+      },
+      "rdfs:range": {
+        "@id": "xsd:decimal"
+      }
+    },
+    {
+      "@id": "ion:restructuringReason",
+      "@type": "rdf:Property",
+      "rdfs:label": "restructuringReason",
+      "rdfs:comment": "Plain-language reason for restructuring (audit trail per POJK 40/2019).",
+      "rdfs:domain": {
+        "@id": "ion:LoanRestructuring"
+      },
+      "rdfs:range": {
+        "@id": "xsd:string"
+      }
+    },
+    {
+      "@id": "ion:LoanStatus",
+      "@type": [
+        "rdfs:Class",
+        "skos:ConceptScheme"
+      ],
+      "rdfs:label": "LoanStatus",
+      "rdfs:comment": "OJK SLIK collectibility grade taxonomy."
+    },
+    {
+      "@id": "ion:LANCAR",
+      "@type": "skos:Concept",
+      "skos:prefLabel": "ACTIVE",
+      "skos:broader": {
+        "@id": "ion:LoanStatus"
+      },
+      "rdfs:comment": "Grade 1 — Lancar (Current). All payments on time."
+    },
+    {
+      "@id": "ion:DALAM_PERHATIAN",
+      "@type": "skos:Concept",
+      "skos:prefLabel": "SPECIAL_MENTION",
+      "skos:broader": {
+        "@id": "ion:LoanStatus"
+      },
+      "rdfs:comment": "Grade 2 — Dalam Perhatian Khusus. 1–90 days past due."
+    },
+    {
+      "@id": "ion:KURANG_LANCAR",
+      "@type": "skos:Concept",
+      "skos:prefLabel": "SUBSTANDARD",
+      "skos:broader": {
+        "@id": "ion:LoanStatus"
+      },
+      "rdfs:comment": "Grade 3 — Kurang Lancar. 91–180 days past due."
+    },
+    {
+      "@id": "ion:DIRAGUKAN",
+      "@type": "skos:Concept",
+      "skos:prefLabel": "DOUBTFUL",
+      "skos:broader": {
+        "@id": "ion:LoanStatus"
+      },
+      "rdfs:comment": "Grade 4 — Diragukan. 181–270 days past due."
+    },
+    {
+      "@id": "ion:MACET",
+      "@type": "skos:Concept",
+      "skos:prefLabel": "LOSS",
+      "skos:broader": {
+        "@id": "ion:LoanStatus"
+      },
+      "rdfs:comment": "Grade 5 — Macet. More than 270 days past due."
+    }
+  ]
+}

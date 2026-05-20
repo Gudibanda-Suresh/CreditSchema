@@ -1,0 +1,53 @@
+{
+  "id": "ion-finance-contract-v1",
+  "version": "1.0.0",
+  "domain": "finance",
+  "type": "AttributePack",
+  "name": "ION Finance Credit Contract Extension (v1)",
+  "packSchema": "./schema.json",
+  "jsonldContext": "./context.jsonld",
+  "extends": "beckn:Contract",
+  "attachmentPoints": {
+    "contractAttributes": ["LoanAgreement"]
+  },
+  "indexing": {
+    "indexable": [
+      { "path": "$.contractNumber" },
+      { "path": "$.loanAccountNumber" },
+      { "path": "$.agreementDate" },
+      { "path": "$.maturityDate" },
+      { "path": "$.loanStatus" },
+      { "path": "$.loanTerms.approvedPrincipal" },
+      { "path": "$.loanTerms.effectiveRatePercent" },
+      { "path": "$.loanTerms.tenorMonths" },
+      { "path": "$.loanTerms.outstandingPrincipal" }
+    ],
+    "filterable": [
+      { "path": "$.loanStatus" },
+      { "path": "$.loanTerms.yieldType" },
+      { "path": "$.loanTerms.calculationMethod" }
+    ],
+    "sortable": [
+      { "path": "$.agreementDate" },
+      { "path": "$.maturityDate" },
+      { "path": "$.loanTerms.approvedPrincipal" },
+      { "path": "$.loanTerms.effectiveRatePercent" },
+      { "path": "$.loanTerms.outstandingPrincipal" }
+    ]
+  },
+  "minimalForDiscovery": [
+    "contractNumber",
+    "loanAccountNumber",
+    "agreementDate",
+    "loanStatus",
+    "loanTerms.approvedPrincipal",
+    "loanTerms.effectiveRatePercent",
+    "loanTerms.tenorMonths",
+    "loanTerms.monthlyInstallmentIDR"
+  ],
+  "context": {
+    "schemaContext": [
+      "https://schema.ion.id/finance/contract/v1/context.jsonld"
+    ]
+  }
+}

@@ -1,0 +1,66 @@
+iri: ion://policy/finance.cancellation.loan-nonrefundable-processing-fee
+
+version: "1.0.0"
+
+versionEffectiveFrom: "2026-05-01"
+
+category: CANCELLATION
+
+subCategory: LOAN_APPLICATION
+
+status: ratified
+
+ratifiedAt: "2026-04-15"
+
+displayText:
+  id: "Biaya proses tidak dapat dikembalikan saat pembatalan"
+  en: "Non-refundable processing fee on loan cancellation"
+
+cancellationWindowCloses: DISBURSEMENT_INITIATED
+
+cancellationFee:
+  type: NONE
+  value: 0
+
+processingFeeRefundable: false
+
+processingFeeNote: >
+  Processing fee (biaya administrasi) already charged and collected at
+  on_confirm is non-refundable regardless of cancellation timing, unless
+  cancellation is initiated by the lender (BPP) without valid cause.
+  Applicable when offerAttributes.processingFee > 0 and was pre-collected.
+
+lenderInitiatedCancelRefund:
+  processingFeeRefundable: true
+  reason: Lender bears full refund obligation if lender initiates cancel without cause
+
+cancellationReasonsAllowed:
+  - CHANGE_OF_MIND
+  - FOUND_BETTER_OFFER
+  - INCOME_CHANGE
+  - EMPLOYMENT_CHANGE
+  - DOCUMENTATION_ISSUE
+
+refundTimelineFromCancel: P3D
+
+refundDestinationDefault: ORIGINAL_PAYMENT_METHOD
+
+applicablePatterns:
+  - personal-loan
+  - mortgage
+  - vehicle-loan
+  - business-loan
+
+applicableLenderTypes:
+  - BANK_UMUM
+  - BPR
+  - MULTIFINANCE
+  - LPBBTI_P2P
+
+regulatoryBasis:
+  - "UU 8/1999 tentang Perlindungan Konsumen Pasal 4"
+  - "OJK POJK 22/2023 Pasal 27 tentang biaya yang dibebankan kepada konsumen"
+
+supersededBy: null
+
+deprecatedAt: null

@@ -1,0 +1,49 @@
+{
+  "id": "ion-finance-offer-v1",
+  "version": "1.0.0",
+  "domain": "finance",
+  "type": "AttributePack",
+  "name": "ION Finance Credit Offer Extension (v1)",
+  "packSchema": "./schema.json",
+  "jsonldContext": "./context.jsonld",
+  "extends": "beckn:Offer",
+  "attachmentPoints": {
+    "offerAttributes": ["CreditApproval"]
+  },
+  "indexing": {
+    "indexable": [
+      { "path": "$.offerStatus" },
+      { "path": "$.approvedPrincipal.value" },
+      { "path": "$.approvedTenor.value" },
+      { "path": "$.effectiveRate.percentPerYear" },
+      { "path": "$.effectiveRate.yieldType" },
+      { "path": "$.totalFees.aprEquivalent" },
+      { "path": "$.monthlyInstallment.totalIDR" }
+    ],
+    "filterable": [
+      { "path": "$.offerStatus" },
+      { "path": "$.effectiveRate.method" },
+      { "path": "$.effectiveRate.yieldType" },
+      { "path": "$.disbursementSchedule.disbursementMethod" }
+    ],
+    "sortable": [
+      { "path": "$.effectiveRate.percentPerYear" },
+      { "path": "$.totalFees.aprEquivalent" },
+      { "path": "$.monthlyInstallment.totalIDR" }
+    ]
+  },
+  "minimalForDiscovery": [
+    "offerStatus",
+    "approvedPrincipal",
+    "approvedTenor",
+    "effectiveRate.percentPerYear",
+    "effectiveRate.method",
+    "monthlyInstallment.totalIDR",
+    "totalFees.aprEquivalent"
+  ],
+  "context": {
+    "schemaContext": [
+      "https://schema.ion.id/finance/offer/v1/context.jsonld"
+    ]
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schema.ion.id/finance/settlement/v1/schema.json",
+  "title": "AmortisationRow",
+  "description": "ION Finance Credit Settlement Extension v1 — one amortisation row placed in Settlement.settlementAttributes.",
+  "type": "object",
+  "required": [
+    "@context",
+    "@type",
+    "installmentNumber",
+    "dueDate",
+    "installmentIDR"
+  ],
+  "additionalProperties": true,
+  "properties": {
+    "@context": {
+      "type": "string",
+      "const": "https://schema.ion.id/finance/settlement/v1/context.jsonld"
+    },
+    "@type": {
+      "type": "string",
+      "const": "ion:AmortisationRow"
+    },
+    "installmentNumber": {
+      "type": "integer"
+    },
+    "dueDate": {
+      "type": "string",
+      "format": "date"
+    },
+    "installmentIDR": {
+      "type": "number"
+    },
+    "principalIDR": {
+      "type": "number"
+    },
+    "interestIDR": {
+      "type": "number"
+    },
+    "outstandingPrincipalIDR": {
+      "type": "number"
+    },
+    "paymentStatus": {
+      "type": "string",
+      "enum": [
+        "UNPAID",
+        "PAID",
+        "OVERDUE",
+        "PARTIAL"
+      ],
+      "default": "UNPAID"
+    },
+    "actualPaymentDate": {
+      "type": "string",
+      "format": "date"
+    }
+  }
+}

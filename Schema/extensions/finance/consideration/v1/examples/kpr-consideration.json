@@ -1,0 +1,18 @@
+{
+  "$schema": "https://schema.ion.id/finance/consideration/v1/schema.json",
+  "@context": "https://schema.ion.id/finance/consideration/v1/context.jsonld",
+  "description": "Example: LoanConsideration for a KPR — IDR 450jt principal, total upfront fees IDR 12,510,000 (provision + admin + appraisal + notary + MRTA + fire insurance + stamp duty), APR equivalent 11.2%.",
+  "consideration": [
+    {
+      "id": "CONSID-KPR-001",
+      "considerationAttributes": {
+        "@context": "https://schema.ion.id/finance/consideration/v1/context.jsonld",
+        "@type": "ion:LoanConsideration",
+        "approvedPrincipal": 450000000,
+        "currency": "IDR",
+        "totalFeesIDR": 12510000,
+        "aprEquivalent": 11.2
+      }
+    }
+  ]
+}

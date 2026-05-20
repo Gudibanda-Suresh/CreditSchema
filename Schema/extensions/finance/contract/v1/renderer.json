@@ -1,0 +1,99 @@
+{
+  "schemaId": "ion-finance-contract-v1",
+  "version": "1.0.0",
+  "slots": {
+    "contractAttributes": {
+      "fieldGroups": [
+        {
+          "id": "contractIdentity",
+          "label": "Contract Identity",
+          "icon": "document-text",
+          "fields": ["contractNumber", "loanAccountNumber", "agreementDate", "maturityDate", "loanStatus"]
+        },
+        {
+          "id": "loanTerms",
+          "label": "Loan Terms",
+          "icon": "calculator",
+          "fields": [
+            "loanTerms.approvedPrincipal",
+            "loanTerms.effectiveRatePercent",
+            "loanTerms.calculationMethod",
+            "loanTerms.yieldType",
+            "loanTerms.tenorMonths",
+            "loanTerms.monthlyInstallmentIDR",
+            "loanTerms.monthlyDueDay",
+            "loanTerms.outstandingPrincipal",
+            "loanTerms.totalInterestPaid",
+            "loanTerms.islamicContractType"
+          ]
+        },
+        {
+          "id": "legalDocuments",
+          "label": "Legal Documents",
+          "icon": "paper-clip",
+          "fields": [
+            "legalDocuments.creditAgreementUrl",
+            "legalDocuments.collateralCertificateUrl",
+            "legalDocuments.notarialDeedNumber",
+            "legalDocuments.mortgageLienNumber",
+            "legalDocuments.riplayDocumentUrl",
+            "legalDocuments.approvalLetterUrl",
+            "legalDocuments.eMateraiSerial"
+          ]
+        },
+        {
+          "id": "restructuring",
+          "label": "Loan Restructuring",
+          "icon": "refresh",
+          "conditional": "loanStatus === 'RESTRUCTURED'",
+          "fields": [
+            "restructuring.restructuringDate",
+            "restructuring.restructuringType",
+            "restructuring.regulatoryBasis",
+            "restructuring.newTenorMonths",
+            "restructuring.newRatePercent",
+            "restructuring.restructuringReason"
+          ]
+        }
+      ]
+    }
+  },
+  "displayPreferences": {
+    "primaryFields": [
+      "contractNumber", "loanStatus",
+      "loanTerms.approvedPrincipal", "loanTerms.effectiveRatePercent",
+      "loanTerms.tenorMonths", "loanTerms.monthlyInstallmentIDR"
+    ],
+    "cardSummaryFields": [
+      "contractNumber", "loanStatus",
+      "loanTerms.approvedPrincipal", "loanTerms.effectiveRatePercent"
+    ],
+    "statusColors": {
+      "ACTIVE":          "green",
+      "SPECIAL_MENTION": "yellow",
+      "SUBSTANDARD":     "orange",
+      "DOUBTFUL":        "red",
+      "LOSS":            "darkred",
+      "SETTLED":         "grey",
+      "RESTRUCTURED":    "blue"
+    },
+    "currencyFields": [
+      "loanTerms.approvedPrincipal",
+      "loanTerms.monthlyInstallmentIDR",
+      "loanTerms.outstandingPrincipal",
+      "loanTerms.totalInterestPaid"
+    ],
+    "percentageFields": [
+      "loanTerms.effectiveRatePercent",
+      "restructuring.newRatePercent"
+    ],
+    "urlFields": [
+      "legalDocuments.creditAgreementUrl",
+      "legalDocuments.collateralCertificateUrl",
+      "legalDocuments.riplayDocumentUrl",
+      "legalDocuments.approvalLetterUrl"
+    ],
+    "locale": "id-ID",
+    "currency": "IDR"
+  }
+}

@@ -1,0 +1,78 @@
+{
+  "$schema": "https://schema.ion.id/finance/resource/v1/schema.json",
+  "@context": "https://schema.ion.id/finance/resource/v1/context.jsonld",
+  "description": "Example: CreditProduct template for KUR Mikro — government-subsidized SME loan, rate capped at 6% p.a. effective, max IDR 100jt, via SIKP integration, zero prepayment penalty.",
+  "id": "RES-BNI-KUR-MIKRO-001",
+  "descriptor": {
+    "name": "KUR Mikro BNI",
+    "shortDesc": "Kredit Usaha Rakyat Mikro bersubsidi pemerintah untuk UMKM, bunga 6% per tahun"
+  },
+  "resourceAttributes": {
+    "@context": "https://schema.ion.id/finance/resource/v1/context.jsonld",
+    "@type": "ion:CreditProduct",
+    "productIdentity": {
+      "productName": "KUR Mikro BNI",
+      "institutionName": "PT Bank Negara Indonesia (Persero) Tbk",
+      "productType": "KUR_MIKRO",
+      "financeType": "CONVENTIONAL",
+      "currency": "IDR",
+      "institutionType": "BANK_UMUM",
+      "bankCapitalTier": "BUKU_4",
+      "digitalOnly": false,
+      "distributionChannels": ["BRANCH_OFFICE", "BRANCHLESS_BANKING_AGENT", "MOBILE_BANKING"]
+    },
+    "principalRange": {
+      "minimum": { "value": 10000001, "currency": "IDR" },
+      "maximum": { "value": 100000000, "currency": "IDR" },
+      "maximumKUROfficial": 100000000,
+      "denomination": 1000000
+    },
+    "tenor": {
+      "unit": "MONTHS",
+      "minimum": 6,
+      "maximum": 60
+    },
+    "costOfFund": {
+      "yieldType": "FIXED",
+      "calculationMethod": "ANNUITY",
+      "rateMinPercent": 6.0,
+      "rateMaxPercent": 6.0
+    },
+    "repaymentSchedule": {
+      "scheduleType": "MONTHLY",
+      "graceMonths": 0
+    },
+    "feeStructure": {
+      "provisionFeePercent": 0,
+      "adminFeeFixed": 0
+    },
+    "collateral": {
+      "required": false
+    },
+    "borrowerCriteria": {
+      "applicantTypes": ["BUSINESS_OWNER", "SELF_EMPLOYED"],
+      "minimumMonthlyIncomeIDR": 1000000,
+      "minimumSLIKGrade": "1",
+      "serviceRegions": ["ID-JK", "ID-JB", "ID-JT", "ID-JI", "ID-BA", "ID-SU", "ID-SS", "ID-KB", "ID-SN", "ID-ST", "ID-SG", "ID-PA"],
+      "maxDSRPercent": 50
+    },
+    "regulatoryDeclaration": {
+      "ojkApprovedDate": "2023-01-15",
+      "productRegistrationNumber": "S-011/NB.111/2023-KUR",
+      "riskCategory": "LOW",
+      "disclosureLanguage": "id"
+    },
+    "requiredDocuments": [
+      { "documentType": "IDENTITY", "documentCode": "KTP", "mandatory": true },
+      { "documentType": "BUSINESS", "documentCode": "NIB_ATAU_IUMK", "mandatory": true },
+      { "documentType": "TAX", "documentCode": "NPWP", "mandatory": false },
+      { "documentType": "BUSINESS_PROOF", "documentCode": "FOTO_USAHA", "mandatory": true }
+    ],
+    "governmentProgram": {
+      "programType": "KUR",
+      "maxPrincipal": 100000000,
+      "subventionPercent": 3.0,
+      "repaymentFrequency": "MONTHLY"
+    }
+  }
+}

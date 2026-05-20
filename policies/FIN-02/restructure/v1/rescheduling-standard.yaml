@@ -1,0 +1,76 @@
+iri: ion://policy/finance.restructure.rescheduling-standard
+
+version: "1.0.0"
+
+versionEffectiveFrom: "2026-05-01"
+
+category: RESTRUCTURE
+
+subCategory: RESCHEDULING
+
+status: ratified
+
+ratifiedAt: "2026-04-15"
+
+displayText:
+  id: "Restrukturisasi kredit — penjadwalan ulang angsuran"
+  en: "Credit restructuring — rescheduling (extended tenure)"
+
+restructureType: RESCHEDULING
+
+description: >
+  Rescheduling extends the loan tenure while keeping outstanding principal
+  and interest rate unchanged. Monthly installment is reduced accordingly.
+  Only the repayment schedule changes; no modification to loan terms.
+
+eligibilityCriteria:
+  - borrowerExperiencingFinancialDifficulty: true
+  - minDpdForEligibility: 0
+  - maxDpdForEligibility: 180
+  - maxTimesRescheduledInLoanLifetime: 2
+  - requiresLenderCreditCommitteeApproval: true
+
+applicationProcess:
+  borrowerRequestRequired: true
+  supportingDocumentsRequired:
+    - SURAT_PERMOHONAN_RESTRUKTURISASI
+    - BUKTI_KESULITAN_KEUANGAN
+  lenderResponseSlaDays: 14
+
+tenureExtensionLimits:
+  personalLoanMaxExtensionMonths: 12
+  vehicleLoanMaxExtensionMonths: 24
+  mortgageMaxExtensionMonths: 60
+  businessLoanMaxExtensionMonths: 36
+
+interestAccrualDuringRescheduling: CONTINUES_ON_OUTSTANDING_BALANCE
+
+processingFee:
+  applicable: true
+  maxPercent: 0.5
+  note: "Lender may waive fee at discretion for genuine hardship cases"
+
+sikLiReclassificationImpact:
+  rescheduledLoanQuality: DALAM_PERHATIAN_KHUSUS_MINIMUM
+  note: "POJK 40/2019: restructured loan quality cannot be upgraded above DPK for 6 months"
+
+applicablePatterns:
+  - personal-loan
+  - mortgage
+  - vehicle-loan
+  - business-loan
+  - revolving-credit
+
+applicableLenderTypes:
+  - BANK_UMUM
+  - BPR
+  - MULTIFINANCE
+
+regulatoryBasis:
+  - "OJK POJK 40/2019 tentang Penilaian Kualitas Aset Bank Umum"
+  - "OJK POJK 11/2020 jo POJK 48/2020 tentang Stimulus COVID (kerangka acuan)"
+  - "OJK POJK 22/2023 tentang Perlindungan Konsumen"
+
+supersededBy: null
+
+deprecatedAt: null

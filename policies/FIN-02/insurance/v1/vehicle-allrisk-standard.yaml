@@ -1,0 +1,87 @@
+iri: ion://policy/finance.insurance.vehicle-allrisk-standard
+
+version: "1.0.0"
+
+versionEffectiveFrom: "2026-05-01"
+
+category: INSURANCE
+
+subCategory: VEHICLE_INSURANCE
+
+status: ratified
+
+ratifiedAt: "2026-04-15"
+
+displayText:
+  id: "Asuransi kendaraan — all-risk standar untuk KKB"
+  en: "Vehicle insurance — all-risk standard for vehicle loan"
+
+insuranceType: VEHICLE_ALL_RISK
+
+coverageTypes:
+  - type: ALL_RISK
+    applicableFor: "New vehicles and vehicles up to 3 years old"
+    covers:
+      - COLLISION
+      - THEFT
+      - FIRE
+      - NATURAL_DISASTER
+      - THIRD_PARTY_LIABILITY
+  - type: TOTAL_LOSS_ONLY
+    applicableFor: "Vehicles older than 3 years"
+    covers:
+      - TOTAL_THEFT
+      - TOTAL_DESTRUCTION
+
+policyHolder: BORROWER
+
+beneficiary: LENDER_AS_LOSS_PAYEE
+
+coveragePeriod: ALIGNED_WITH_LOAN_TENURE
+
+premiumPayment:
+  method: ANNUAL_RENEWAL_OR_SINGLE_PREMIUM
+  responsibleParty: BORROWER
+
+sumInsured: OTR_OR_AGREED_VALUE_AT_INCEPTION
+
+sumInsuredDepreciation:
+  method: PER_GAKINDO_TABLE
+  note: "Depreciation follows GAKINDO (Indonesian Motor Vehicle Association) standard table"
+
+mandatoryFor:
+  - vehicle-loan
+
+lenderRightToPlaceInsurance:
+  allowed: true
+  trigger: BORROWER_FAILS_TO_RENEW_INSURANCE_BY_EXPIRY
+  note: "Lender may force-place insurance and charge premium to borrower account"
+
+claimProcess:
+  notificationSlaDays: 3
+  repairNetworkRequired: INSURER_APPROVED_WORKSHOP
+  totalLossThreshold: 0.75
+  claimPayoutTo: LENDER_UP_TO_OUTSTANDING_BALANCE
+  surplusReturnedTo: BORROWER
+
+bundlingRules:
+  forcedBundlingProhibited: true
+  borrowerMustConsentExplicitly: true
+  borrowerCanChooseInsurer: true
+  regulatoryBasis: "OJK POJK 22/2023"
+
+applicablePatterns:
+  - vehicle-loan
+
+applicableLenderTypes:
+  - BANK_UMUM
+  - MULTIFINANCE
+
+regulatoryBasis:
+  - "OJK POJK 23/2023 tentang Perasuransian"
+  - "OJK POJK 22/2023 tentang Perlindungan Konsumen dan Masyarakat di Sektor Jasa Keuangan"
+  - "POLIS STANDAR ASURANSI KENDARAAN BERMOTOR INDONESIA (PSAKBI)"
+
+supersededBy: null
+
+deprecatedAt: null

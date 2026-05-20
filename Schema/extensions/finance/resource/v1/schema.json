@@ -1,0 +1,913 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schema.ion.id/finance/resource/v1/schema.json",
+  "title": "CreditProduct",
+  "description": "ION Finance Credit Resource Extension v1 — product template for credit/financing offerings placed in Resource.resourceAttributes.",
+  "type": "object",
+  "required": [
+    "@context",
+    "@type",
+    "productIdentity",
+    "principalRange",
+    "tenor",
+    "costOfFund",
+    "repaymentSchedule",
+    "borrowerCriteria",
+    "regulatoryDeclaration",
+    "requiredDocuments"
+  ],
+  "properties": {
+    "@context": {
+      "type": "string",
+      "const": "https://schema.ion.id/finance/resource/v1/context.jsonld"
+    },
+    "@type": {
+      "type": "string",
+      "const": "ion:CreditProduct"
+    },
+    "productIdentity": {
+      "$ref": "#/$defs/ProductIdentity"
+    },
+    "principalRange": {
+      "$ref": "#/$defs/PrincipalRange"
+    },
+    "tenor": {
+      "$ref": "#/$defs/Tenor"
+    },
+    "costOfFund": {
+      "$ref": "#/$defs/CostOfFundMechanism"
+    },
+    "repaymentSchedule": {
+      "$ref": "#/$defs/RepaymentSchedule"
+    },
+    "feeStructure": {
+      "$ref": "#/$defs/FeeStructure"
+    },
+    "collateral": {
+      "$ref": "#/$defs/Collateral"
+    },
+    "borrowerCriteria": {
+      "$ref": "#/$defs/BorrowerCriteria"
+    },
+    "regulatoryDeclaration": {
+      "$ref": "#/$defs/RegulatoryDeclaration"
+    },
+    "requiredDocuments": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/RequiredDocument"
+      }
+    },
+    "islamicFinance": {
+      "$ref": "#/$defs/IslamicFinanceStructure"
+    },
+    "governmentProgram": {
+      "$ref": "#/$defs/GovernmentProgram"
+    },
+    "paylaterService": {
+      "$ref": "#/$defs/PaylaterService"
+    }
+  },
+  "additionalProperties": true,
+  "$defs": {
+    "ProductIdentity": {
+      "type": "object",
+      "required": [
+        "productName",
+        "institutionName",
+        "productType",
+        "financeType",
+        "currency",
+        "institutionType"
+      ],
+      "properties": {
+        "productName": {
+          "type": "string"
+        },
+        "institutionName": {
+          "type": "string"
+        },
+        "productType": {
+          "type": "string",
+          "enum": [
+            "KPR",
+            "KPA",
+            "KKB",
+            "KTA",
+            "CREDIT_CARD",
+            "PAYLATER",
+            "MULTIPURPOSE_LOAN",
+            "CASH_ADVANCE",
+            "KUR_SUPER_MIKRO",
+            "KUR_MIKRO",
+            "KUR_KECIL",
+            "KUR_TKI",
+            "WORKING_CAPITAL",
+            "INVESTMENT_LOAN",
+            "MICRO_BUSINESS_LOAN",
+            "INVOICE_FINANCING",
+            "SUPPLY_CHAIN_FINANCE",
+            "LINKAGE",
+            "P2P_PRODUCTIVE",
+            "P2P_CONSUMER",
+            "KPR_SYARIAH",
+            "KKB_SYARIAH",
+            "ISLAMIC_BUSINESS",
+            "RAHN",
+            "QARDH_HASAN",
+            "FLPP",
+            "TAPERA",
+            "BPUM",
+            "UMI",
+            "ALSINTAN",
+            "CONVENTIONAL_PAWN",
+            "OTHER"
+          ]
+        },
+        "financeType": {
+          "type": "string",
+          "enum": [
+            "CONVENTIONAL",
+            "ISLAMIC"
+          ]
+        },
+        "currency": {
+          "type": "string",
+          "enum": [
+            "IDR",
+            "USD",
+            "SGD",
+            "EUR"
+          ],
+          "default": "IDR"
+        },
+        "institutionType": {
+          "type": "string",
+          "enum": [
+            "BANK_UMUM",
+            "BPR",
+            "BPRS",
+            "PERUSAHAAN_PEMBIAYAAN",
+            "KOPERASI_SIMPAN_PINJAM",
+            "P2P_LENDING",
+            "PEGADAIAN",
+            "BMT",
+            "MODAL_VENTURA",
+            "LEMBAGA_KEUANGAN_MIKRO"
+          ]
+        },
+        "bankCapitalTier": {
+          "type": "string",
+          "enum": [
+            "BUKU_1",
+            "BUKU_2",
+            "BUKU_3",
+            "BUKU_4"
+          ]
+        },
+        "digitalOnly": {
+          "type": "boolean",
+          "default": false
+        },
+        "distributionChannels": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "BRANCH_OFFICE",
+              "MOBILE_BANKING",
+              "INTERNET_BANKING",
+              "BRANCHLESS_BANKING_AGENT",
+              "FINANCIAL_MARKETPLACE",
+              "WHATSAPP_BANKING",
+              "DIRECT_API",
+              "FIELD_SALES_AGENT"
+            ]
+          }
+        }
+      }
+    },
+    "MonetaryAmount": {
+      "type": "object",
+      "required": [
+        "value",
+        "currency"
+      ],
+      "properties": {
+        "value": {
+          "type": "number",
+          "minimum": 0
+        },
+        "currency": {
+          "type": "string",
+          "default": "IDR"
+        }
+      }
+    },
+    "PrincipalRange": {
+      "type": "object",
+      "required": [
+        "minimum",
+        "maximum"
+      ],
+      "properties": {
+        "minimum": {
+          "$ref": "#/$defs/MonetaryAmount"
+        },
+        "maximum": {
+          "$ref": "#/$defs/MonetaryAmount"
+        },
+        "maximumKUROfficial": {
+          "type": "number"
+        },
+        "denomination": {
+          "type": "number"
+        }
+      }
+    },
+    "Tenor": {
+      "type": "object",
+      "required": [
+        "unit",
+        "minimum",
+        "maximum"
+      ],
+      "properties": {
+        "unit": {
+          "type": "string",
+          "enum": [
+            "DAYS",
+            "MONTHS",
+            "YEARS"
+          ]
+        },
+        "minimum": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "maximum": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "availableTenors": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        }
+      }
+    },
+    "CostOfFundMechanism": {
+      "type": "object",
+      "required": [
+        "yieldType"
+      ],
+      "properties": {
+        "yieldType": {
+          "type": "string",
+          "enum": [
+            "FIXED",
+            "FLOATING",
+            "COMBINED",
+            "MARGIN",
+            "NISBAH",
+            "UJRAH",
+            "ZERO_COST"
+          ]
+        },
+        "calculationMethod": {
+          "type": "string",
+          "enum": [
+            "ANNUITY",
+            "FLAT",
+            "EFFECTIVE",
+            "DECLINING_BALANCE"
+          ]
+        },
+        "rateMinPercent": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "rateMaxPercent": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "rateReference": {
+          "type": "string",
+          "enum": [
+            "BI_RATE",
+            "JIBOR",
+            "SBDK",
+            "PRIME_RATE",
+            "SOFR"
+          ]
+        },
+        "spreadPercent": {
+          "type": "number"
+        },
+        "fixedPeriodYears": {
+          "type": "integer"
+        },
+        "governmentSubsidyPercent": {
+          "type": "number"
+        },
+        "effectiveRatePercent": {
+          "type": "number"
+        },
+        "creditCardMonthlyRatePercent": {
+          "type": "number"
+        }
+      }
+    },
+    "RepaymentSchedule": {
+      "type": "object",
+      "required": [
+        "frequency",
+        "paymentChannels"
+      ],
+      "properties": {
+        "frequency": {
+          "type": "string",
+          "enum": [
+            "DAILY",
+            "WEEKLY",
+            "BIWEEKLY",
+            "MONTHLY",
+            "QUARTERLY",
+            "SEMIANNUAL",
+            "ANNUAL",
+            "BULLET",
+            "SEASONAL"
+          ]
+        },
+        "paymentChannels": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "AUTODEBIT",
+              "VIRTUAL_ACCOUNT",
+              "MOBILE_BANKING",
+              "INTERNET_BANKING",
+              "ATM",
+              "BANK_TELLER",
+              "BIFAST",
+              "RTGS",
+              "KLIRING",
+              "QRIS",
+              "GOPAY",
+              "OVO",
+              "DANA",
+              "LINKAJA",
+              "SHOPEEPAY",
+              "SAKUKU",
+              "ALFAMART",
+              "INDOMARET"
+            ]
+          }
+        },
+        "gracePeriodDays": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0
+        },
+        "earlySettlementAllowed": {
+          "type": "boolean",
+          "default": true
+        },
+        "earlySettlementPenalty": {
+          "type": "boolean",
+          "default": false
+        },
+        "restructuringAllowed": {
+          "type": "boolean",
+          "default": true
+        },
+        "seasonalArrangement": {
+          "type": "string"
+        }
+      }
+    },
+    "FeeStructure": {
+      "type": "object",
+      "properties": {
+        "provisionFeePercent": {
+          "type": "number",
+          "minimum": 0
+        },
+        "administrationFeeIDR": {
+          "type": "number",
+          "minimum": 0
+        },
+        "appraisalFeeIDR": {
+          "type": "number",
+          "minimum": 0
+        },
+        "notaryFeeIDR": {
+          "type": "number",
+          "minimum": 0
+        },
+        "insurancePremiumPercent": {
+          "type": "number",
+          "minimum": 0
+        },
+        "mandatoryInsurance": {
+          "type": "boolean",
+          "default": false
+        },
+        "mandatoryInsuranceTypes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "LIFE_INSURANCE",
+              "CREDIT_INSURANCE",
+              "FIRE_INSURANCE",
+              "VEHICLE_INSURANCE",
+              "EMPLOYMENT_INSURANCE",
+              "PROPERTY_INSURANCE",
+              "BUSINESS_INSURANCE"
+            ]
+          }
+        },
+        "latePenaltyPercentPerDay": {
+          "type": "number",
+          "minimum": 0
+        },
+        "prepaymentPenaltyPercent": {
+          "type": "number",
+          "minimum": 0
+        },
+        "stampDutyIDR": {
+          "type": "integer",
+          "default": 10000
+        },
+        "maxTotalCostPercent": {
+          "type": "number"
+        }
+      }
+    },
+    "Collateral": {
+      "type": "object",
+      "required": [
+        "required"
+      ],
+      "properties": {
+        "required": {
+          "type": "boolean"
+        },
+        "collateralTypes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "UNSECURED",
+              "PROPERTY",
+              "APARTMENT",
+              "MOTOR_VEHICLE_CAR",
+              "MOTOR_VEHICLE_MOTORCYCLE",
+              "GOLD",
+              "FIXED_DEPOSIT",
+              "LISTED_SHARES",
+              "GOVERNMENT_BONDS",
+              "TRADE_RECEIVABLES",
+              "INVENTORY",
+              "MACHINERY_AND_EQUIPMENT",
+              "VESSEL",
+              "AIRCRAFT",
+              "RIGHTS_OF_CLAIM",
+              "PERSONAL_GUARANTOR",
+              "CORPORATE_GUARANTOR",
+              "GOVERNMENT_GUARANTOR"
+            ]
+          }
+        },
+        "maxLTVPercent": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "appraisalRequired": {
+          "type": "boolean",
+          "default": false
+        },
+        "guarantorInstitution": {
+          "type": "string",
+          "enum": [
+            "JAMKRINDO",
+            "ASKRINDO",
+            "JAMKRIDA",
+            "PERUM_JAMKRINDO"
+          ]
+        }
+      }
+    },
+    "BorrowerCriteria": {
+      "type": "object",
+      "required": [
+        "applicantTypes"
+      ],
+      "properties": {
+        "applicantTypes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "INDIVIDUAL",
+              "MARRIED_COUPLE",
+              "MICRO_ENTERPRISE",
+              "SMALL_ENTERPRISE",
+              "MEDIUM_ENTERPRISE",
+              "CORPORATION",
+              "COOPERATIVE",
+              "FOUNDATION",
+              "STATE_OWNED_ENTERPRISE",
+              "REGIONAL_STATE_ENTERPRISE"
+            ]
+          }
+        },
+        "minimumAge": {
+          "type": "integer",
+          "minimum": 17
+        },
+        "maximumAgeAtMaturity": {
+          "type": "integer",
+          "maximum": 80
+        },
+        "minimumMonthlyIncomeIDR": {
+          "type": "number",
+          "minimum": 0
+        },
+        "minimumSLIKGrade": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5
+        },
+        "requiredCollectibilityGrade": {
+          "type": "integer",
+          "enum": [
+            1,
+            2
+          ],
+          "default": 1
+        },
+        "employmentTypes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "citizenship": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "NATIONAL_CITIZEN",
+              "FOREIGN_KITAS",
+              "FOREIGN_KITAP",
+              "LEGAL_ENTITY",
+              "FOREIGN_LEGAL_ENTITY"
+            ]
+          }
+        },
+        "serviceRegions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "maxDSRPercent": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "cleanCreditHistoryRequired": {
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
+    "License": {
+      "type": "object",
+      "required": [
+        "regulatoryBody",
+        "licenseNumber",
+        "role"
+      ],
+      "properties": {
+        "regulatoryBody": {
+          "type": "string",
+          "enum": [
+            "OJK_BANK_UMUM",
+            "OJK_BPR",
+            "OJK_BPRS",
+            "OJK_PERUSAHAAN_PEMBIAYAAN",
+            "OJK_P2P_LENDING",
+            "OJK_MODAL_VENTURA",
+            "OJK_LKM",
+            "BI_SISTEM_PEMBAYARAN",
+            "KEMENKOP_KOPERASI",
+            "DSN_MUI",
+            "AFPI",
+            "APPI"
+          ]
+        },
+        "licenseNumber": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string",
+          "enum": [
+            "DIRECT_LENDER",
+            "KUR_CHANNEL_BANK",
+            "DISTRIBUTION_PARTNER",
+            "MARKETING_AGENT",
+            "LOAN_SERVICE_PROVIDER",
+            "GUARANTOR"
+          ]
+        },
+        "verificationUrl": {
+          "type": "string",
+          "format": "uri"
+        }
+      }
+    },
+    "Disclosure": {
+      "type": "object",
+      "required": [
+        "disclosureType",
+        "url"
+      ],
+      "properties": {
+        "disclosureType": {
+          "type": "string",
+          "enum": [
+            "PRODUCT_SUMMARY",
+            "INSTALLMENT_SIMULATOR",
+            "TERMS_AND_CONDITIONS",
+            "PRIVACY_POLICY",
+            "COMPLAINT_PROCEDURE",
+            "DISPUTE_RESOLUTION",
+            "REGULATORY_REFERENCE",
+            "DSN_MUI_FATWA",
+            "SLIK_CONSENT_FORM"
+          ]
+        },
+        "url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "language": {
+          "type": "string",
+          "enum": [
+            "id",
+            "en"
+          ],
+          "default": "id"
+        }
+      }
+    },
+    "ComplaintService": {
+      "type": "object",
+      "properties": {
+        "tollFreePhone": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string",
+          "format": "email"
+        },
+        "complaintUrl": {
+          "type": "string",
+          "format": "uri"
+        },
+        "ojkConsumerPortal": {
+          "type": "string",
+          "format": "uri",
+          "default": "https://konsumen.ojk.go.id"
+        }
+      }
+    },
+    "RegulatoryDeclaration": {
+      "type": "object",
+      "required": [
+        "licenses"
+      ],
+      "properties": {
+        "licenses": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/License"
+          }
+        },
+        "disclosures": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Disclosure"
+          }
+        },
+        "complaintService": {
+          "$ref": "#/$defs/ComplaintService"
+        },
+        "privacyPolicyUrl": {
+          "type": "string",
+          "format": "uri"
+        }
+      }
+    },
+    "RequiredDocument": {
+      "type": "object",
+      "required": [
+        "documentType",
+        "mandatory"
+      ],
+      "properties": {
+        "documentType": {
+          "type": "string"
+        },
+        "mandatory": {
+          "type": "boolean"
+        },
+        "issuer": {
+          "type": "string"
+        },
+        "digitalVerification": {
+          "type": "boolean",
+          "default": false
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "IslamicFinanceStructure": {
+      "type": "object",
+      "required": [
+        "contractType",
+        "dsnMuiFatwaNumber"
+      ],
+      "properties": {
+        "contractType": {
+          "type": "string",
+          "enum": [
+            "MURABAHAH",
+            "MUSHARAKAH_MUTANAQISAH",
+            "MUDHARABAH",
+            "MUSHARAKAH",
+            "IJARAH",
+            "IJARAH_MUNTAHIA_BITTAMLIK",
+            "ISTISHNA",
+            "SALAM",
+            "QARDH",
+            "RAHN",
+            "WAKALAH_BIL_ISTITHMAR",
+            "KAFALAH",
+            "HIWALAH"
+          ]
+        },
+        "dsnMuiFatwaNumber": {
+          "type": "string"
+        },
+        "marginPercentPerYear": {
+          "type": "number"
+        },
+        "bankProfitSharePercent": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "customerProfitSharePercent": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "annualUjrahIDR": {
+          "type": "number"
+        },
+        "shariahBoardSupervision": {
+          "type": "object",
+          "properties": {
+            "chairmanName": {
+              "type": "string"
+            },
+            "dsnMuiCertNumber": {
+              "type": "string"
+            }
+          }
+        },
+        "halalCertified": {
+          "type": "boolean",
+          "default": true
+        }
+      }
+    },
+    "GovernmentProgram": {
+      "type": "object",
+      "required": [
+        "programType"
+      ],
+      "properties": {
+        "programType": {
+          "type": "string",
+          "enum": [
+            "KUR_SUPER_MIKRO",
+            "KUR_MIKRO",
+            "KUR_KECIL",
+            "KUR_TKI",
+            "FLPP",
+            "TAPERA",
+            "BPUM",
+            "UMI",
+            "ALSINTAN",
+            "GERAK_UMi"
+          ]
+        },
+        "responsibleMinistry": {
+          "type": "string"
+        },
+        "subsidyPercent": {
+          "type": "number"
+        },
+        "effectiveRatePercent": {
+          "type": "number"
+        },
+        "targetBusinessSectors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "authorizedDistributingBanks": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "officialGuarantorInstitution": {
+          "type": "string",
+          "enum": [
+            "JAMKRINDO",
+            "ASKRINDO",
+            "JAMKRIDA",
+            "PERUM_JAMKRINDO"
+          ]
+        },
+        "specialRequirements": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "regulatoryReference": {
+          "type": "string"
+        }
+      }
+    },
+    "PaylaterService": {
+      "type": "object",
+      "properties": {
+        "maxCreditLimitIDR": {
+          "type": "number"
+        },
+        "maxTransactionIDR": {
+          "type": "number"
+        },
+        "billingCycle": {
+          "type": "string",
+          "enum": [
+            "FIXED_INSTALLMENT",
+            "MONTHLY_BILLING"
+          ]
+        },
+        "interestFreePeriodDays": {
+          "type": "integer"
+        },
+        "availableInstallmentTenors": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        },
+        "merchantCategories": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "integratedPlatforms": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "usesInternalCreditScore": {
+          "type": "boolean",
+          "default": false
+        }
+      }
+    }
+  }
+}

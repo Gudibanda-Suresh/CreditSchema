@@ -1,0 +1,77 @@
+{
+  "@context": {
+    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "ion": "https://schema.ion.id/finance/participant/v1#",
+    "schema": "https://schema.org/"
+  },
+  "@graph": [
+    {
+      "@id": "ion:Borrower",
+      "rdf:type": "rdfs:Class",
+      "rdfs:comment": "Individual borrower identity on a credit contract.",
+      "rdfs:subClassOf": {
+        "@id": "schema:Person"
+      }
+    },
+    {
+      "@id": "ion:Lender",
+      "rdf:type": "rdfs:Class",
+      "rdfs:comment": "Lending institution party on a credit contract.",
+      "rdfs:subClassOf": {
+        "@id": "schema:FinancialService"
+      }
+    },
+    {
+      "@id": "ion:fullName",
+      "rdf:type": "rdf:Property",
+      "rdfs:comment": "Full legal name as printed on KTP."
+    },
+    {
+      "@id": "ion:nik",
+      "rdf:type": "rdf:Property",
+      "rdfs:comment": "16-digit National Identity Number from KTP."
+    },
+    {
+      "@id": "ion:npwp",
+      "rdf:type": "rdf:Property",
+      "rdfs:comment": "Tax Identification Number (Nomor Pokok Wajib Pajak)."
+    },
+    {
+      "@id": "ion:birthPlace",
+      "rdf:type": "rdf:Property",
+      "rdfs:comment": "City / regency of birth."
+    },
+    {
+      "@id": "ion:birthDate",
+      "rdf:type": "rdf:Property",
+      "rdfs:comment": "Date of birth (xsd:date)."
+    },
+    {
+      "@id": "ion:registeredAddress",
+      "rdf:type": "rdf:Property",
+      "rdfs:comment": "Full residential address as on KTP."
+    },
+    {
+      "@id": "ion:institutionName",
+      "rdf:type": "rdf:Property",
+      "rdfs:comment": "Full legal entity name registered with OJK."
+    },
+    {
+      "@id": "ion:ojkLicenseNumber",
+      "rdf:type": "rdf:Property",
+      "rdfs:comment": "OJK operating license number."
+    },
+    {
+      "@id": "ion:branchOffice",
+      "rdf:type": "rdf:Property",
+      "rdfs:comment": "Branch office handling this loan."
+    },
+    {
+      "@id": "ion:relationshipManagerName",
+      "rdf:type": "rdf:Property",
+      "rdfs:comment": "Account Officer / Relationship Manager name."
+    }
+  ]
+}

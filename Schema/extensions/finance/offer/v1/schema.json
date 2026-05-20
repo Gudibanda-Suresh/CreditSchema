@@ -1,0 +1,240 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schema.ion.id/finance/offer/v1/schema.json",
+  "title": "CreditApproval",
+  "description": "ION Finance Credit Offer Extension v1 — per-applicant offer with exact approved values placed in Offer.offerAttributes.",
+  "type": "object",
+  "required": [
+    "@context",
+    "@type",
+    "offerReference",
+    "validUntil",
+    "offerStatus",
+    "approvedPrincipal",
+    "approvedTenor",
+    "effectiveRate",
+    "monthlyInstallment",
+    "totalFees"
+  ],
+  "properties": {
+    "@context": {
+      "type": "string",
+      "const": "https://schema.ion.id/finance/offer/v1/context.jsonld"
+    },
+    "@type": {
+      "type": "string",
+      "const": "ion:CreditApproval"
+    },
+    "offerReference": {
+      "type": "string"
+    },
+    "validUntil": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "offerStatus": {
+      "type": "string",
+      "enum": [
+        "UNDER_EVALUATION",
+        "APPROVED",
+        "CONDITIONALLY_APPROVED",
+        "REJECTED",
+        "EXPIRED"
+      ]
+    },
+    "approvedPrincipal": {
+      "$ref": "#/$defs/ApprovedAmount"
+    },
+    "approvedTenor": {
+      "$ref": "#/$defs/ApprovedTenor"
+    },
+    "effectiveRate": {
+      "$ref": "#/$defs/EffectiveRate"
+    },
+    "monthlyInstallment": {
+      "$ref": "#/$defs/MonthlyInstallment"
+    },
+    "totalFees": {
+      "$ref": "#/$defs/TotalFees"
+    },
+    "additionalConditions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "disbursementSchedule": {
+      "$ref": "#/$defs/DisbursementSchedule"
+    },
+    "internalCreditScore": {
+      "$ref": "#/$defs/InternalCreditScore"
+    }
+  },
+  "additionalProperties": true,
+  "$defs": {
+    "ApprovedAmount": {
+      "type": "object",
+      "required": [
+        "value",
+        "currency"
+      ],
+      "properties": {
+        "value": {
+          "type": "number"
+        },
+        "currency": {
+          "type": "string",
+          "default": "IDR"
+        }
+      }
+    },
+    "ApprovedTenor": {
+      "type": "object",
+      "required": [
+        "value",
+        "unit"
+      ],
+      "properties": {
+        "value": {
+          "type": "integer"
+        },
+        "unit": {
+          "type": "string",
+          "enum": [
+            "DAYS",
+            "MONTHS",
+            "YEARS"
+          ]
+        }
+      }
+    },
+    "EffectiveRate": {
+      "type": "object",
+      "required": [
+        "percentPerYear",
+        "method"
+      ],
+      "properties": {
+        "percentPerYear": {
+          "type": "number"
+        },
+        "method": {
+          "type": "string",
+          "enum": [
+            "ANNUITY",
+            "FLAT",
+            "EFFECTIVE"
+          ]
+        },
+        "yieldType": {
+          "type": "string",
+          "enum": [
+            "FIXED",
+            "FLOATING",
+            "COMBINED",
+            "MARGIN",
+            "NISBAH"
+          ]
+        },
+        "fixedPeriodYears": {
+          "type": "integer"
+        },
+        "floatingRateAfterFixedPercent": {
+          "type": "number"
+        }
+      }
+    },
+    "MonthlyInstallment": {
+      "type": "object",
+      "required": [
+        "totalIDR"
+      ],
+      "properties": {
+        "totalIDR": {
+          "type": "number"
+        },
+        "principalIDR": {
+          "type": "number"
+        },
+        "interestIDR": {
+          "type": "number"
+        }
+      }
+    },
+    "TotalFees": {
+      "type": "object",
+      "properties": {
+        "provisionFeeIDR": {
+          "type": "number"
+        },
+        "administrationFeeIDR": {
+          "type": "number"
+        },
+        "appraisalFeeIDR": {
+          "type": "number"
+        },
+        "notaryFeeIDR": {
+          "type": "number"
+        },
+        "lifeInsurancePremiumIDR": {
+          "type": "number"
+        },
+        "annualFireInsuranceIDR": {
+          "type": "number"
+        },
+        "stampDutyIDR": {
+          "type": "integer",
+          "default": 10000
+        },
+        "totalUpfrontCostsIDR": {
+          "type": "number"
+        },
+        "aprEquivalent": {
+          "type": "number"
+        }
+      }
+    },
+    "DisbursementSchedule": {
+      "type": "object",
+      "properties": {
+        "targetBusinessDays": {
+          "type": "integer"
+        },
+        "disbursementMethod": {
+          "type": "string",
+          "enum": [
+            "BANK_TRANSFER",
+            "DEVELOPER_TRANSFER",
+            "DEALER_TRANSFER",
+            "CASH",
+            "VIRTUAL_ACCOUNT"
+          ]
+        }
+      }
+    },
+    "InternalCreditScore": {
+      "type": "object",
+      "properties": {
+        "score": {
+          "type": "integer"
+        },
+        "category": {
+          "type": "string",
+          "enum": [
+            "EXCELLENT",
+            "GOOD",
+            "FAIR",
+            "POOR"
+          ]
+        },
+        "slikGrade": {
+          "type": "string",
+          "enum": [
+            "1",
+            "2"
+          ]
+        }
+      }
+    }
+  }
+}

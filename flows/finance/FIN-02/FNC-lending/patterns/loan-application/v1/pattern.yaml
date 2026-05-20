@@ -1,0 +1,589 @@
+id: ion-finance-pattern-loan-application-v1
+version: "1.0.0"
+patternName: Loan Application
+iri: ion://flow/finance/FIN-02/FNC-lending/loan-application/v1
+sector: ion:finance
+crc: FNC-lending
+category: FIN-02
+status: ready
+description: >
+  The ION Finance loan-application pattern covers all credit facility types
+  under FIN-02 Lending & Consumer Credit. Product-type differentiation is
+  carried by resourceAttributes.productType and activates the relevant variant
+  windows. Supported product types: KTA (unsecured personal loan), KPR/KPA
+  (mortgage), KKB (vehicle loan), KUR/UMKM (MSME business loan), revolving
+  credit, and BNPL/Paylater.
+
+productTypes:
+  KTA:
+    name: Kredit Tanpa Agunan (Unsecured Personal Loan)
+    collateralRequired: false
+    disbursementTarget: borrower-account
+    activeVariants: [credit-assessment, kyc-verification, disbursement, early-settlement, delinquency, restructure, insurance, cross-cutting]
+  KPR:
+    name: Kredit Pemilikan Rumah / Apartemen (Mortgage)
+    collateralRequired: true
+    collateralType: SKMHT/APHT (property lien)
+    disbursementTarget: notary-escrow
+    maxTenureMonths: 360
+    activeVariants: [credit-assessment, kyc-verification, collateral, guarantor, disbursement, early-settlement, delinquency, restructure, insurance, cross-cutting]
+  KKB:
+    name: Kredit Kendaraan Bermotor (Vehicle Loan)
+    collateralRequired: true
+    collateralType: fiducia-BPKB
+    disbursementTarget: dealer-direct
+    activeVariants: [credit-assessment, kyc-verification, collateral, disbursement, early-settlement, delinquency, restructure, insurance, cross-cutting]
+  KUR_UMKM:
+    name: Kredit Usaha Rakyat / Kredit UMKM (MSME Loan)
+    collateralRequired: false  # waived for KUR Mikro via IJP KUR government guarantee
+    disbursementTarget: borrower-account
+    externalSystem: SIKP  # Sistem Informasi Kredit Program — Kemenkop subsidy portal
+    activeVariants: [credit-assessment, kyc-verification, collateral, guarantor, disbursement, early-settlement, delinquency, restructure, insurance, cross-cutting]
+  REVOLVING:
+    name: Revolving Credit / Kartu Kredit
+    collateralRequired: false
+    disbursementTarget: credit-limit  # no single disbursement; drawdown on demand
+    billingCycle: monthly
+    activeVariants: [credit-assessment, kyc-verification, delinquency, restructure, insurance, cross-cutting]
+  BNPL:
+    name: Buy Now Pay Later / Paylater
+    collateralRequired: false
+    disbursementTarget: merchant-direct  # BPP pays merchant, not borrower
+    realtimeLimitCheck: true
+    maxTenureMonths: 24
+    activeVariants: [credit-assessment, kyc-verification, disbursement, early-settlement, delinquency, cross-cutting]
+
+participants:
+  BAP: Borrower App Platform — digital lending frontend, marketplace, super-app, or merchant checkout
+  BPP: Lender Platform — bank, multifinance, P2P (LPBBTI), digital bank, KUR-channelling institution
+  ION_CATALOG: ION Catalogue Service (loan product discovery)
+  NOTARY: >
+    [KPR/KPA only] Notary/PPAT handling AJB and APHT deeds — out-of-band participant;
+    coordinates with BPP for escrow disbursement
+  DEALER: >
+    [KKB only] Vehicle dealer (new or used); receives disbursement directly from BPP
+  KUR_PORTAL: >
+    [KUR_UMKM only] SIKP — Sistem Informasi Kredit Program managed by Kemenkop;
+    subsidy registration and IJP KUR guarantee issuance
+
+regulatoryBasis:
+  - POJK 40/2019  # Credit quality and SLIK collectability classification
+  - POJK 22/2023  # Consumer protection in financial services
+  - POJK 18/2017  # SLIK reporting obligations
+  - POJK 6/2022   # RIPLAY APR equivalent disclosure
+  - POJK 10/2022  # BNPL/Paylater licensing (LPBBTI)
+  - POJK 40/2021  # BNPL product rules
+  - POJK 12/2021  # Mortgage (KPR/KPA) product rules
+  - Permenko 1/2023  # KUR program rates and quota
+  - UU 4/1996     # Hak Tanggungan (property lien)
+  - UU 42/1999    # Jaminan Fidusia (fiducia)
+
+phases:
+  phase1:
+    name: Catalog
+    communication: async pub/sub
+    steps:
+      - step: publish_catalog
+        from: BPP
+        to: ION_CATALOG
+        direction: publish
+        description: >
+          Lender publishes loan products to the ION catalog. Each offer carries
+          a productType that determines which attribute schema and variant windows
+          are active. Rate caps, coverage areas, and OJK license scope must be
+          declared.
+        requiredFields:
+          - context.domain
+          - context.bppId
+          - context.timestamp
+          - message.catalog.provider.id
+          - message.catalog.provider.descriptor.name
+          - message.catalog.provider.providerAttributes.ojkLicenseNumber
+          - message.catalog.provider.providerAttributes.ojkLicenseType
+          - message.catalog.provider.providerAttributes.kycStatus
+          - message.catalog.provider.providerAttributes.coverageArea[]
+          - message.catalog.resources[].crc
+          - message.catalog.resources[].resourceAttributes.productType
+          - message.catalog.offers[].id
+          - message.catalog.offers[].offerAttributes.productType
+          - message.catalog.offers[].offerAttributes.minLoanAmount
+          - message.catalog.offers[].offerAttributes.maxLoanAmount
+          - message.catalog.offers[].offerAttributes.minTenureMonths
+          - message.catalog.offers[].offerAttributes.maxTenureMonths
+          - message.catalog.offers[].offerAttributes.interestRateType
+          - message.catalog.offers[].offerAttributes.interestRate
+          - message.catalog.offers[].offerAttributes.aprEquivalent
+          - message.catalog.offers[].offerAttributes.processingFee
+          - message.catalog.offers[].offerAttributes.cancellationPolicy
+          - message.catalog.offers[].offerAttributes.prepaymentPolicy
+          - message.catalog.offers[].offerAttributes.disputePolicy
+          - message.catalog.offers[].offerAttributes.creditPolicy.minCreditScore
+          - message.catalog.offers[].offerAttributes.creditPolicy.maxDti
+          - message.catalog.offers[].offerAttributes.creditPolicy.minMonthlyIncome
+          - message.catalog.offers[].offerAttributes.requiredDocuments[]
+        conditionalFields:
+          - field: message.catalog.offers[].offerAttributes.collateralPolicy.maxLtv
+            condition: required for KPR, KKB, and secured UMKM products
+          - field: message.catalog.offers[].offerAttributes.collateralPolicy.acceptedAssetTypes[]
+            condition: required for KPR, KKB, and secured UMKM products
+          - field: message.catalog.offers[].offerAttributes.creditPolicy.maxCreditUtilization
+            condition: required for REVOLVING products
+          - field: message.catalog.offers[].offerAttributes.creditLimit.maximum
+            condition: required for REVOLVING products
+          - field: message.catalog.offers[].offerAttributes.insurancePolicy
+            condition: required if credit life insurance is bundled or optional
+          - field: message.catalog.offers[].offerAttributes.disbursementPolicy.dailyLimit
+            condition: required if platform has per-day disbursement caps
+          - field: message.catalog.offers[].offerAttributes.fwaApplicable
+            condition: true if this offer accepts Framework Agreement transactions
+          - field: message.catalog.offers[].offerAttributes.kurSubsidyRate
+            condition: required for KUR_UMKM products receiving government interest subsidy
+          - field: message.catalog.offers[].offerAttributes.maxBorrowerAgeAtMaturity
+            condition: required for KPR products (typically 65 years)
+        schemaPacks:
+          core: [identity/v1, payment/v1]
+          finance: [provider/v1, offer/v1, resource/v1]
+
+      - step: on_discover
+        from: ION_CATALOG
+        to: BAP
+        direction: push
+        description: Loan product catalog pushed to BAP. Filtered by borrower's declared domicile and loan purpose.
+
+  phase2:
+    name: Transaction
+    communication: direct BAP-BPP
+    steps:
+      - step: search
+        from: BAP
+        to: BPP
+        direction: request
+        description: >
+          BAP searches for loan products matching borrower's intent — amount,
+          purpose, and preferred tenure. No borrower PII is sent at this stage.
+        requiredFields:
+          - context.transactionId
+          - context.messageId
+          - context.domain
+          - context.bapId
+          - context.bapUri
+          - context.bppId
+          - context.bppUri
+          - context.timestamp
+          - context.ttl
+          - message.intent.considerationAttributes.loanAmount
+          - message.intent.considerationAttributes.tenureMonths
+          - message.intent.considerationAttributes.loanPurpose
+          - message.intent.resourceAttributes.productType
+        conditionalFields:
+          - field: message.intent.participantAttributes.monthlyIncome
+            condition: optional — narrows product matches; required for KUR_UMKM
+          - field: message.intent.offerAttributes.interestRateType
+            condition: optional — FLAT or EFFECTIVE preference
+          - field: message.intent.contractAttributes.vehicleType
+            condition: required for KKB searches
+          - field: message.intent.contractAttributes.propertyType
+            condition: required for KPR/KPA searches
+
+      - step: on_search
+        from: BPP
+        to: BAP
+        direction: callback
+        description: BPP returns matching loan products with indicative rates and eligibility criteria.
+        requiredFields:
+          - message.catalog.resources[].id
+          - message.catalog.resources[].crc
+          - message.catalog.resources[].resourceAttributes.productType
+          - message.catalog.offers[].id
+          - message.catalog.offers[].offerAttributes.productType
+          - message.catalog.offers[].offerAttributes.interestRate
+          - message.catalog.offers[].offerAttributes.aprEquivalent
+          - message.catalog.offers[].offerAttributes.maxLoanAmount
+          - message.catalog.offers[].offerAttributes.maxTenureMonths
+          - message.catalog.offers[].offerAttributes.processingFee
+          - message.catalog.offers[].offerAttributes.coverageArea[]
+
+      - step: select
+        from: BAP
+        to: BPP
+        direction: request
+        description: >
+          BAP selects a specific loan product. BPP performs a soft eligibility
+          check (without a hard SLIK inquiry) and returns a preliminary assessment
+          and indicative installment schedule.
+        requiredFields:
+          - context.transactionId
+          - message.contract.commitments[].offerId
+          - message.contract.considerationAttributes.loanAmount
+          - message.contract.considerationAttributes.tenureMonths
+          - message.contract.considerationAttributes.loanPurpose
+          - message.contract.participants[role=BORROWER].id
+        conditionalFields:
+          - field: message.contract.contractAttributes.vehicleDetails
+            condition: required for KKB — vehicle make, model, year, condition
+          - field: message.contract.contractAttributes.propertyDetails
+            condition: required for KPR/KPA — property type, location, certificate type
+          - field: message.contract.contractAttributes.businessProfile
+            condition: required for KUR_UMKM — NIB, business type, annual revenue
+
+      - step: on_select
+        from: BPP
+        to: BAP
+        direction: callback
+        description: >
+          BPP returns preliminary eligibility indication, indicative installment
+          schedule, and required document list. No hard SLIK inquiry yet. Quote
+          is valid for the duration of quoteValidityWindow.
+        requiredFields:
+          - message.contract.offerAttributes.quoteValidityWindow
+          - message.contract.considerationAttributes.monthlyInstallment
+          - message.contract.considerationAttributes.totalRepaymentAmount
+          - message.contract.considerationAttributes.aprEquivalent
+          - message.contract.considerationAttributes.breakup[]
+          - message.contract.offerAttributes.requiredDocuments[]
+        conditionalFields:
+          - field: message.contract.offerAttributes.creditLimit.available
+            condition: returned for REVOLVING products
+          - field: message.contract.offerAttributes.creditPolicy.maxDti
+            condition: always returned for borrower transparency
+          - field: message.contract.offerAttributes.collateralPolicy.maxLtv
+            condition: returned for KPR, KKB, and secured UMKM products
+          - field: message.contract.considerationAttributes.downPaymentRequired
+            condition: returned for KKB (BI-regulated DP minimum)
+          - field: message.contract.considerationAttributes.notaryFeeEstimate
+            condition: returned for KPR/KPA
+
+      - step: init
+        from: BAP
+        to: BPP
+        direction: request
+        description: >
+          BAP submits full loan application. Borrower's personal data, income
+          documents, and disbursement bank account. Triggers credit-assessment
+          (hard SLIK inquiry) and kyc-verification if kycStatus ≠ APPROVED.
+        requiredFields:
+          - message.contract.participants[role=BORROWER].person.name
+          - message.contract.participants[role=BORROWER].person.nik
+          - message.contract.participants[role=BORROWER].person.dateOfBirth
+          - message.contract.participants[role=BORROWER].contact.phone
+          - message.contract.participants[role=BORROWER].contact.email
+          - message.contract.participants[role=BORROWER].address
+          - message.contract.participants[role=BORROWER].participantAttributes.monthlyIncome
+          - message.contract.participants[role=BORROWER].participantAttributes.employmentStatus
+          - message.contract.participants[role=BORROWER].participantAttributes.documents[]
+          - message.contract.considerationAttributes.loanAmount
+          - message.contract.considerationAttributes.tenureMonths
+          - message.contract.considerationAttributes.loanPurpose
+          - message.contract.settlements[].settlementAttributes.disbursementAccount.bankCode
+          - message.contract.settlements[].settlementAttributes.disbursementAccount.accountNumber
+          - message.contract.settlements[].settlementAttributes.disbursementAccount.accountName
+        conditionalFields:
+          - field: message.contract.participants[role=BORROWER].npwp
+            condition: required if monthly income > IDR 4.5 juta or loan > IDR 50 juta
+          - field: message.contract.contractAttributes.ekycFormReference
+            condition: required when kycStatus ≠ APPROVED (triggers kyc-verification)
+          - field: message.contract.contractAttributes.guarantorId
+            condition: required if lender requires a guarantor
+          - field: message.contract.contractAttributes.insuranceOptIn
+            condition: borrower's insurance election when credit life insurance is optional
+          - field: message.contract.collateral.assetType
+            condition: required for KPR, KKB, and secured UMKM — triggers collateral variant
+          - field: message.contract.collateral.appraisedValue
+            condition: required for KPR and KKB
+          - field: message.contract.collateral.certificateNumber
+            condition: required for KPR (SHM/SHGB) and KKB (BPKB)
+          - field: message.contract.contractAttributes.businessDocuments[]
+            condition: required for KUR_UMKM — NIB, SIUP/TDP, NPWP badan, business cash-flow
+          - field: message.contract.contractAttributes.sikpReferenceNumber
+            condition: required for KUR_UMKM government-subsidised loans via SIKP
+          - field: message.contract.considerationAttributes.merchantOrderId
+            condition: required for BNPL — reference to the originating trade transaction
+          - field: message.contract.settlements[].settlementAttributes.merchantAccount
+            condition: required for BNPL and KKB dealer-direct disbursement
+        schemaPacks:
+          core: [identity/v1, address/v1, payment/v1]
+          finance: [participant/v1, contract/v1]
+
+      - step: on_init
+        from: BPP
+        to: BAP
+        direction: callback
+        description: >
+          BPP returns credit assessment result, final approved amount and rate,
+          repayment schedule, and loan agreement draft. Credit-assessment and
+          kyc-verification branch results are embedded here.
+        requiredFields:
+          - message.contract.contractAttributes.assessmentStatus
+          - message.contract.considerationAttributes.approvedAmount
+          - message.contract.considerationAttributes.approvedRate
+          - message.contract.considerationAttributes.aprEquivalent
+          - message.contract.considerationAttributes.monthlyInstallment
+          - message.contract.considerationAttributes.breakup[]
+          - message.contract.performanceAttributes.schedule[]
+          - message.contract.contractAttributes.loanAgreementDraftUrl
+        conditionalFields:
+          - field: message.contract.contractAttributes.assessmentRejectionReason
+            condition: returned if assessmentStatus is REJECTED
+          - field: message.contract.contractAttributes.ekycStatus
+            condition: returned if kyc-verification was active
+          - field: message.contract.contractAttributes.counterOfferAmount
+            condition: if lender approves a lower amount than requested
+          - field: message.contract.considerationAttributes.insurancePremium
+            condition: if insurance was opted in
+          - field: message.contract.contractAttributes.notaryDetails
+            condition: returned for KPR/KPA — notary name, PPAT registration, escrow account
+          - field: message.contract.contractAttributes.dealerDetails
+            condition: returned for KKB — dealer name, account for disbursement
+          - field: message.contract.considerationAttributes.creditLimitApproved
+            condition: returned for REVOLVING products instead of approvedAmount
+        schemaPacks:
+          finance: [consideration/v1, performance/v1]
+
+      - step: confirm
+        from: BAP
+        to: BPP
+        direction: request
+        description: >
+          Borrower confirms acceptance of loan agreement terms. Digital signature
+          or e-consent reference is included. Binding contract created on confirm.
+        requiredFields:
+          - message.contract.participants[role=BORROWER].id
+          - message.contract.contractAttributes.loanAgreementConsentRef
+          - message.contract.contractAttributes.loanAgreementSignedAt
+          - message.contract.considerationAttributes.approvedAmount
+          - message.contract.considerationAttributes.tenureMonths
+          - message.contract.settlements[].settlementAttributes.disbursementAccount
+
+      - step: on_confirm
+        from: BPP
+        to: BAP
+        direction: callback
+        description: >
+          Lender activates the loan contract. Returns loan contract ID, disbursement
+          timeline, and repayment schedule.
+        requiredFields:
+          - message.contract.id
+          - message.contract.status
+          - message.contract.contractAttributes.loanAccountNumber
+          - message.contract.contractAttributes.disbursementSchedule.expectedDate
+          - message.contract.performanceAttributes.schedule[]
+        conditionalFields:
+          - field: message.contract.contractAttributes.insuranceCertificateUrl
+            condition: if insurance was bundled
+          - field: message.contract.contractAttributes.lienReleaseConditions
+            condition: for KPR and KKB — always returned
+          - field: message.contract.contractAttributes.notaryEscrowStatus
+            condition: for KPR/KPA — escrow account funded, awaiting AJB signing
+          - field: message.contract.contractAttributes.creditLimitActivated
+            condition: for REVOLVING — credit limit is live from this point
+        schemaPacks:
+          finance: [contract/v1, performance/v1, settlement/v1]
+
+  phase3:
+    name: Fulfilment
+    communication: BPP pushes unsolicited, BAP polls optionally
+    stateMachine: schema/extensions/finance/loan-states/v1/states.yaml
+    steps:
+      - step: on_status
+        trigger: DISBURSEMENT_INITIATED
+        from: BPP
+        to: BAP
+        direction: unsolicited
+        description: Lender initiates fund transfer to disbursement target.
+        requiredFields:
+          - message.contract.status
+          - message.contract.contractAttributes.disbursementReference
+
+      - step: on_status
+        trigger: DISBURSED
+        from: BPP
+        to: BAP
+        direction: unsolicited
+        description: Funds successfully credited to disbursement target. Repayment schedule active.
+        requiredFields:
+          - message.contract.status
+          - message.contract.contractAttributes.disbursementTimestamp
+          - message.contract.contractAttributes.disbursedAmount
+          - message.contract.performanceAttributes.schedule[0].dueDate
+
+      - step: on_status
+        trigger: REPAYMENT_DUE
+        from: BPP
+        to: BAP
+        direction: unsolicited
+        description: >
+          Advance notification sent N days before installment due date
+          (N declared in offerAttributes.reminderPolicy.daysBefore).
+        requiredFields:
+          - message.contract.performanceAttributes.schedule[n].dueDate
+          - message.contract.performanceAttributes.schedule[n].amountDue
+          - message.contract.performanceAttributes.schedule[n].installmentNumber
+
+      - step: update
+        from: BAP
+        to: BPP
+        direction: request
+        description: BAP submits repayment record after borrower pays installment.
+        requiredFields:
+          - message.contract.id
+          - message.contract.contractAttributes.updateType
+          - message.contract.settlements[].settlementAttributes.repaymentAmount
+          - message.contract.settlements[].settlementAttributes.repaymentDate
+          - message.contract.settlements[].settlementAttributes.paymentRef
+        updateTypeCodes:
+          REPAYMENT: Regular scheduled installment
+          PARTIAL_PREPAYMENT: Partial early repayment
+          FULL_PREPAYMENT: Full early settlement — triggers early-settlement variant
+          RESTRUCTURE: Borrower requests loan restructuring — triggers restructure variant
+          DRAWDOWN: REVOLVING only — borrower draws against credit limit
+
+      - step: on_update
+        from: BPP
+        to: BAP
+        direction: callback
+        description: Lender confirms receipt of payment and updated outstanding balance.
+        requiredFields:
+          - message.contract.performanceAttributes.outstandingPrincipal
+          - message.contract.performanceAttributes.nextDueDate
+          - message.contract.performanceAttributes.nextAmountDue
+        conditionalFields:
+          - field: message.contract.performanceAttributes.prepaymentPenalty
+            condition: if updateType was PARTIAL_PREPAYMENT or FULL_PREPAYMENT
+          - field: message.contract.performanceAttributes.lienReleaseUrl
+            condition: returned on FULL_PREPAYMENT for KPR or KKB
+          - field: message.contract.performanceAttributes.availableCreditLimit
+            condition: REVOLVING only — limit available after repayment
+
+      - step: on_status
+        trigger: OVERDUE
+        from: BPP
+        to: BAP
+        direction: unsolicited
+        description: Installment not received by due date. Triggers delinquency variant.
+        requiredFields:
+          - message.contract.performanceAttributes.delinquencyStatus
+          - message.contract.performanceAttributes.overdueAmount
+          - message.contract.performanceAttributes.daysPastDue
+
+      - step: on_status
+        trigger: FULLY_REPAID
+        from: BPP
+        to: BAP
+        direction: unsolicited
+        description: Final installment received. Loan fully settled. Contract COMPLETE. Rating window opens.
+        requiredFields:
+          - message.contract.status
+          - message.contract.performanceAttributes.closureDate
+          - message.contract.contractAttributes.settlementLetterUrl
+
+  phase4:
+    name: Post-Fulfilment
+    communication: direct BAP-BPP
+    steps:
+      - step: rate
+        from: BAP
+        to: BPP
+        direction: request
+        description: >
+          Borrower submits rating for the lending experience. Supports
+          context.try=true to preview rating form without recording.
+        requiredFields:
+          - message.ratingInput.target.id
+          - message.ratingInput.range
+        conditionalFields:
+          - field: message.ratingInput.target.targetAttributes.applicationSpeed
+          - field: message.ratingInput.target.targetAttributes.disbursementSpeed
+          - field: message.ratingInput.target.targetAttributes.staffProfessionalism
+          - field: message.ratingInput.feedbackFormSubmission
+
+      - step: on_rate
+        from: BPP
+        to: BAP
+        direction: callback
+        requiredFields:
+          - message.ratingInput.target.id
+
+      - step: reconcile
+        endpointClass: ION_EXTENSION
+        from: BAP
+        to: BPP
+        direction: request
+        description: >
+          ION EXTENSION. BAP initiates financial reconciliation for the total
+          lifecycle of the loan — processing fees, insurance premiums, interest
+          collected, principal recovered, penalties applied.
+          context.try=true previews without committing.
+        requiredFields:
+          - message.contract.settlements[].settlementAttributes.reconId
+          - message.contract.settlements[].settlementAttributes.contractId
+          - message.contract.settlements[].settlementAttributes.settlementBasis
+          - message.contract.settlements[].settlementAttributes.amounts.principalRecovered
+          - message.contract.settlements[].settlementAttributes.amounts.interestCollected
+          - message.contract.settlements[].settlementAttributes.amounts.processingFeeCollected
+        conditionalFields:
+          - field: message.contract.settlements[].settlementAttributes.amounts.prepaymentPenaltyCollected
+            condition: if early settlement occurred
+          - field: message.contract.settlements[].settlementAttributes.amounts.lateFeeCollected
+            condition: if delinquency fees were charged
+          - field: message.contract.settlements[].settlementAttributes.amounts.insurancePremiumCollected
+            condition: if insurance was bundled
+          - field: message.contract.settlements[].settlementAttributes.taxWithholdings[]
+            condition: required for PPh 23 on interest income
+        schemaPacks:
+          core: [reconcile/v1]
+
+      - step: on_reconcile
+        endpointClass: ION_EXTENSION
+        from: BPP
+        to: BAP
+        direction: callback
+        requiredFields:
+          - message.contract.settlements[].settlementAttributes.reconId
+          - message.contract.settlements[].settlementAttributes.reconStatus
+          - message.contract.settlements[].settlementAttributes.netSettlementAmount
+
+variantWindows:
+  credit-assessment:
+    earliest: init
+    latest: on_init
+    condition: Always active — hard SLIK inquiry triggered on init
+  kyc-verification:
+    earliest: init
+    latest: on_init
+    condition: Triggered when borrower kycStatus ≠ APPROVED
+  collateral:
+    earliest: init
+    latest: on_confirm
+    condition: Triggered when productType is KPR, KKB, or secured KUR_UMKM
+  guarantor:
+    earliest: init
+    latest: on_confirm
+    condition: Triggered when lender requires a guarantor; mandatory for some KUR_UMKM products
+  disbursement:
+    earliest: on_confirm
+    latest: "on_status[DISBURSED]"
+    condition: >
+      Direct-to-account (KTA, KUR_UMKM default);
+      notary-escrow (KPR/KPA);
+      dealer-direct (KKB);
+      merchant-direct (BNPL)
+  insurance:
+    earliest: init
+    latest: on_confirm
+    condition: Triggered when credit life insurance is bundled or opted in
+  restructure:
+    earliest: "on_status[DISBURSED]"
+    latest: "on_status[FULLY_REPAID]"
+    condition: Triggered on updateType RESTRUCTURE; not applicable for BNPL
+  early-settlement:
+    earliest: "on_status[DISBURSED]"
+    latest: "on_status[FULLY_REPAID]"
+    condition: Triggered on updateType FULL_PREPAYMENT or PARTIAL_PREPAYMENT
+  delinquency:
+    earliest: "on_status[OVERDUE]"
+    latest: contract_COMPLETE
+    condition: Triggered when installment is not received by due date
+  cross-cutting:
+    earliest: on_confirm
+    latest: contract_COMPLETE
+    condition: Always available — covers status polling, support tickets, reconciliation, and cancel

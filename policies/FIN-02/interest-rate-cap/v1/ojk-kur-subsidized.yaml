@@ -1,0 +1,83 @@
+iri: ion://policy/finance.interest-rate-cap.ojk-kur-subsidized
+
+version: "1.0.0"
+
+versionEffectiveFrom: "2026-05-01"
+
+category: INTEREST_RATE_CAP
+
+subCategory: KUR_SUBSIDIZED
+
+status: ratified
+
+ratifiedAt: "2026-04-15"
+
+displayText:
+  id: "Batas suku bunga KUR bersubsidi pemerintah"
+  en: "Interest rate cap — government-subsidized KUR"
+
+loanType: KUR_KREDIT_USAHA_RAKYAT
+
+rateCapType: EFFECTIVE_ANNUAL_RATE
+
+governmentProgram: true
+
+kurTiers:
+  - tier: KUR_SUPER_MIKRO
+    maxLoanIDR: 10000000
+    effectiveRatePercent: 3.0
+    guaranteeProvider: JAMKRINDO_ASKRINDO
+    ijpSubsidized: true
+    note: "Introduced 2020; targets ultra-micro businesses"
+  - tier: KUR_MIKRO
+    minLoanIDR: 10000001
+    maxLoanIDR: 100000000
+    effectiveRatePercent: 6.0
+    guaranteeProvider: JAMKRINDO_ASKRINDO
+    ijpSubsidized: true
+    note: "Subsidized rate: government pays IJP and partial interest subsidy"
+  - tier: KUR_KECIL
+    minLoanIDR: 100000001
+    maxLoanIDR: 500000000
+    effectiveRatePercent: 6.0
+    guaranteeProvider: JAMKRINDO_ASKRINDO
+    ijpSubsidized: true
+  - tier: KUR_TKI
+    maxLoanIDR: 25000000
+    effectiveRatePercent: 6.0
+    applicableTo: TENAGA_KERJA_INDONESIA_MIGRANT_WORKERS
+    ijpSubsidized: true
+
+rateSubsidyMechanism:
+  subsidyProvider: PEMERINTAH_PUSAT_APBN
+  subsidyCoordinator: KOMITE_KUR_KEMENKOP_UKM
+  lenderReceivesMarketRate: true
+  borrowerPaysSubsidizedRate: true
+
+eligibilityForKurRate:
+  - REGISTERED_IN_SIKP
+  - FIRST_TIME_KUR_OR_GRADUATED_FROM_PREVIOUS_TIER
+  - PRODUCTIVE_BUSINESS_PURPOSE
+
+sikpIntegration:
+  required: true
+  apiRef: SIKP_KEMENKOP_UKM
+
+prepaymentPolicy:
+  penaltyRef: ion://policy/finance.prepayment.zero-penalty-kur
+
+applicablePatterns:
+  - business-loan
+
+applicableLenderTypes:
+  - BANK_UMUM
+  - BPR
+
+regulatoryBasis:
+  - "Permenko 1/2023 tentang Pedoman Pelaksanaan Kredit Usaha Rakyat"
+  - "Peraturan Menteri Keuangan tentang Subsidi Bunga KUR"
+  - "OJK POJK 40/2019 tentang Penilaian Kualitas Aset Bank Umum"
+
+supersededBy: null
+
+deprecatedAt: null

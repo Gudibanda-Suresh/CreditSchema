@@ -1,0 +1,306 @@
+# ION Finance Error Registry (ION-FIN-6xxx)
+# Sector:   finance
+# Category: FIN-02 — Lending & Credit
+# Covers:   credit assessment, KYC, loan eligibility, collateral, disbursement,
+#           repayment, interest regulation, SLIK/credit bureau, OJK compliance
+
+- code: ION-FIN-6000
+  http_status: 422
+  category: finance
+  title:
+    id: Skor kredit di bawah ambang batas minimum
+    en: Credit score below minimum threshold
+  description:
+    en: The borrower's credit score from the credit bureau (SLIK) falls below the minimum threshold required by the lender's credit policy for the requested loan product.
+  affected_field: offerAttributes.internalCreditScore.score
+  affected_apis: [select, on_select, init, on_init]
+  schema_ref: schema/extensions/finance/participant/v1
+  flow_ref: flows/finance/FIN-02/variants/credit-assessment/v1
+  resolution:
+    en: Borrower must improve credit score before reapplying. Lender may offer alternative products with higher rates for lower credit scores. Minimum score threshold is declared in offerAttributes.creditPolicy.minCreditScore.
+
+- code: ION-FIN-6001
+  http_status: 503
+  category: finance
+  title:
+    id: Data biro kredit tidak tersedia
+    en: Credit bureau data unavailable
+  description:
+    en: The SLIK/BI Checking credit bureau service is temporarily unavailable or returned an inconclusive response during credit assessment.
+  affected_field: participantAttributes.slik
+  affected_apis: [init, on_init, confirm]
+  schema_ref: schema/extensions/finance/participant/v1
+  flow_ref: flows/finance/FIN-02/variants/credit-assessment/v1
+  resolution:
+    en: Retry the request after a brief delay. If the issue persists, contact ION network operations. BPP must not block assessment indefinitely; use cached data with a staleness flag if within the acceptable staleness window declared in offerAttributes.creditPolicy.slikCacheTtl.
+
+- code: ION-FIN-6002
+  http_status: 422
+  category: finance
+  title:
+    id: Batas kredit terlampaui
+    en: Credit limit exceeded
+  description:
+    en: The requested loan amount exceeds the borrower's available credit limit as determined by the lender's credit assessment or pre-approved credit limit.
+  affected_field: considerationAttributes.loanAmount
+  affected_apis: [select, on_select, init, on_init]
+  schema_ref: schema/extensions/finance/consideration/v1
+  flow_ref: flows/finance/FIN-02/variants/credit-assessment/v1
+  resolution:
+    en: Reduce the requested loan amount to within the available credit limit. The available limit is returned in on_select.offerAttributes.creditLimit.available.
+
+- code: ION-FIN-6003
+  http_status: 422
+  category: finance
+  title:
+    id: Verifikasi penghasilan gagal
+    en: Income verification failed
+  description:
+    en: The borrower's declared income could not be verified against available data sources (e-slip, bank statement, tax return) or falls below the minimum income requirement for the loan product.
+  affected_field: participantAttributes.incomeVerification
+  affected_apis: [init, on_init, confirm]
+  schema_ref: schema/extensions/finance/participant/v1
+  flow_ref: flows/finance/FIN-02/variants/credit-assessment/v1
+  resolution:
+    en: Submit verifiable income documents. Accepted document types are declared in offerAttributes.requiredDocuments. Ensure document figures match the declared income amount in participantAttributes.monthlyIncome.
+
+- code: ION-FIN-6004
+  http_status: 422
+  category: finance
+  title:
+    id: Rasio utang terhadap pendapatan melebihi batas
+    en: Debt-to-income ratio exceeded
+  description:
+    en: The borrower's total monthly debt obligations including the requested loan installment exceed the maximum debt-to-income (DTI) ratio allowed by OJK regulation (typically 50–70% of gross income depending on product category).
+  affected_field: participantAttributes.debtToIncomeRatio
+  affected_apis: [init, on_init, confirm]
+  schema_ref: schema/extensions/finance/participant/v1
+  flow_ref: flows/finance/FIN-02/variants/credit-assessment/v1
+  resolution:
+    en: Borrower must reduce existing debt or request a lower loan amount resulting in a smaller monthly installment. DTI is computed as (total monthly obligations / gross monthly income) × 100. Maximum DTI is declared in offerAttributes.creditPolicy.maxDti.
+
+- code: ION-FIN-6005
+  http_status: 403
+  category: finance
+  title:
+    id: KYC peminjam kedaluwarsa atau tidak disetujui
+    en: Borrower KYC expired or not approved
+  description:
+    en: The borrower's KYC status is not APPROVED or the kycExpiry date has passed. All finance transactions require valid KYC with kycStatus APPROVED and kycExpiry in the future.
+  affected_field: participantAttributes.kycStatus
+  affected_apis: [init, on_init, confirm]
+  schema_ref: schema/extensions/finance/participant/v1
+  flow_ref: flows/finance/FIN-02/variants/kyc-verification/v1
+  resolution:
+    en: Borrower must complete or renew KYC through the BAP's identity verification flow before initiating new finance transactions. New transactions are blocked until kycStatus returns to APPROVED.
+
+- code: ION-FIN-6006
+  http_status: 409
+  category: finance
+  title:
+    id: Ketidakcocokan identitas KYC
+    en: KYC identity mismatch
+  description:
+    en: The identity data submitted (NIK, full name, date of birth) does not match the data on record in Dukcapil or the previously verified KYC profile stored by the lender.
+  affected_field: participantAttributes.nik
+  affected_apis: [init, on_init]
+  schema_ref: schema/extensions/finance/participant/v1
+  flow_ref: flows/finance/FIN-02/variants/kyc-verification/v1
+  resolution:
+    en: Verify that NIK, full name, and date of birth exactly match Dukcapil records. If personal data has officially changed, submit an identity update supported by Dukcapil documents before re-initiating.
+
+- code: ION-FIN-6007
+  http_status: 422
+  category: finance
+  title:
+    id: Penilaian agunan tidak mencukupi
+    en: Collateral valuation insufficient
+  description:
+    en: The appraised value of the declared collateral does not meet the minimum loan-to-value (LTV) ratio required for the secured loan product.
+  affected_field: contractAttributes.collateral.appraisedValue
+  affected_apis: [init, on_init, confirm]
+  schema_ref: schema/extensions/finance/contract/v1
+  flow_ref: flows/finance/FIN-02/variants/collateral/v1
+  resolution:
+    en: Provide additional collateral or reduce the requested loan amount so that loanAmount ≤ (appraisedValue × maxLTV). Accepted LTV ceiling is declared in offerAttributes.collateralPolicy.maxLtv.
+
+- code: ION-FIN-6008
+  http_status: 409
+  category: finance
+  title:
+    id: Agunan sudah dijaminkan pada fasilitas lain
+    en: Collateral already encumbered by another facility
+  description:
+    en: The collateral asset declared (property, vehicle, or other asset) is already registered as collateral for another active loan and cannot be pledged again until the prior lien or fiducia registration is released.
+  affected_field: contractAttributes.collateral.assetId
+  affected_apis: [init, on_init, confirm]
+  schema_ref: schema/extensions/finance/contract/v1
+  flow_ref: flows/finance/FIN-02/variants/collateral/v1
+  resolution:
+    en: Release the prior encumbrance (SKMHT/APHT/AHT fiducia) before pledging the asset again, or provide alternative unencumbered collateral. Reference existing lien in contractAttributes.collateral.existingLienRef.
+
+- code: ION-FIN-6009
+  http_status: 422
+  category: finance
+  title:
+    id: Rekening pencairan tidak valid atau belum terverifikasi
+    en: Disbursement account invalid or unverified
+  description:
+    en: The bank account declared for loan disbursement failed account verification (penny-drop or name-match) or belongs to a third party not authorized to receive disbursement on behalf of the borrower.
+  affected_field: settlementAttributes.disbursementAccount
+  affected_apis: [confirm, on_confirm]
+  schema_ref: schema/extensions/finance/settlement/v1
+  flow_ref: flows/finance/FIN-02/variants/disbursement/v1
+  resolution:
+    en: Ensure settlementAttributes.disbursementAccount.accountNumber and accountName pass penny-drop verification and match the borrower's registered identity. Third-party accounts require explicit power-of-attorney documentation.
+
+- code: ION-FIN-6010
+  http_status: 422
+  category: finance
+  title:
+    id: Batas pencairan harian terlampaui
+    en: Daily disbursement limit exceeded
+  description:
+    en: The disbursement amount exceeds the daily transaction limit set by the payment gateway or applicable OJK regulations for the lender's disbursement rail.
+  affected_field: settlementAttributes.disbursementAmount
+  affected_apis: [confirm, on_confirm]
+  schema_ref: schema/extensions/finance/settlement/v1
+  flow_ref: flows/finance/FIN-02/variants/disbursement/v1
+  resolution:
+    en: Split disbursement across multiple calendar days or use an alternative payment rail with a higher daily limit. Daily limits per rail are declared in offerAttributes.disbursementPolicy.dailyLimit.
+
+- code: ION-FIN-6011
+  http_status: 422
+  category: finance
+  title:
+    id: Peminjam tercatat dalam SLIK dengan kolektibilitas buruk
+    en: Borrower has adverse SLIK collectability record
+  description:
+    en: The borrower has an active adverse record in SLIK (Sistem Layanan Informasi Keuangan) with a collectability rating of 4 (doubtful) or 5 (bad debt), indicating material credit risk.
+  affected_field: participantAttributes.slikCollectability
+  affected_apis: [select, on_select, init]
+  schema_ref: schema/extensions/finance/participant/v1
+  flow_ref: flows/finance/FIN-02/variants/credit-assessment/v1
+  resolution:
+    en: Borrower must settle all delinquent obligations and submit an SLIK data correction request to OJK. New credit facilities are blocked until collectability rating improves to 1 (current) or 2 (special mention).
+
+- code: ION-FIN-6012
+  http_status: 422
+  category: finance
+  title:
+    id: Suku bunga melebihi batas maksimum OJK
+    en: Interest rate exceeds OJK regulatory cap
+  description:
+    en: The declared annual percentage rate (APR) or flat interest rate for the loan product exceeds the maximum rate cap set by OJK for the applicable loan category (KTA, KPR, KKPE, or UMKM).
+  affected_field: offerAttributes.interestRate
+  affected_apis: [publish_catalog, on_select]
+  schema_ref: schema/extensions/finance/offer/v1
+  flow_ref: policies/FIN-02/interest-rate-cap/v1
+  resolution:
+    en: Revise offerAttributes.interestRate to comply with the OJK rate cap for the product category. Current OJK rate caps are declared in policies/FIN-02/interest-rate-cap/v1 and must be refreshed each quarter.
+
+- code: ION-FIN-6013
+  http_status: 400
+  category: finance
+  title:
+    id: Tenor pinjaman melebihi maksimum yang diizinkan
+    en: Loan tenure exceeds maximum allowed
+  description:
+    en: The requested loan tenure in months exceeds the maximum tenure permitted by the loan product configuration or OJK regulation for the product category. Mortgage products also apply a borrower-age-at-maturity constraint.
+  affected_field: contractAttributes.tenureMonths
+  affected_apis: [select, on_select, init, on_init]
+  schema_ref: schema/extensions/finance/contract/v1
+  flow_ref: flows/finance/FIN-02/FNC-lending/patterns/loan-application/v1
+  resolution:
+    en: Reduce contractAttributes.tenureMonths to within offerAttributes.maxTenureMonths. For KPR products, also verify that borrower age at loan maturity does not exceed offerAttributes.maxBorrowerAgeAtMaturity (typically 65 years).
+
+- code: ION-FIN-6014
+  http_status: 409
+  category: finance
+  title:
+    id: Permohonan pinjaman duplikat terdeteksi
+    en: Duplicate loan application detected
+  description:
+    en: A loan application with the same borrower NIK, product ID, and approximate loan amount is already active (pending assessment, approved, or disbursed) within the deduplication window.
+  affected_field: context.transactionId
+  affected_apis: [init, on_init]
+  schema_ref: schema/extensions/finance/contract/v1
+  flow_ref: flows/finance/FIN-02/FNC-lending/patterns/loan-application/v1
+  resolution:
+    en: Check the status of the existing application via /status before submitting a new one. If the prior application must be withdrawn, cancel it via /cancel first. The deduplication window duration is configurable per lender in offerAttributes.applicationPolicy.dedupWindowHours.
+
+- code: ION-FIN-6015
+  http_status: 422
+  category: finance
+  title:
+    id: KYC penjamin gagal atau tidak lengkap
+    en: Guarantor KYC failed or incomplete
+  description:
+    en: The loan product requires a guarantor and the declared guarantor's KYC status is not APPROVED, or the guarantor's identity documents are missing or could not be verified against Dukcapil.
+  affected_field: participantAttributes.guarantor.kycStatus
+  affected_apis: [init, on_init, confirm]
+  schema_ref: schema/extensions/finance/participant/v1
+  flow_ref: flows/finance/FIN-02/variants/guarantor/v1
+  resolution:
+    en: Guarantor must independently complete KYC before being added to a loan application. The verified guarantor participantId must be submitted in contractAttributes.guarantorId once KYC returns APPROVED.
+
+- code: ION-FIN-6016
+  http_status: 422
+  category: finance
+  title:
+    id: Pembayaran angsuran terlambat — akun delinquent
+    en: Repayment overdue — account delinquent
+  description:
+    en: The loan account has one or more overdue installment payments past the due date. New top-up loans and credit facility increases are blocked until all outstanding dues are settled.
+  affected_field: performanceAttributes.delinquencyStatus
+  affected_apis: [select, init, confirm, update]
+  schema_ref: schema/extensions/finance/performance/v1
+  flow_ref: flows/finance/FIN-02/variants/delinquency/v1
+  resolution:
+    en: Borrower must settle all overdue installments. Current overdue amount and due date are in performanceAttributes.overdueAmount and performanceAttributes.oldestDueDateOverdue. After settlement, delinquencyStatus must return to CURRENT before new facilities are processed.
+
+- code: ION-FIN-6017
+  http_status: 409
+  category: finance
+  title:
+    id: Jumlah cicilan tidak sesuai jadwal
+    en: Repayment amount does not match scheduled installment
+  description:
+    en: The repayment amount submitted does not match the scheduled installment amount in the amortization schedule. Partial payments below the minimum due are rejected unless the lender's policy explicitly permits partial settlement.
+  affected_field: settlementAttributes.repaymentAmount
+  affected_apis: [update, on_update]
+  schema_ref: schema/extensions/finance/settlement/v1
+  flow_ref: flows/finance/FIN-02/variants/cross-cutting/v1
+  resolution:
+    en: Submit the exact amount declared in performanceAttributes.schedule[n].amountDue, or the full outstanding principal for early settlement. For hardship arrangements, request a payment plan modification via /update with updateType RESTRUCTURE.
+
+- code: ION-FIN-6018
+  http_status: 403
+  category: finance
+  title:
+    id: Produk keuangan tidak tersedia di wilayah peminjam
+    en: Loan product not available in borrower's region
+  description:
+    en: The lender's OJK/POJK license does not cover the borrower's registered domicile province or city. Cross-region lending is restricted to the lender's licensed geographic coverage area.
+  affected_field: offerAttributes.coverageArea
+  affected_apis: [search, on_search, select, on_select]
+  schema_ref: schema/extensions/finance/offer/v1
+  flow_ref: flows/finance/FIN-02/FNC-lending/patterns/loan-application/v1
+  resolution:
+    en: BAP must filter loan products by borrower domicile against offerAttributes.coverageArea before presenting options to the borrower. Lender must declare accurate provincial coverage in publish_catalog using resourceAttributes.borrowerCriteria.serviceRegions.
+
+- code: ION-FIN-6019
+  http_status: 422
+  category: finance
+  title:
+    id: Rasio utilisasi kredit terlalu tinggi
+    en: Credit utilization ratio too high
+  description:
+    en: The borrower's current credit utilization across all active revolving facilities exceeds the lender's threshold, indicating over-leveraging risk that conflicts with prudent lending standards.
+  affected_field: participantAttributes.creditUtilizationRatio
+  affected_apis: [select, on_select, init]
+  schema_ref: schema/extensions/finance/participant/v1
+  flow_ref: flows/finance/FIN-02/variants/credit-assessment/v1
+  resolution:
+    en: Borrower must reduce outstanding balances on revolving credit facilities before applying. Utilization ratio is computed as (total utilized revolving credit / total revolving credit limit) × 100. Maximum acceptable ratio is declared in offerAttributes.creditPolicy.maxCreditUtilization.
+

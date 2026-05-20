@@ -1,0 +1,53 @@
+{
+  "@context": {
+    "@version": 1.1,
+    "@protected": true,
+
+    "ion":    "https://schema.ion.id/finance/contract/v1#",
+    "beckn":  "https://spec.beckn.io/vocab/v2.0.0#",
+    "rdf":    "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdfs":   "http://www.w3.org/2000/01/rdf-schema#",
+    "xsd":    "http://www.w3.org/2001/XMLSchema#",
+    "schema": "https://schema.org/",
+
+    "LoanAgreement": "ion:LoanAgreement",
+    "ActiveLoanTerms":           "ion:ActiveLoanTerms",
+    "LegalDocuments":            "ion:LegalDocuments",
+    "LoanRestructuring":         "ion:LoanRestructuring",
+
+    "contractNumber":             { "@id": "ion:contractNumber",             "@type": "xsd:string" },
+    "loanAccountNumber":          { "@id": "ion:loanAccountNumber",          "@type": "xsd:string" },
+    "agreementDate":              { "@id": "ion:agreementDate",              "@type": "xsd:date" },
+    "maturityDate":               { "@id": "ion:maturityDate",               "@type": "xsd:date" },
+    "loanStatus":                 { "@id": "ion:loanStatus",                 "@type": "xsd:string" },
+    "loanTerms":                  { "@id": "ion:loanTerms",                  "@type": "@id" },
+    "legalDocuments":             { "@id": "ion:legalDocuments",             "@type": "@id" },
+    "restructuring":              { "@id": "ion:restructuring",              "@type": "@id" },
+
+    "approvedPrincipal":          { "@id": "ion:approvedPrincipal",          "@type": "xsd:decimal" },
+    "effectiveRatePercent":       { "@id": "ion:effectiveRatePercent",       "@type": "xsd:decimal" },
+    "calculationMethod":          { "@id": "ion:calculationMethod",          "@type": "xsd:string" },
+    "yieldType":                  { "@id": "ion:yieldType",                  "@type": "xsd:string" },
+    "tenorMonths":                { "@id": "ion:tenorMonths",                "@type": "xsd:integer" },
+    "monthlyInstallmentIDR":      { "@id": "ion:monthlyInstallmentIDR",      "@type": "xsd:decimal" },
+    "monthlyDueDay":              { "@id": "ion:monthlyDueDay",              "@type": "xsd:integer" },
+    "outstandingPrincipal":       { "@id": "ion:outstandingPrincipal",       "@type": "xsd:decimal" },
+    "totalInterestPaid":          { "@id": "ion:totalInterestPaid",          "@type": "xsd:decimal" },
+    "islamicContractType":        { "@id": "ion:islamicContractType",        "@type": "xsd:string" },
+
+    "creditAgreementUrl":         { "@id": "ion:creditAgreementUrl",         "@type": "@id" },
+    "collateralCertificateUrl":   { "@id": "ion:collateralCertificateUrl",   "@type": "@id" },
+    "notarialDeedNumber":         { "@id": "ion:notarialDeedNumber",         "@type": "xsd:string" },
+    "mortgageLienNumber":         { "@id": "ion:mortgageLienNumber",         "@type": "xsd:string" },
+    "riplayDocumentUrl":          { "@id": "ion:riplayDocumentUrl",          "@type": "@id" },
+    "approvalLetterUrl":          { "@id": "ion:approvalLetterUrl",          "@type": "@id" },
+    "eMateraiSerial":             { "@id": "ion:eMateraiSerial",             "@type": "xsd:string" },
+
+    "restructuringDate":          { "@id": "ion:restructuringDate",          "@type": "xsd:date" },
+    "restructuringType":          { "@id": "ion:restructuringType",          "@type": "xsd:string" },
+    "regulatoryBasis":            { "@id": "ion:regulatoryBasis",            "@type": "xsd:string" },
+    "newTenorMonths":             { "@id": "ion:newTenorMonths",             "@type": "xsd:integer" },
+    "newRatePercent":             { "@id": "ion:newRatePercent",             "@type": "xsd:decimal" },
+    "restructuringReason":        { "@id": "ion:restructuringReason",        "@type": "xsd:string" }
+  }
+}

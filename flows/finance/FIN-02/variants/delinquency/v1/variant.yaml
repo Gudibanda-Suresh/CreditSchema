@@ -1,0 +1,209 @@
+id: ion-finance-variant-delinquency-v1
+version: "1.0.0"
+variantType: delinquency
+sector: ion:finance
+status: ready
+description: >
+  Overdue handling, collections, SLIK adverse reporting, write-off, and
+  legal action escalation. Triggered when an installment is not received
+  by the due date. Follows OJK POJK 40/2019 (restructuring before
+  classification) and POJK 22/2023 (consumer protection). Collections
+  conduct is regulated — no harassment; contact hours restricted.
+  Four escalation stages: early arrears (1–30 DPD), substandard
+  (31–90 DPD), doubtful (91–180 DPD), bad debt (>180 DPD / write-off).
+
+appliesTo:
+  - FNC-lending
+  - FNC-lending
+  - FNC-lending
+  - FNC-lending
+  - FNC-lending
+  - FNC-lending
+
+window:
+  earliest: "on_status[OVERDUE]"
+  latest: contract_COMPLETE
+
+subBranches:
+
+  early-arrears:
+    id: early-arrears
+    dpd: "1–30"
+    slikCollectability: 1 → 2
+    description: >
+      Instalment missed. BPP sends reminder and attempts contact.
+      Restructuring offer extended if arrears persist past DPD-7.
+      SLIK collectability updated to 2 (Special Mention) after DPD-1.
+    steps:
+      - step: overdue-notification
+        trigger: "on_status[OVERDUE]"
+        from: BPP
+        to: BAP
+        direction: unsolicited
+        requiredFields:
+          - performanceAttributes.delinquencyStatus
+          - performanceAttributes.overdueAmount
+          - performanceAttributes.daysPastDue
+          - performanceAttributes.oldestDueDateOverdue
+          - contractAttributes.lateFeeDailyRate
+
+      - step: collections-contact
+        direction: BPP (collections team contacts borrower — OJK regulated)
+        collectionsPolicy:
+          permittedHours: "08:00–20:00 WIB on working days"
+          prohibitedActions: [threats, third-party disclosure, excessive frequency]
+          maxContactsPerDay: 3
+
+      - step: late-fee-accrual
+        direction: BPP-internal
+        description: Daily late fee applied per contractAttributes.lateFeeDailyRate from DPD+1
+        requiredFields:
+          - performanceAttributes.accruedLateFee
+
+      - step: restructuring-offer
+        trigger: DPD >= 7
+        from: BPP
+        to: BAP
+        direction: unsolicited update
+        description: >
+          BPP proactively offers restructuring per OJK POJK 40/2019.
+          Activates the restructure variant's payment-holiday or
+          rescheduling sub-branch.
+        requiredFields:
+          - contractAttributes.restructureOfferRef
+          - contractAttributes.restructureOfferExpiryDate
+
+  substandard:
+    id: substandard
+    dpd: "31–90"
+    slikCollectability: 3
+    description: >
+      Loan classified as substandard. SLIK updated to collectability 3.
+      Lender may initiate collateral assessment for secured loans.
+      Formal collections engagement escalated.
+    steps:
+      - step: slik-reclassification
+        trigger: DPD = 31
+        direction: BPP → OJK SLIK (monthly SLIK reporting cycle)
+        requiredFields:
+          - performanceAttributes.daysPastDue
+          - contractAttributes.slikReportingRef
+
+      - step: collateral-reassessment
+        appliesTo: [mortgage, vehicle-loan, business-loan]
+        direction: BPP-internal
+        description: BPP re-appraises collateral value to assess recovery potential
+
+      - step: formal-collections-notice
+        direction: BPP → borrower (official surat peringatan)
+        requiredFields:
+          - contractAttributes.suratPeringatan1Ref
+          - contractAttributes.suratPeringatan1Date
+
+  doubtful:
+    id: doubtful
+    dpd: "91–180"
+    slikCollectability: 4
+    description: >
+      Loan classified as doubtful. SP2 and SP3 issued. Legal action
+      preparation begins for secured products. Guarantor is formally
+      notified and demand letter sent. Final restructuring opportunity.
+    steps:
+      - step: sp2-sp3-issuance
+        requiredFields:
+          - contractAttributes.suratPeringatan2Ref
+          - contractAttributes.suratPeringatan3Ref
+
+      - step: guarantor-demand
+        appliesTo: patterns with individual-guarantor
+        direction: BPP → GUARANTOR
+        requiredFields:
+          - contractAttributes.guarantorDemandLetterRef
+          - contractAttributes.guarantorDemandAmount
+
+      - step: legal-preparation
+        appliesTo: [mortgage, vehicle-loan]
+        direction: BPP-internal
+        description: >
+          BPP prepares for asset execution — APHT parate execution
+          for mortgage; fiducia voluntary surrender or Pengadilan Negeri
+          application for vehicle. Activates when DPD > 120 and
+          restructuring fails.
+
+  bad-debt-writeoff:
+    id: bad-debt-writeoff
+    dpd: "> 180"
+    slikCollectability: 5
+    description: >
+      Loan written off the lender's books as bad debt. SLIK collectability
+      reported as 5. For secured products, collateral execution proceeds.
+      Write-off is accounting treatment — borrower's obligation remains.
+      OJK notified in monthly SLIK report.
+    steps:
+      - step: write-off-declaration
+        trigger: DPD > 180
+        direction: BPP-internal
+        requiredFields:
+          - contractAttributes.writeOffDate
+          - contractAttributes.writeOffAmount
+          - contractAttributes.writeOffRef
+        on_status:
+          trigger: DEFAULT_DECLARED
+
+      - step: collateral-execution
+        appliesTo: [mortgage, vehicle-loan, business-loan]
+        description: >
+          Mortgage: APHT parate execution (auction via KPKNL/DJKN).
+          Vehicle: fiducia object voluntary surrender; if refused, BPP
+          files with Pengadilan Negeri per UUJF 42/1999.
+          Movable asset: fiducia execution.
+        steps:
+          - step: execution-notice
+            requiredFields:
+              - contractAttributes.executionNoticeRef
+              - contractAttributes.executionNoticeDate
+          - step: auction-listing
+            appliesTo: [FNC-lending]
+            requiredFields:
+              - contractAttributes.auctionListingRef
+              - contractAttributes.kpknlRef
+          - step: recovery-proceeds
+            requiredFields:
+              - contractAttributes.recoveryAmount
+              - contractAttributes.recoveryDate
+              - contractAttributes.deficiencyAmount
+
+      - step: debt-sale
+        description: >
+          If collateral recovery is insufficient, lender may sell
+          remaining claim to a debt purchasing company (perusahaan
+          pembiayaan piutang — OJK licensed). Borrower is notified.
+        conditionalFields:
+          - field: contractAttributes.debtPurchaserName
+            condition: if debt is sold
+          - field: contractAttributes.debtSaleDate
+            condition: if debt is sold
+
+  on_status_fields:
+    additionalStatuses:
+      - OVERDUE
+      - DELINQUENT_SP1
+      - DELINQUENT_SP2
+      - DELINQUENT_SP3
+      - DEFAULT_DECLARED
+      - COLLATERAL_EXECUTION_IN_PROGRESS
+      - RECOVERED_PARTIAL
+      - WRITTEN_OFF
+
+  errors:
+    - ION-FIN-6016  # Repayment overdue — account delinquent
+    - ION-FIN-6017  # Repayment amount mismatch
+
+policyReferences:
+  - ion://policy/finance/collections-conduct/ojk-pojk-22-2023/v1
+  - ion://policy/finance/slik-reporting/v1
+  - ion://policy/finance/collateral-execution/apht/v1
+  - ion://policy/finance/collateral-execution/fiducia/v1
+  - ion://policy/finance/write-off/v1
+
+

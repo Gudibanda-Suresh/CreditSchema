@@ -1,0 +1,30 @@
+{
+  "@context": {
+    "@version": 1.1,
+    "@protected": true,
+
+    "ion":    "https://schema.ion.id/finance/participant/v1#",
+    "beckn":  "https://spec.beckn.io/vocab/v2.0.0#",
+    "rdf":    "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdfs":   "http://www.w3.org/2000/01/rdf-schema#",
+    "xsd":    "http://www.w3.org/2001/XMLSchema#",
+    "schema": "https://schema.org/",
+
+    "Borrower": "ion:Borrower",
+    "Lender":   "ion:Lender",
+
+    "fullName":                   { "@id": "ion:fullName",                   "@type": "xsd:string" },
+    "nik":                        { "@id": "ion:nik",                        "@type": "xsd:string" },
+    "npwp":                       { "@id": "ion:npwp",                       "@type": "xsd:string" },
+    "birthPlace":                 { "@id": "ion:birthPlace",                 "@type": "xsd:string" },
+    "birthDate":                  { "@id": "ion:birthDate",                  "@type": "xsd:date" },
+    "registeredAddress":          { "@id": "ion:registeredAddress",          "@type": "xsd:string" },
+    "email":                      { "@id": "schema:email",                   "@type": "xsd:string" },
+    "phone":                      { "@id": "schema:telephone",               "@type": "xsd:string" },
+
+    "institutionName":            { "@id": "ion:institutionName",            "@type": "xsd:string" },
+    "ojkLicenseNumber":           { "@id": "ion:ojkLicenseNumber",           "@type": "xsd:string" },
+    "branchOffice":               { "@id": "ion:branchOffice",               "@type": "xsd:string" },
+    "relationshipManagerName":    { "@id": "ion:relationshipManagerName",    "@type": "xsd:string" }
+  }
+}

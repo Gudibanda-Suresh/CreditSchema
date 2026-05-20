@@ -1,0 +1,70 @@
+iri: ion://policy/finance.interest-rate-cap.ojk-kkb-vehicle
+
+version: "1.0.0"
+
+versionEffectiveFrom: "2026-05-01"
+
+category: INTEREST_RATE_CAP
+
+subCategory: VEHICLE_LOAN
+
+status: ratified
+
+ratifiedAt: "2026-04-15"
+
+displayText:
+  id: "Batas suku bunga kredit kendaraan bermotor (KKB)"
+  en: "Interest rate cap — vehicle loan (KKB)"
+
+loanType: KKB_VEHICLE_LOAN
+
+rateCapType: FLAT_MONTHLY_AND_EFFECTIVE_ANNUAL
+
+noStatutoryCap: true
+note: >
+  There is no statutory national interest rate cap for KKB. Rates are market-determined
+  subject to OJK supervision and SBDK disclosure requirements.
+
+rateConventions:
+  MULTIFINANCE:
+    quoteMethod: FLAT_MONTHLY_RATE
+    typicalFlatMonthlyRange: "0.6% - 1.0%"
+    note: "Multifinance typically quotes flat rate; effective rate is approximately 2x flat"
+  BANK_UMUM:
+    quoteMethod: EFFECTIVE_ANNUAL_RATE
+    typicalEffectiveAnnualRange: "7% - 14%"
+    note: "Banks quote effective rate per SBDK disclosure"
+
+disclosureRequirements:
+  - FLAT_RATE_AND_EFFECTIVE_RATE_BOTH_DISCLOSED
+  - TOTAL_COST_OF_CREDIT_SIMULATION
+  - INSURANCE_PREMIUM_SEPARATED_FROM_INTEREST
+  - SBDK_PUBLISHED_MONTHLY_FOR_BANKS
+
+administrationFeeDisclosure:
+  required: true
+  mustBeIncludedInAPRC: true
+
+earlySettlementRateAdjustment:
+  allowed: true
+  policyRef: ion://policy/finance.prepayment.penalty-1pct-standard
+
+fixedVsFloating:
+  KKB: TYPICALLY_FIXED_RATE
+  residualRiskAt: NOT_APPLICABLE
+
+applicablePatterns:
+  - vehicle-loan
+
+applicableLenderTypes:
+  - BANK_UMUM
+  - MULTIFINANCE
+
+regulatoryBasis:
+  - "OJK POJK 35/2018 tentang Penyelenggaraan Usaha Perusahaan Pembiayaan"
+  - "OJK POJK 22/2023 tentang Perlindungan Konsumen dan Masyarakat di Sektor Jasa Keuangan"
+  - "SE BI No.15/1/DPNP tentang Suku Bunga Dasar Kredit"
+
+supersededBy: null
+
+deprecatedAt: null

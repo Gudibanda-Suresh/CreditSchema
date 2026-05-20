@@ -1,0 +1,80 @@
+{
+  "$schema": "https://schema.ion.id/finance/resource/v1/schema.json",
+  "@context": "https://schema.ion.id/finance/resource/v1/context.jsonld",
+  "description": "Example: CreditProduct template for a KPR (mortgage) — IDR 100jt–5M, 60–300 months, 9–12% COMBINED rate, ANNUITY. Requires property collateral.",
+  "id": "RES-BTN-KPR-001",
+  "descriptor": {
+    "name": "KPR BTN Platinum",
+    "shortDesc": "Kredit pemilikan rumah dengan suku bunga kompetitif dan proses cepat"
+  },
+  "resourceAttributes": {
+    "@context": "https://schema.ion.id/finance/resource/v1/context.jsonld",
+    "@type": "ion:CreditProduct",
+    "productIdentity": {
+      "productName": "KPR BTN Platinum",
+      "institutionName": "PT Bank Tabungan Negara (Persero) Tbk",
+      "productType": "KPR",
+      "financeType": "CONVENTIONAL",
+      "currency": "IDR",
+      "institutionType": "BANK_UMUM",
+      "bankCapitalTier": "BUKU_3",
+      "digitalOnly": false,
+      "distributionChannels": ["BRANCH_OFFICE", "MOBILE_BANKING", "FINANCIAL_MARKETPLACE"]
+    },
+    "principalRange": {
+      "minimum": { "value": 100000000, "currency": "IDR" },
+      "maximum": { "value": 5000000000, "currency": "IDR" },
+      "denomination": 1000000
+    },
+    "tenor": {
+      "unit": "MONTHS",
+      "minimum": 60,
+      "maximum": 300
+    },
+    "costOfFund": {
+      "yieldType": "COMBINED",
+      "calculationMethod": "ANNUITY",
+      "rateMinPercent": 9.0,
+      "rateMaxPercent": 12.0,
+      "fixedPeriodYears": 3
+    },
+    "repaymentSchedule": {
+      "scheduleType": "MONTHLY",
+      "graceMonths": 0
+    },
+    "feeStructure": {
+      "provisionFeePercent": 1.0,
+      "adminFeePercent": 0.05,
+      "collateralEstimateFeePercent": 0.17,
+      "insurancePremiumPercent": 0.27
+    },
+    "collateral": {
+      "required": true,
+      "collateralTypes": ["RESIDENTIAL_PROPERTY"],
+      "maxLTVPercent": 85
+    },
+    "borrowerCriteria": {
+      "applicantTypes": ["EMPLOYEE", "PROFESSIONAL", "SELF_EMPLOYED", "BUSINESS_OWNER"],
+      "minimumMonthlyIncomeIDR": 5000000,
+      "minimumSLIKGrade": "1",
+      "serviceRegions": ["ID-JK", "ID-JB", "ID-JT", "ID-JI", "ID-BA", "ID-SU", "ID-SS"],
+      "maxDSRPercent": 50
+    },
+    "regulatoryDeclaration": {
+      "ojkApprovedDate": "2023-08-01",
+      "productRegistrationNumber": "S-088/NB.111/2023",
+      "riskCategory": "MEDIUM",
+      "disclosureLanguage": "id"
+    },
+    "requiredDocuments": [
+      { "documentType": "IDENTITY", "documentCode": "KTP", "mandatory": true },
+      { "documentType": "IDENTITY_SPOUSE", "documentCode": "KTP_PASANGAN", "mandatory": false },
+      { "documentType": "TAX", "documentCode": "NPWP", "mandatory": true },
+      { "documentType": "INCOME", "documentCode": "SLIP_GAJI_3_BULAN", "mandatory": true },
+      { "documentType": "EMPLOYMENT", "documentCode": "SK_KERJA", "mandatory": true },
+      { "documentType": "BANK_STATEMENT", "documentCode": "REKENING_KORAN_3_BULAN", "mandatory": true },
+      { "documentType": "PROPERTY", "documentCode": "SERTIFIKAT_TANAH_FOTOKOPI", "mandatory": true },
+      { "documentType": "PROPERTY", "documentCode": "IMB_ATAU_PBG", "mandatory": true }
+    ]
+  }
+}

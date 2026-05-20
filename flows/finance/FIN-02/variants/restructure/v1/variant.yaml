@@ -1,0 +1,178 @@
+id: ion-finance-variant-restructure-v1
+version: "1.0.0"
+variantType: restructure
+sector: ion:finance
+status: ready
+description: >
+  Loan restructuring and rescheduling sub-flow. Activated when borrower
+  faces repayment difficulty or requests modified loan terms. OJK POJK
+  40/2019 mandates that lenders offer restructuring before classifying
+  a loan as non-performing. Four sub-branches: rescheduling (extend
+  tenure), reconditioning (adjust rate or terms), restructuring
+  (combination of changes), and payment-holiday (temporary deferral).
+  All require bilateral agreement and produce an amended loan agreement.
+
+appliesTo:
+  - FNC-lending
+  - FNC-lending
+  - FNC-lending
+  - FNC-lending
+
+window:
+  earliest: "on_status[DISBURSED]"
+  latest: "on_status[FULLY_REPAID]"
+
+triggerConditions:
+  - Borrower-initiated request via BAP /update updateType=RESTRUCTURE_REQUEST
+  - Lender-initiated offer when delinquencyStatus reaches DAYS_PAST_DUE_30
+  - OJK COVID-19 or disaster-relief policy activation (regulatory trigger)
+
+subBranches:
+
+  rescheduling:
+    id: rescheduling
+    description: >
+      Tenure extension â€” the outstanding balance is re-amortised over
+      a longer remaining tenure. Monthly installment decreases.
+      Interest rate unchanged. Most common restructuring type.
+    steps:
+      - step: restructure-request
+        from: BAP
+        to: BPP
+        updateType: RESCHEDULING_REQUEST
+        requiredFields:
+          - message.contract.id
+          - contractAttributes.updateType
+          - contractAttributes.restructureReason
+          - contractAttributes.requestedNewTenure
+        conditionalFields:
+          - field: contractAttributes.hardshipEvidenceRef
+            condition: required if triggered by financial hardship â€” supports OJK policy basis
+
+      - step: restructure-assessment
+        direction: BPP-internal
+        description: BPP re-checks DTI with the proposed new installment; verifies total tenure cap
+        blockingConditions:
+          - requestedNewTenure > offerAttributes.maxTenureMonths â†’ reject
+          - borrower age at new maturity > maxBorrowerAgeAtMaturity â†’ reject
+
+      - step: on_update
+        from: BPP
+        to: BAP
+        requiredFields:
+          - contractAttributes.restructureApproved
+          - contractAttributes.newTenureMonths
+          - contractAttributes.newMonthlyInstallment
+          - contractAttributes.revisedScheduleUrl
+          - contractAttributes.amendedAgreementDraftUrl
+        conditionalFields:
+          - field: contractAttributes.restructureRejectionReason
+            condition: if restructureApproved is false
+
+      - step: amendment-signing
+        from: BAP
+        to: BPP
+        updateType: RESTRUCTURE_CONFIRM
+        requiredFields:
+          - contractAttributes.amendedAgreementConsentRef
+          - contractAttributes.amendedAgreementSignedAt
+
+      - step: restructure-activated
+        trigger: on_status(RESTRUCTURED)
+        requiredFields:
+          - contractAttributes.restructureEffectiveDate
+          - contractAttributes.restructureRef
+          - performanceAttributes.newSchedule[]
+
+  reconditioning:
+    id: reconditioning
+    description: >
+      Interest rate reduction or change from fixed to floating (or vice versa).
+      Principal and tenure unchanged. Used when market rates drop significantly
+      or as a hardship measure. New interest rate must still comply with OJK cap.
+    steps:
+      - step: rate-change-request
+        from: BAP
+        to: BPP
+        updateType: RECONDITIONING_REQUEST
+        requiredFields:
+          - contractAttributes.requestedNewRate
+          - contractAttributes.newRateType
+          - contractAttributes.reconditioningReason
+
+      - step: rate-approval
+        from: BPP
+        to: BAP
+        requiredFields:
+          - contractAttributes.approvedNewRate
+          - contractAttributes.newRateEffectiveDate
+          - contractAttributes.revisedBreakup[]
+        blockingConditions:
+          - approvedNewRate > OJK rate cap for product category â†’ ION-10013
+
+      - step: amendment-signing
+        from: BAP
+        to: BPP
+        requiredFields:
+          - contractAttributes.amendedAgreementConsentRef
+
+  payment-holiday:
+    id: payment-holiday
+    description: >
+      Temporary deferral of principal and/or interest payments for a
+      defined period (1â€“12 months). Deferred amounts are capitalised
+      or appended to the loan tail. Commonly applied under OJK disaster-
+      relief policies. Collectability rating is maintained at current
+      during the approved holiday period.
+    steps:
+      - step: holiday-request
+        from: BAP
+        to: BPP
+        updateType: PAYMENT_HOLIDAY_REQUEST
+        requiredFields:
+          - contractAttributes.holidayType
+          - contractAttributes.requestedHolidayMonths
+          - contractAttributes.holidayStartDate
+          - contractAttributes.deferralBasis
+        holidayTypes:
+          PRINCIPAL_ONLY: Interest continues; principal deferred
+          INTEREST_ONLY: Principal continues; interest deferred
+          FULL: Both principal and interest deferred
+        deferralBasis:
+          CAPITALISE: Deferred interest added to outstanding principal
+          TAIL: Deferred installments appended after original end date
+          WAIVE: Interest waived (requires regulatory mandate)
+
+      - step: holiday-approval
+        from: BPP
+        to: BAP
+        requiredFields:
+          - contractAttributes.holidayApproved
+          - contractAttributes.holidayStartDate
+          - contractAttributes.holidayEndDate
+          - contractAttributes.deferredAmountTotal
+          - contractAttributes.revisedScheduleUrl
+          - contractAttributes.ojkPolicyRef
+        conditionalFields:
+          - field: contractAttributes.holidayRejectionReason
+            condition: if holidayApproved is false
+
+      - step: holiday-activated
+        trigger: on_status(PAYMENT_HOLIDAY_ACTIVE)
+        description: >
+          SLIK reporting is suspended for the holiday period if covered
+          by an OJK regulatory relief policy.
+
+      - step: holiday-end
+        trigger: on_status(PAYMENT_HOLIDAY_ENDED)
+        requiredFields:
+          - performanceAttributes.newSchedule[]
+          - contractAttributes.resumeInstallmentDate
+
+  errors: []
+
+policyReferences:
+  - ion://policy/finance/restructure/ojk-pojk-40-2019/v1
+  - ion://policy/finance/payment-holiday/v1
+  - ion://policy/finance/slik-collectability-during-restructure/v1
+

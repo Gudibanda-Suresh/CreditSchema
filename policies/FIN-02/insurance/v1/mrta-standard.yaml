@@ -1,0 +1,97 @@
+iri: ion://policy/finance.insurance.mrta-standard
+
+version: "1.0.0"
+
+versionEffectiveFrom: "2026-05-01"
+
+category: INSURANCE
+
+subCategory: MORTGAGE_PROTECTION
+
+status: ratified
+
+ratifiedAt: "2026-04-15"
+
+displayText:
+  id: "Asuransi MRTA — perlindungan KPR standar"
+  en: "MRTA — Mortgage Reducing Term Assurance standard"
+
+insuranceType: MRTA
+
+fullName: "Mortgage Reducing Term Assurance"
+
+coverageEvents:
+  - DEATH
+  - TOTAL_PERMANENT_DISABILITY
+
+coverageBasis: OUTSTANDING_MORTGAGE_BALANCE
+
+coverageDeclines: true
+
+coverageDeclinesMethod: ALIGNED_WITH_LOAN_AMORTIZATION_SCHEDULE
+
+policyHolder: LENDER
+
+insuredParty: BORROWER
+
+beneficiary: LENDER
+
+premiumPayment:
+  method: SINGLE_PREMIUM_AT_LOAN_ORIGINATION
+  financedIntoLoan: true
+  note: "Premium is typically rolled into the mortgage principal"
+
+premiumRateRange:
+  factorsAffectingRate:
+    - BORROWER_AGE
+    - LOAN_TENURE
+    - COVERAGE_AMOUNT
+  typicalRangePercent: "0.3 - 1.5% of loan principal"
+
+maxInsurableAge: 60
+
+insuranceTenureMatchesLoanTenure: true
+
+mandatoryFor:
+  - mortgage
+
+optionalFor: []
+
+propertyInsuranceCompanion:
+  required: true
+  type: KEBAKARAN_DAN_BENCANA_ALAM
+  note: "Property must also be insured against fire and natural disaster"
+  coverageBasis: PROPERTY_REPLACEMENT_VALUE
+
+bundlingRules:
+  forcedBundlingProhibited: true
+  borrowerMustConsentExplicitly: true
+  borrowerCanChooseInsurer: true
+  regulatoryBasis: "OJK POJK 22/2023"
+
+claimProcess:
+  notificationSlaDays: 30
+  documentRequired:
+    - SURAT_KETERANGAN_KEMATIAN
+    - AKTA_KEMATIAN
+    - KARTU_KELUARGA
+    - SERTIFIKAT_MRTA
+  payoutSlaDays: 30
+  payoutSettlesOutstandingMortgage: true
+  surplusReturnedToEstate: true
+
+applicablePatterns:
+  - mortgage
+
+applicableLenderTypes:
+  - BANK_UMUM
+  - MULTIFINANCE
+
+regulatoryBasis:
+  - "OJK POJK 69/2016 tentang Bisnis Proses Perusahaan Asuransi"
+  - "OJK POJK 22/2023 tentang Perlindungan Konsumen dan Masyarakat di Sektor Jasa Keuangan"
+  - "OJK SE 05/SEOJK.05/2013 tentang Produk Asuransi yang Dikaitkan dengan Kredit atau Pembiayaan"
+
+supersededBy: null
+
+deprecatedAt: null

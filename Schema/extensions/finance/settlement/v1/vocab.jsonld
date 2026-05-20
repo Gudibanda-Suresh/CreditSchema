@@ -1,0 +1,59 @@
+{
+  "@context": {
+    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "ion": "https://schema.ion.id/finance/settlement/v1#",
+    "schema": "https://schema.org/"
+  },
+  "@graph": [
+    {
+      "@id": "ion:AmortisationRow",
+      "rdf:type": "rdfs:Class",
+      "rdfs:comment": "One installment row in a loan amortisation schedule.",
+      "rdfs:subClassOf": {
+        "@id": "schema:RepaymentSpecification"
+      }
+    },
+    {
+      "@id": "ion:installmentNumber",
+      "rdf:type": "rdf:Property",
+      "rdfs:comment": "1-based installment sequence number."
+    },
+    {
+      "@id": "ion:dueDate",
+      "rdf:type": "rdf:Property",
+      "rdfs:comment": "Payment due date for this installment."
+    },
+    {
+      "@id": "ion:installmentIDR",
+      "rdf:type": "rdf:Property",
+      "rdfs:comment": "Total installment amount due in IDR."
+    },
+    {
+      "@id": "ion:principalIDR",
+      "rdf:type": "rdf:Property",
+      "rdfs:comment": "Principal repayment component in IDR."
+    },
+    {
+      "@id": "ion:interestIDR",
+      "rdf:type": "rdf:Property",
+      "rdfs:comment": "Interest / margin component in IDR."
+    },
+    {
+      "@id": "ion:outstandingPrincipalIDR",
+      "rdf:type": "rdf:Property",
+      "rdfs:comment": "Remaining principal balance after this installment."
+    },
+    {
+      "@id": "ion:paymentStatus",
+      "rdf:type": "rdf:Property",
+      "rdfs:comment": "Real-time payment status: UNPAID, PAID, OVERDUE, or PARTIAL."
+    },
+    {
+      "@id": "ion:actualPaymentDate",
+      "rdf:type": "rdf:Property",
+      "rdfs:comment": "Date actual payment was received."
+    }
+  ]
+}

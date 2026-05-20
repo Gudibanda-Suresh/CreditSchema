@@ -1,0 +1,71 @@
+iri: ion://policy/finance.penalty.lender-disbursement-delay
+
+version: "1.0.0"
+
+versionEffectiveFrom: "2026-05-01"
+
+category: PENALTY
+
+subCategory: LENDER_DISBURSEMENT_DELAY
+
+status: ratified
+
+ratifiedAt: "2026-04-15"
+
+displayText:
+  id: "Kompensasi keterlambatan pencairan dana oleh pemberi pinjaman"
+  en: "Lender disbursement delay compensation to borrower"
+
+penaltyType: LENDER_DISBURSEMENT_DELAY
+
+disbursementSlaHoursFromAgreementSigning:
+  personalLoan: 24
+  vehicleLoan: 48
+  businessLoan: 48
+  mortgage: 72
+  bnpl: 0.083
+
+penaltyForExceedingSla:
+  type: COMPENSATION_TO_BORROWER
+  ratePercentPerDay: 0.05
+  base: APPROVED_LOAN_AMOUNT
+  note: "Compensation is credited against first installment or paid directly to borrower"
+
+gracePeriodHours: 4
+
+exclusions:
+  - BORROWER_INCOMPLETE_DOCUMENTATION
+  - FORCE_MAJEURE
+  - THIRD_PARTY_ESCROW_DELAY_NOT_CAUSED_BY_LENDER
+  - BI_FAST_SYSTEM_DOWNTIME
+
+compensationCap:
+  maxCompensationPercentOfLoanAmount: 1.0
+
+disclosureRequired: true
+
+disclosureIn:
+  - LOAN_AGREEMENT
+  - PRODUCT_INFORMATION_SHEET
+
+applicablePatterns:
+  - personal-loan
+  - mortgage
+  - vehicle-loan
+  - business-loan
+  - bnpl
+
+applicableLenderTypes:
+  - BANK_UMUM
+  - BPR
+  - MULTIFINANCE
+  - LPBBTI_P2P
+  - LPBBTI_DIGITAL
+
+regulatoryBasis:
+  - "OJK POJK 22/2023 tentang Perlindungan Konsumen dan Masyarakat di Sektor Jasa Keuangan"
+  - "OJK POJK 18/2018 tentang Layanan Pengaduan Konsumen di Sektor Jasa Keuangan"
+
+supersededBy: null
+
+deprecatedAt: null

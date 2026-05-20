@@ -1,0 +1,61 @@
+iri: ion://policy/finance.cancellation.loan-free-before-disburse
+
+version: "1.0.0"
+
+versionEffectiveFrom: "2026-05-01"
+
+category: CANCELLATION
+
+subCategory: LOAN_APPLICATION
+
+status: ratified
+
+ratifiedAt: "2026-04-15"
+
+displayText:
+  id: "Batalkan pinjaman gratis sebelum pencairan"
+  en: "Free loan cancellation before disbursement"
+
+cancellationWindowCloses: DISBURSEMENT_INITIATED
+
+cancellationFee:
+  type: NONE
+  value: 0
+
+processingFeeRefundable: true
+
+cancellationReasonsAllowed:
+  - CHANGE_OF_MIND
+  - FOUND_BETTER_OFFER
+  - INCOME_CHANGE
+  - EMPLOYMENT_CHANGE
+  - PERSONAL_EMERGENCY
+  - DOCUMENTATION_ISSUE
+  - LOAN_AMOUNT_CHANGED
+  - TENURE_PREFERENCE_CHANGE
+  - DUPLICATE_APPLICATION
+
+refundTimelineFromCancel: P3D
+
+refundDestinationDefault: ORIGINAL_PAYMENT_METHOD
+
+applicablePatterns:
+  - personal-loan
+  - mortgage
+  - vehicle-loan
+  - business-loan
+
+applicableLenderTypes:
+  - BANK_UMUM
+  - BPR
+  - MULTIFINANCE
+  - LPBBTI_P2P
+  - LPBBTI_DIGITAL
+
+regulatoryBasis:
+  - "UU 8/1999 tentang Perlindungan Konsumen Pasal 4"
+  - "OJK POJK 22/2023 tentang Perlindungan Konsumen Sektor Jasa Keuangan"
+
+supersededBy: null
+
+deprecatedAt: null

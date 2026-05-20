@@ -1,0 +1,59 @@
+{
+  "@context": {
+    "@version": 1.1,
+    "@protected": true,
+    "ion":    "https://schema.ion.id/finance/offer/v1#",
+    "beckn":  "https://spec.beckn.io/vocab/v2.0.0#",
+    "rdf":    "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdfs":   "http://www.w3.org/2000/01/rdf-schema#",
+    "xsd":    "http://www.w3.org/2001/XMLSchema#",
+    "schema": "https://schema.org/",
+
+    "CreditApproval": "ion:CreditApproval",
+
+    "offerReference":               { "@id": "ion:offerReference",               "@type": "xsd:string" },
+    "validUntil":                   { "@id": "ion:validUntil",                   "@type": "xsd:dateTime" },
+    "offerStatus":                  { "@id": "ion:offerStatus",                  "@type": "xsd:string" },
+
+    "approvedPrincipal":            { "@id": "ion:approvedPrincipal",            "@type": "@id" },
+    "approvedTenor":                { "@id": "ion:approvedTenor",                "@type": "@id" },
+    "effectiveRate":                { "@id": "ion:effectiveRate",                "@type": "@id" },
+    "monthlyInstallment":           { "@id": "ion:monthlyInstallment",           "@type": "@id" },
+    "totalFees":                    { "@id": "ion:totalFees",                    "@type": "@id" },
+    "disbursementSchedule":         { "@id": "ion:disbursementSchedule",         "@type": "@id" },
+    "internalCreditScore":          { "@id": "ion:internalCreditScore",          "@type": "@id" },
+
+    "additionalConditions":         { "@id": "ion:additionalConditions",         "@container": "@set" },
+
+    "value":                        { "@id": "ion:value",                        "@type": "xsd:decimal" },
+    "currency":                     { "@id": "ion:currency",                     "@type": "xsd:string" },
+    "unit":                         { "@id": "ion:unit",                         "@type": "xsd:string" },
+
+    "percentPerYear":               { "@id": "ion:percentPerYear",               "@type": "xsd:decimal" },
+    "method":                       { "@id": "ion:method",                       "@type": "xsd:string" },
+    "yieldType":                    { "@id": "ion:yieldType",                    "@type": "xsd:string" },
+    "fixedPeriodYears":             { "@id": "ion:fixedPeriodYears",             "@type": "xsd:integer" },
+    "floatingRateAfterFixedPercent":{ "@id": "ion:floatingRateAfterFixedPercent","@type": "xsd:decimal" },
+
+    "totalIDR":                     { "@id": "ion:totalIDR",                     "@type": "xsd:decimal" },
+    "principalIDR":                 { "@id": "ion:principalIDR",                 "@type": "xsd:decimal" },
+    "interestIDR":                  { "@id": "ion:interestIDR",                  "@type": "xsd:decimal" },
+
+    "provisionFeeIDR":              { "@id": "ion:provisionFeeIDR",              "@type": "xsd:decimal" },
+    "administrationFeeIDR":         { "@id": "ion:administrationFeeIDR",         "@type": "xsd:decimal" },
+    "appraisalFeeIDR":              { "@id": "ion:appraisalFeeIDR",              "@type": "xsd:decimal" },
+    "notaryFeeIDR":                 { "@id": "ion:notaryFeeIDR",                 "@type": "xsd:decimal" },
+    "lifeInsurancePremiumIDR":      { "@id": "ion:lifeInsurancePremiumIDR",      "@type": "xsd:decimal" },
+    "annualFireInsuranceIDR":       { "@id": "ion:annualFireInsuranceIDR",       "@type": "xsd:decimal" },
+    "stampDutyIDR":                 { "@id": "ion:stampDutyIDR",                 "@type": "xsd:integer" },
+    "totalUpfrontCostsIDR":         { "@id": "ion:totalUpfrontCostsIDR",         "@type": "xsd:decimal" },
+    "aprEquivalent":                { "@id": "ion:aprEquivalent",                "@type": "xsd:decimal" },
+
+    "targetBusinessDays":           { "@id": "ion:targetBusinessDays",           "@type": "xsd:integer" },
+    "disbursementMethod":           { "@id": "ion:disbursementMethod",           "@type": "xsd:string" },
+
+    "score":                        { "@id": "ion:score",                        "@type": "xsd:integer" },
+    "category":                     { "@id": "ion:category",                     "@type": "xsd:string" },
+    "slikGrade":                    { "@id": "ion:slikGrade",                    "@type": "xsd:string" }
+  }
+}

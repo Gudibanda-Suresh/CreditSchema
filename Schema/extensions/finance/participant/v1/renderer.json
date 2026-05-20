@@ -1,0 +1,28 @@
+{
+  "schemaId": "ion-finance-participant-v1",
+  "version": "1.0.0",
+  "slots": {
+    "participantAttributes": {
+      "fieldGroups": [
+        {
+          "id": "borrowerIdentity",
+          "label": "Borrower Identity",
+          "icon": "user",
+          "applyWhen": "@type === 'Borrower'",
+          "fields": ["fullName", "nik", "npwp", "birthPlace", "birthDate", "registeredAddress", "email", "phone"]
+        },
+        {
+          "id": "lenderIdentity",
+          "label": "Lending Institution",
+          "icon": "office-building",
+          "applyWhen": "@type === 'Lender'",
+          "fields": ["institutionName", "ojkLicenseNumber", "branchOffice", "relationshipManagerName"]
+        }
+      ]
+    }
+  },
+  "displayPreferences": {
+    "primaryFields": ["fullName", "nik", "institutionName", "ojkLicenseNumber"],
+    "locale": "id-ID"
+  }
+}

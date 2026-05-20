@@ -1,0 +1,208 @@
+id: ion-finance-variant-early-settlement-v1
+version: "1.0.0"
+variantType: early-settlement
+sector: ion:finance
+status: ready
+description: >
+  Early repayment sub-flow — partial prepayment or full payoff before
+  the original loan maturity. Triggers penalty calculation per the
+  prepaymentPolicy IRI, lien release (for secured products), and
+  issuance of a settlement letter. For revolving credit, this sub-branch
+  covers credit-line closure. OJK caps prepayment penalty at a maximum
+  defined in POJK per product category.
+
+appliesTo:
+  - FNC-lending
+  - FNC-lending
+  - FNC-lending
+  - FNC-lending
+  - FNC-lending
+
+window:
+  earliest: "on_status[DISBURSED]"
+  latest: "on_status[FULLY_REPAID]"
+
+subBranches:
+
+  partial-prepayment:
+    id: partial-prepayment
+    description: >
+      Borrower repays more than the scheduled installment but less than
+      the full outstanding balance. The excess reduces principal. Two
+      modes: shorten tenure (same installment, fewer remaining periods)
+      or reduce installment (same tenure, lower monthly payment).
+    steps:
+      - step: prepayment-request
+        from: BAP
+        to: BPP
+        updateType: PARTIAL_PREPAYMENT
+        requiredFields:
+          - message.contract.id
+          - contractAttributes.updateType
+          - settlementAttributes.prepaymentAmount
+          - contractAttributes.prepaymentMode
+        prepaymentModes:
+          SHORTEN_TENURE: Excess applied to principal; tenure reduced; installment unchanged
+          REDUCE_INSTALLMENT: Excess applied to principal; installment reduced; tenure unchanged
+
+      - step: penalty-calculation
+        direction: BPP-internal
+        inputs:
+          - prepaymentAmount
+          - outstandingPrincipal
+          - offerAttributes.prepaymentPolicy
+          - contractAttributes.disbursementDate
+          - contractAttributes.prepaymentRequestDate
+        output:
+          - contractAttributes.prepaymentPenaltyAmount
+          - contractAttributes.prepaymentPenaltyRate
+          - contractAttributes.prepaymentNetAmount
+        penaltyRules:
+          - Penalty rate from prepaymentPolicy IRI (typically 1–3% of prepaid principal)
+          - Zero penalty if beyond penalty-free window (offerAttributes.prepaymentPolicy.penaltyFreeAfterMonths)
+          - OJK-mandated cap applies per product category
+
+      - step: prepayment-confirmation
+        from: BPP
+        to: BAP
+        requiredFields:
+          - contractAttributes.prepaymentPenaltyAmount
+          - contractAttributes.prepaymentNetAmount
+          - performanceAttributes.newOutstandingPrincipal
+          - contractAttributes.prepaymentMode
+          - performanceAttributes.revisedScheduleUrl
+        conditionalFields:
+          - field: performanceAttributes.newTenureEndDate
+            condition: returned for SHORTEN_TENURE mode
+          - field: performanceAttributes.newMonthlyInstallment
+            condition: returned for REDUCE_INSTALLMENT mode
+
+  full-settlement:
+    id: full-settlement
+    description: >
+      Borrower repays the full outstanding balance (principal +
+      accrued interest + prepayment penalty). Loan contract closes.
+      Lien is released. Settlement letter issued. SLIK is updated
+      to reflect closure.
+    steps:
+      - step: settlement-quote-request
+        from: BAP
+        to: BPP
+        updateType: SETTLEMENT_QUOTE
+        requiredFields:
+          - message.contract.id
+          - contractAttributes.requestedSettlementDate
+        description: >
+          BAP requests the total amount needed for full settlement as
+          of a specific date. Quote is valid for N days (typically 3–7
+          business days) per offerAttributes.prepaymentPolicy.quoteValidityDays.
+
+      - step: settlement-quote-response
+        from: BPP
+        to: BAP
+        requiredFields:
+          - contractAttributes.settlementQuoteDate
+          - contractAttributes.settlementQuoteAmount
+          - contractAttributes.prepaymentPenaltyAmount
+          - contractAttributes.settlementQuoteExpiry
+          - contractAttributes.settlementPaymentInstructions
+
+      - step: settlement-payment
+        from: BAP
+        to: BPP
+        updateType: FULL_PREPAYMENT
+        requiredFields:
+          - settlementAttributes.repaymentAmount
+          - settlementAttributes.paymentRef
+          - settlementAttributes.paymentDate
+
+      - step: settlement-confirmation
+        trigger: "on_status[FULLY_REPAID]"
+        from: BPP
+        to: BAP
+        requiredFields:
+          - contractAttributes.closureDate
+          - contractAttributes.settlementLetterUrl
+          - performanceAttributes.finalOutstandingBalance
+        conditionalFields:
+          - field: contractAttributes.lienReleaseUrl
+            condition: returned for secured products (mortgage, vehicle-loan, business-loan with collateral)
+          - field: contractAttributes.bpkbReturnRef
+            condition: returned for vehicle-loan — BPKB return tracking reference
+          - field: contractAttributes.aphtReleaseRef
+            condition: returned for mortgage — APHT/HT release deed reference
+          - field: contractAttributes.fiduciaReleaseRef
+            condition: returned for movable-asset collateral
+
+  lien-release:
+    id: lien-release
+    appliesTo: [mortgage, vehicle-loan, business-loan]
+    description: >
+      Collateral lien released after full settlement. Initiated by BPP.
+      Process differs by collateral type.
+    subTypes:
+      apht-release:
+        appliesTo: [FNC-lending]
+        description: APHT roya at BPN. Borrower receives certificate free of encumbrance.
+        steps:
+          - BPP instructs notary to file APHT release at BPN
+          - BPN issues roya certificate
+          - BPP returns original certificate to borrower
+        requiredFields:
+          - contractAttributes.royaCertificateUrl
+          - contractAttributes.bpnRoyaDate
+
+      bpkb-return:
+        appliesTo: [FNC-lending]
+        description: BPKB physically returned to borrower after fiducia release
+        steps:
+          - BPP files fiducia release (Roya Fidusia) at Kemenkumham
+          - BPP couriers BPKB to borrower's registered address
+        requiredFields:
+          - contractAttributes.fiduciaRoyaRef
+          - contractAttributes.bpkbCourierTrackingRef
+
+      fiducia-release:
+        appliesTo: [FNC-lending]
+        description: Fiducia release filed at Kemenkumham. Asset unencumbered.
+        requiredFields:
+          - contractAttributes.fiduciaRoyaRef
+          - contractAttributes.fiduciaRoyaDate
+
+  credit-line-closure:
+    id: credit-line-closure
+    appliesTo: [revolving-credit]
+    description: >
+      Borrower requests full balance repayment and credit line closure.
+      No penalty for credit line closure. Card is deactivated. Credit
+      limit set to zero. SLIK updated to reflect closure.
+    steps:
+      - step: balance-query
+        updateType: BALANCE_QUERY
+        returns:
+          - performanceAttributes.outstandingBalance
+          - performanceAttributes.accruedInterest
+          - performanceAttributes.closureAmount
+
+      - step: closure-payment
+        updateType: CREDIT_LINE_CLOSURE
+        requiredFields:
+          - settlementAttributes.repaymentAmount
+          - settlementAttributes.paymentRef
+
+      - step: closure-confirmation
+        trigger: "on_status[CREDIT_LINE_CLOSED]"
+        requiredFields:
+          - contractAttributes.closureDate
+          - contractAttributes.closureLetterUrl
+
+  errors:
+    - ION-FIN-6017  # Repayment amount does not match scheduled installment (if quote not honoured)
+
+policyReferences:
+  - ion://policy/finance/prepayment-penalty/v1
+  - ion://policy/finance/lien-release/apht/v1
+  - ion://policy/finance/lien-release/fiducia/v1
+  - ion://policy/finance/credit-line-closure/v1
+
+

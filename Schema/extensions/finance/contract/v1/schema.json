@@ -1,0 +1,195 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schema.ion.id/finance/contract/v1/schema.json",
+  "title": "LoanAgreement",
+  "description": "ION Finance Credit Contract Extension v1 — immutable signed loan agreement placed in Contract.contractAttributes.",
+  "type": "object",
+  "required": [
+    "@context",
+    "@type",
+    "contractNumber",
+    "loanAccountNumber",
+    "agreementDate",
+    "loanTerms",
+    "legalDocuments"
+  ],
+  "additionalProperties": true,
+  "properties": {
+    "@context": {
+      "type": "string",
+      "const": "https://schema.ion.id/finance/contract/v1/context.jsonld"
+    },
+    "@type": {
+      "type": "string",
+      "const": "ion:LoanAgreement"
+    },
+    "contractNumber": {
+      "type": "string"
+    },
+    "loanAccountNumber": {
+      "type": "string"
+    },
+    "agreementDate": {
+      "type": "string",
+      "format": "date"
+    },
+    "maturityDate": {
+      "type": "string",
+      "format": "date"
+    },
+    "loanStatus": {
+      "type": "string",
+      "enum": [
+        "ACTIVE",
+        "SPECIAL_MENTION",
+        "SUBSTANDARD",
+        "DOUBTFUL",
+        "LOSS",
+        "SETTLED",
+        "RESTRUCTURED"
+      ],
+      "default": "ACTIVE"
+    },
+    "loanTerms": {
+      "$ref": "#/$defs/ActiveLoanTerms"
+    },
+    "legalDocuments": {
+      "$ref": "#/$defs/LegalDocuments"
+    },
+    "restructuring": {
+      "$ref": "#/$defs/LoanRestructuring"
+    }
+  },
+  "$defs": {
+    "ActiveLoanTerms": {
+      "title": "ActiveLoanTerms",
+      "description": "Active loan parameters frozen at akad signing. Reported to OJK SLIK monthly.",
+      "type": "object",
+      "required": [
+        "approvedPrincipal",
+        "effectiveRatePercent",
+        "tenorMonths",
+        "monthlyInstallmentIDR",
+        "monthlyDueDay"
+      ],
+      "additionalProperties": true,
+      "properties": {
+        "approvedPrincipal": {
+          "type": "number"
+        },
+        "effectiveRatePercent": {
+          "type": "number"
+        },
+        "calculationMethod": {
+          "type": "string",
+          "enum": [
+            "ANNUITY",
+            "FLAT",
+            "EFFECTIVE"
+          ]
+        },
+        "yieldType": {
+          "type": "string",
+          "enum": [
+            "FIXED",
+            "COMBINED",
+            "FLOATING",
+            "MARGIN",
+            "NISBAH"
+          ]
+        },
+        "tenorMonths": {
+          "type": "integer"
+        },
+        "monthlyInstallmentIDR": {
+          "type": "number"
+        },
+        "monthlyDueDay": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 31
+        },
+        "outstandingPrincipal": {
+          "type": "number"
+        },
+        "totalInterestPaid": {
+          "type": "number"
+        },
+        "islamicContractType": {
+          "type": "string"
+        }
+      }
+    },
+    "LegalDocuments": {
+      "title": "LegalDocuments",
+      "description": "Legal document references for this credit contract.",
+      "type": "object",
+      "required": [
+        "creditAgreementUrl"
+      ],
+      "additionalProperties": true,
+      "properties": {
+        "creditAgreementUrl": {
+          "type": "string",
+          "format": "uri"
+        },
+        "collateralCertificateUrl": {
+          "type": "string",
+          "format": "uri"
+        },
+        "notarialDeedNumber": {
+          "type": "string"
+        },
+        "mortgageLienNumber": {
+          "type": "string"
+        },
+        "riplayDocumentUrl": {
+          "type": "string",
+          "format": "uri"
+        },
+        "approvalLetterUrl": {
+          "type": "string",
+          "format": "uri"
+        },
+        "eMateraiSerial": {
+          "type": "string"
+        }
+      }
+    },
+    "LoanRestructuring": {
+      "title": "LoanRestructuring",
+      "description": "Formal loan restructuring record per POJK 40/POJK.03/2019.",
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "restructuringDate": {
+          "type": "string",
+          "format": "date"
+        },
+        "restructuringType": {
+          "type": "string",
+          "enum": [
+            "TENOR_EXTENSION",
+            "RATE_REDUCTION",
+            "ARREARS_WAIVER",
+            "PRINCIPAL_CONVERSION",
+            "NEW_FACILITY",
+            "COMBINED"
+          ]
+        },
+        "regulatoryBasis": {
+          "type": "string"
+        },
+        "newTenorMonths": {
+          "type": "integer"
+        },
+        "newRatePercent": {
+          "type": "number"
+        },
+        "restructuringReason": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

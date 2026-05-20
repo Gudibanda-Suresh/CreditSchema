@@ -1,0 +1,93 @@
+iri: ion://policy/finance.dispute.consumer-ojk-pojk-18
+
+version: "1.0.0"
+
+versionEffectiveFrom: "2026-05-01"
+
+category: DISPUTE
+
+subCategory: CONSUMER_COMPLAINT
+
+status: ratified
+
+ratifiedAt: "2026-04-15"
+
+displayText:
+  id: "Penanganan pengaduan konsumen — POJK 18/2018"
+  en: "Consumer complaint handling — OJK POJK 18/2018"
+
+disputeType: CONSUMER_COMPLAINT
+
+applicableTo: RETAIL_BORROWERS
+
+complaintChannels:
+  - WRITTEN_BRANCH
+  - CALL_CENTER
+  - EMAIL
+  - MOBILE_APP_IN_APP_SUPPORT
+  - OJK_PORTAL_KONSUMEN
+
+internalResolutionProcess:
+  firstResponseSlaDays: 2
+  finalResolutionSlaDays: 20
+  extensionAllowedDays: 20
+  extensionRequiresNotification: true
+  note: "Total internal resolution maximum 40 business days with extension"
+
+escalationPath:
+  - level: LENDER_INTERNAL
+    maxDays: 40
+  - level: OJK_PENGADUAN_PORTAL
+    trigger: BORROWER_UNSATISFIED_OR_LENDER_NONRESPONSIVE
+    ojkPortal: https://konsumen.ojk.go.id
+  - level: LAPS_SJK
+    description: "Lembaga Alternatif Penyelesaian Sengketa Sektor Jasa Keuangan"
+    binding: true
+    maxProcessingDays: 30
+
+lapssjkAccreditedBodies:
+  - BMAI
+  - BAPMI
+  - BANI
+
+requiredDocumentation:
+  - COMPLAINT_REFERENCE_NUMBER
+  - BORROWER_IDENTITY_DOCUMENT
+  - EVIDENCE_OF_COMPLAINT
+  - LOAN_AGREEMENT_COPY
+
+recordKeepingYears: 5
+
+compensationIfComplaintUpheld:
+  required: true
+  type: AS_AGREED_OR_REGULATORY_MINIMUM
+
+prohibitedActions:
+  - CHARGING_FEE_FOR_COMPLAINT_SUBMISSION
+  - RETALIATORY_ACTION_AGAINST_COMPLAINANT
+  - DISCLOSURE_OF_COMPLAINT_TO_THIRD_PARTIES_WITHOUT_CONSENT
+
+applicablePatterns:
+  - personal-loan
+  - mortgage
+  - vehicle-loan
+  - business-loan
+  - revolving-credit
+  - bnpl
+
+applicableLenderTypes:
+  - BANK_UMUM
+  - BPR
+  - MULTIFINANCE
+  - LPBBTI_P2P
+  - LPBBTI_DIGITAL
+
+regulatoryBasis:
+  - "OJK POJK 18/2018 tentang Layanan Pengaduan Konsumen di Sektor Jasa Keuangan"
+  - "OJK POJK 22/2023 tentang Perlindungan Konsumen dan Masyarakat di Sektor Jasa Keuangan"
+  - "OJK POJK 61/2020 tentang Lembaga Alternatif Penyelesaian Sengketa Sektor Jasa Keuangan"
+  - "UU 8/1999 tentang Perlindungan Konsumen"
+
+supersededBy: null
+
+deprecatedAt: null

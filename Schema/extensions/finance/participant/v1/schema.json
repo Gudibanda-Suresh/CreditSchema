@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schema.ion.id/finance/participant/v1/schema.json",
+  "title": "CreditParticipant",
+  "description": "ION Finance Credit Participant Extension v1 — borrower and lender identity placed in Participant.participantAttributes.",
+  "$defs": {
+    "Borrower": {
+      "title": "Borrower",
+      "description": "Borrower identity placed in Beckn Contract.participants[] with participantAttributes[@type] = ion:Borrower.",
+      "type": "object",
+      "required": [
+        "@context",
+        "@type",
+        "fullName",
+        "nik"
+      ],
+      "additionalProperties": true,
+      "properties": {
+        "@context": {
+          "type": "string",
+          "const": "https://schema.ion.id/finance/participant/v1/context.jsonld"
+        },
+        "@type": {
+          "type": "string",
+          "const": "ion:Borrower"
+        },
+        "fullName": {
+          "type": "string"
+        },
+        "nik": {
+          "type": "string",
+          "pattern": "^[0-9]{16}$"
+        },
+        "npwp": {
+          "type": "string"
+        },
+        "birthPlace": {
+          "type": "string"
+        },
+        "birthDate": {
+          "type": "string",
+          "format": "date"
+        },
+        "registeredAddress": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string",
+          "format": "email"
+        },
+        "phone": {
+          "type": "string"
+        }
+      }
+    },
+    "Lender": {
+      "title": "Lender",
+      "description": "Lending institution identity placed in Beckn Contract.participants[] with participantAttributes[@type] = ion:Lender.",
+      "type": "object",
+      "required": [
+        "@context",
+        "@type",
+        "institutionName",
+        "ojkLicenseNumber"
+      ],
+      "additionalProperties": true,
+      "properties": {
+        "@context": {
+          "type": "string",
+          "const": "https://schema.ion.id/finance/participant/v1/context.jsonld"
+        },
+        "@type": {
+          "type": "string",
+          "const": "ion:Lender"
+        },
+        "institutionName": {
+          "type": "string"
+        },
+        "ojkLicenseNumber": {
+          "type": "string"
+        },
+        "branchOffice": {
+          "type": "string"
+        },
+        "relationshipManagerName": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

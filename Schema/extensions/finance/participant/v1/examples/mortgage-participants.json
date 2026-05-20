@@ -1,0 +1,35 @@
+{
+  "$schema": "https://schema.ion.id/finance/participant/v1/schema.json",
+  "@context": "https://schema.ion.id/finance/participant/v1/context.jsonld",
+  "description": "Example: participants array for a KPR (mortgage) after on_confirm. Includes property seller and notary as additional participants beyond borrower and lender.",
+  "participants": [
+    {
+      "id": "PART-BOR-001",
+      "role": "BORROWER",
+      "participantAttributes": {
+        "@context": "https://schema.ion.id/finance/participant/v1/context.jsonld",
+        "@type": "ion:Borrower",
+        "fullName": "Siti Rahayu",
+        "nik": "3578025508900002",
+        "npwp": "98.765.432.1-045.000",
+        "birthPlace": "Surabaya",
+        "birthDate": "1990-08-15",
+        "registeredAddress": "Jl. Pahlawan No. 5, RT 002/RW 003, Kel. Sidodadi, Kec. Simokerto, Kota Surabaya, Jawa Timur 60141",
+        "email": "siti.rahayu@email.com",
+        "phone": "+6285678901234"
+      }
+    },
+    {
+      "id": "PART-LEN-001",
+      "role": "LENDER",
+      "participantAttributes": {
+        "@context": "https://schema.ion.id/finance/participant/v1/context.jsonld",
+        "@type": "ion:Lender",
+        "institutionName": "PT Bank Tabungan Negara (Persero) Tbk",
+        "ojkLicenseNumber": "KEP-022/DIR/1992",
+        "branchOffice": "Kantor Cabang BTN Surabaya Darmo",
+        "relationshipManagerName": "Ahmad Fauzi"
+      }
+    }
+  ]
+}

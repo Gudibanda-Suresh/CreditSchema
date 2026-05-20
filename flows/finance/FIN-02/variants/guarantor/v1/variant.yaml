@@ -1,0 +1,143 @@
+id: ion-finance-variant-guarantor-v1
+version: "1.0.0"
+variantType: guarantor
+sector: ion:finance
+status: ready
+description: >
+  Guarantor or co-borrower addition to a loan. Two sub-branches:
+  individual guarantor (personal guarantee, joint liability) and
+  government guarantor (IJP — Imbal Jasa Penjaminan via Jamkrindo
+  or Askrindo for KUR products). Individual guarantors must pass
+  their own KYC and credit check independently before being added.
+  Government guarantor is system-assigned for KUR products and does
+  not require a separate credit check.
+
+appliesTo:
+  - FNC-lending
+  - FNC-lending
+  - FNC-lending
+  - FNC-lending
+
+window:
+  earliest: init
+  latest: on_confirm
+
+subBranches:
+
+  individual-guarantor:
+    id: individual-guarantor
+    appliesTo: [personal-loan, mortgage, vehicle-loan, business-loan]
+    description: >
+      A natural person provides personal guarantee for the borrower's
+      obligations. Guarantor must complete KYC independently, pass a
+      credit check (SLIK is checked for guarantor too), and sign the
+      guarantee deed (Akta Perjanjian Penanggungan). Joint borrowers
+      (co-borrowers) use the same sub-branch with role CO_BORROWER.
+    steps:
+      - step: guarantor-declaration
+        from: BAP
+        to: BPP
+        within: init
+        requiredFields:
+          - contractAttributes.guarantorId
+          - participants[role=GUARANTOR].person.nik
+          - participants[role=GUARANTOR].person.name
+          - participants[role=GUARANTOR].person.dateOfBirth
+          - participants[role=GUARANTOR].contact.phone
+          - participants[role=GUARANTOR].participantAttributes.kycStatus
+          - participants[role=GUARANTOR].participantAttributes.monthlyIncome
+          - participants[role=GUARANTOR].participantAttributes.employmentStatus
+        conditionalFields:
+          - field: participants[role=GUARANTOR].participantAttributes.relationshipToBorrower
+            condition: required for married co-borrower (spousal consent required)
+          - field: contractAttributes.spouseConsentRef
+            condition: required when guarantor/co-borrower is borrower's spouse
+
+      - step: guarantor-kyc-check
+        direction: BPP-internal (separate kyc-verification branch for guarantor)
+        requiredFields:
+          - participants[role=GUARANTOR].participantAttributes.kycStatus
+        blockingConditions:
+          - guarantor kycStatus ≠ APPROVED → ION-FIN-6015
+
+      - step: guarantor-credit-check
+        direction: BPP-internal (SLIK inquiry on guarantor NIK)
+        requiredFields:
+          - participants[role=GUARANTOR].participantAttributes.slikCollectability
+        blockingConditions:
+          - guarantor slikCollectability 4 or 5 → ION-FIN-6015
+
+      - step: guarantee-deed-execution
+        trigger: on_confirm
+        description: >
+          Guarantee deed signed by guarantor. For loans > IDR 50 juta, a
+          notarial deed (Akta Notaris) is typically required; smaller amounts
+          may use a private deed (Perjanjian di Bawah Tangan) per lender policy.
+        requiredFields:
+          - contractAttributes.guaranteeDeedType
+          - contractAttributes.guaranteeDeedRef
+          - contractAttributes.guarantorSignedAt
+        conditionalFields:
+          - field: contractAttributes.notarialGuaranteeDeedRef
+            condition: required if guaranteeDeedType is NOTARIAL
+
+      - step: guarantor-notification
+        trigger: on_confirm
+        direction: BPP → GUARANTOR (out-of-band)
+        description: >
+          Guarantor receives confirmation of guarantee activation,
+          their maximum liability, and the borrower's repayment schedule.
+
+  government-guarantor-ijp:
+    id: government-guarantor-ijp
+    appliesTo: [FNC-lending]
+    description: >
+      Government-backed guarantee (IJP — Imbal Jasa Penjaminan) through
+      Jamkrindo (PT Jaminan Kredit Indonesia) or Askrindo (PT Asuransi
+      Kredit Indonesia). Applicable to all KUR products. The guarantee
+      covers a percentage of the loan (typically 70–80%) in case of
+      borrower default. IJP premium is charged to the lender (subsidised
+      by government for KUR). Borrower does not interact with the guarantor.
+    steps:
+      - step: ijp-registration
+        direction: BPP → Jamkrindo/Askrindo API
+        trigger: on_confirm
+        requiredFields:
+          - contractAttributes.kurApprovalRef
+          - contractAttributes.sikpRegistrationNumber
+          - contractAttributes.ijpGuarantorId
+        returnedFields:
+          - contractAttributes.ijpCertificateNumber
+          - contractAttributes.ijpCoveredAmount
+          - contractAttributes.ijpPremiumAmount
+          - contractAttributes.ijpCertificateUrl
+
+      - step: ijp-on-default
+        trigger: "on_status[DEFAULT_DECLARED]"
+        direction: BPP → Jamkrindo/Askrindo
+        description: >
+          In case of borrower default, lender submits IJP claim.
+          Jamkrindo/Askrindo pays the covered portion to the lender.
+          This sub-step is triggered by the delinquency variant
+          reaching DEFAULT_DECLARED status.
+        requiredFields:
+          - contractAttributes.ijpClaimRef
+          - contractAttributes.defaultDate
+          - contractAttributes.outstandingAtDefault
+
+  on_init_fields:
+    conditionalFields:
+      - field: contractAttributes.guarantorKycStatus
+        condition: returned when individual-guarantor branch is active
+      - field: contractAttributes.ijpCertificateUrl
+        condition: returned when government-guarantor-ijp branch is active
+
+  errors:
+    - ION-FIN-6015  # Guarantor KYC failed or incomplete
+
+policyReferences:
+  - ion://policy/finance/guarantor/individual/v1
+  - ion://policy/finance/ijp-guarantee/v1
+  - ion://policy/finance/kur-subsidy/v1
+
+

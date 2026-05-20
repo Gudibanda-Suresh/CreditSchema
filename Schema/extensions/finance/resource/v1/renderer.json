@@ -1,0 +1,83 @@
+{
+  "schemaId": "ion-finance-credit-resource-v1",
+  "version": "1.0.0",
+  "fieldGroups": [
+    {
+      "id": "productIdentity",
+      "label": "Product Identity",
+      "icon": "bank",
+      "fields": ["productIdentity.productName", "productIdentity.institutionName", "productIdentity.productType", "productIdentity.financeType", "productIdentity.institutionType", "productIdentity.currency"]
+    },
+    {
+      "id": "financingTerms",
+      "label": "Financing Terms",
+      "icon": "currency",
+      "fields": ["principalRange.minimum.value", "principalRange.maximum.value", "tenor.minimum", "tenor.maximum", "costOfFund.yieldType", "costOfFund.rateMinPercent", "costOfFund.rateMaxPercent", "costOfFund.calculationMethod"]
+    },
+    {
+      "id": "repayment",
+      "label": "Repayment",
+      "icon": "calendar",
+      "fields": ["repaymentSchedule.frequency", "repaymentSchedule.paymentChannels", "repaymentSchedule.gracePeriodDays", "repaymentSchedule.earlySettlementAllowed"]
+    },
+    {
+      "id": "fees",
+      "label": "Fees & Charges",
+      "icon": "receipt",
+      "fields": ["feeStructure.provisionFeePercent", "feeStructure.administrationFeeIDR", "feeStructure.appraisalFeeIDR", "feeStructure.notaryFeeIDR", "feeStructure.mandatoryInsurance", "feeStructure.mandatoryInsuranceTypes", "feeStructure.latePenaltyPercentPerDay"]
+    },
+    {
+      "id": "collateral",
+      "label": "Collateral",
+      "icon": "shield",
+      "fields": ["collateral.required", "collateral.collateralTypes", "collateral.maxLTVPercent", "collateral.appraisalRequired", "collateral.guarantorInstitution"]
+    },
+    {
+      "id": "eligibility",
+      "label": "Eligibility",
+      "icon": "person-check",
+      "fields": ["borrowerCriteria.applicantTypes", "borrowerCriteria.minimumAge", "borrowerCriteria.maximumAgeAtMaturity", "borrowerCriteria.minimumMonthlyIncomeIDR", "borrowerCriteria.employmentTypes", "borrowerCriteria.serviceRegions", "borrowerCriteria.maxDSRPercent"]
+    },
+    {
+      "id": "regulatory",
+      "label": "Regulatory",
+      "icon": "certificate",
+      "fields": ["regulatoryDeclaration.licenses", "regulatoryDeclaration.disclosures", "regulatoryDeclaration.privacyPolicyUrl"]
+    },
+    {
+      "id": "documents",
+      "label": "Required Documents",
+      "icon": "file-text",
+      "fields": ["requiredDocuments"]
+    },
+    {
+      "id": "islamic",
+      "label": "Islamic Finance",
+      "icon": "star-crescent",
+      "conditional": "productIdentity.financeType === 'ISLAMIC'",
+      "fields": ["islamicFinance.contractType", "islamicFinance.dsnMuiFatwaNumber", "islamicFinance.marginPercentPerYear", "islamicFinance.bankProfitSharePercent", "islamicFinance.customerProfitSharePercent"]
+    },
+    {
+      "id": "government",
+      "label": "Government Program",
+      "icon": "government",
+      "conditional": "governmentProgram != null",
+      "fields": ["governmentProgram.programType", "governmentProgram.effectiveRatePercent", "governmentProgram.subsidyPercent", "governmentProgram.officialGuarantorInstitution", "governmentProgram.specialRequirements"]
+    },
+    {
+      "id": "paylater",
+      "label": "Paylater / BNPL",
+      "icon": "credit-card",
+      "conditional": "productIdentity.productType === 'PAYLATER'",
+      "fields": ["paylaterService.maxCreditLimitIDR", "paylaterService.billingCycle", "paylaterService.availableInstallmentTenors", "paylaterService.merchantCategories"]
+    }
+  ],
+  "displayPreferences": {
+    "primaryFields": ["productIdentity.productName", "productIdentity.productType", "costOfFund.rateMinPercent", "costOfFund.rateMaxPercent", "principalRange.minimum.value", "principalRange.maximum.value"],
+    "cardSummaryFields": ["productIdentity.institutionName", "productIdentity.productType", "costOfFund.yieldType", "costOfFund.rateMinPercent"],
+    "currencyFields": ["principalRange.minimum.value", "principalRange.maximum.value", "feeStructure.administrationFeeIDR", "feeStructure.appraisalFeeIDR", "feeStructure.notaryFeeIDR", "borrowerCriteria.minimumMonthlyIncomeIDR"],
+    "percentageFields": ["costOfFund.rateMinPercent", "costOfFund.rateMaxPercent", "collateral.maxLTVPercent", "borrowerCriteria.maxDSRPercent", "feeStructure.provisionFeePercent"],
+    "locale": "id-ID",
+    "currency": "IDR"
+  }
+}

@@ -1,0 +1,196 @@
+id: ion-finance-variant-insurance-v1
+version: "1.0.0"
+variantType: insurance
+sector: ion:finance
+status: ready
+description: >
+  Credit-linked insurance sub-flow. Covers credit life insurance
+  (asuransi jiwa kredit) bundled with personal and business loans,
+  mortgage protection (MRTA/MRTTA) for KPR/KPA, and all-risk vehicle
+  insurance for KKB. Insurance is regulated by OJK (POJK 69/2016 and
+  POJK 23/2023). Bancassurance rules apply when lender distributes
+  insurance. Bundling must be declared as optional where OJK prohibits
+  mandatory bundling; mortgage protection is typically required by
+  lender policy. Premium collection and remittance to insurer is
+  handled by the lender as bancassurance agent.
+
+appliesTo:
+  - FNC-lending
+  - FNC-lending
+  - FNC-lending
+  - FNC-lending
+
+window:
+  earliest: init
+  latest: "on_status[DISBURSED]"
+
+subBranches:
+
+  credit-life-insurance:
+    id: credit-life-insurance
+    appliesTo: [FNC-lending, FNC-lending]
+    description: >
+      Asuransi jiwa kredit â€” covers outstanding loan balance in the event
+      of borrower's death or total permanent disability (TPD). Policy
+      term matches loan tenure. Sum insured equals outstanding balance
+      at time of claim (reducing cover) or original loan amount (level cover).
+    steps:
+      - step: insurance-offer
+        trigger: on_select
+        from: BPP
+        to: BAP
+        requiredFields:
+          - offerAttributes.insurancePolicy.provider
+          - offerAttributes.insurancePolicy.coverType
+          - offerAttributes.insurancePolicy.premiumRate
+          - offerAttributes.insurancePolicy.optionality
+        optionality:
+          MANDATORY: Required by lender â€” borrower cannot opt out
+          OPTIONAL: Borrower may opt in or out
+          DEFAULT_OPT_IN: Pre-selected but borrower may opt out
+
+      - step: insurance-election
+        trigger: init
+        from: BAP
+        to: BPP
+        conditionalFields:
+          - field: contractAttributes.insuranceOptIn
+            condition: required when optionality is OPTIONAL or DEFAULT_OPT_IN
+
+      - step: premium-computation
+        direction: BPP-internal
+        inputs:
+          - considerationAttributes.approvedAmount
+          - contractAttributes.tenureMonths
+          - participants[role=BORROWER].person.dateOfBirth
+          - offerAttributes.insurancePolicy.premiumRate
+          - offerAttributes.insurancePolicy.coverType
+        output:
+          - considerationAttributes.insurancePremium
+          - contractAttributes.insurancePremiumBreakup
+
+      - step: policy-issuance
+        trigger: on_confirm
+        direction: BPP â†’ Insurer (bancassurance channel)
+        requiredFields:
+          - contractAttributes.insurancePolicyNumber
+          - contractAttributes.insuranceCertificateUrl
+          - contractAttributes.insuranceProvider
+          - contractAttributes.insuranceSumInsured
+          - contractAttributes.insurancePolicyStartDate
+          - contractAttributes.insurancePolicyEndDate
+
+      - step: claim-notification
+        trigger: borrower death or TPD (out-of-band)
+        direction: Beneficiary/BAP â†’ BPP â†’ Insurer
+        requiredFields:
+          - contractAttributes.claimType
+          - contractAttributes.claimEvidenceRef
+          - contractAttributes.claimDate
+        claimTypes:
+          DEATH: Outstanding balance settled by insurer on death certificate
+          TPD: Total Permanent Disability claim â€” supporting medical documentation
+
+  mortgage-protection:
+    id: mortgage-protection
+    appliesTo: [FNC-lending]
+    description: >
+      Mortgage Reducing Term Assurance (MRTA) or Mortgage Reducing Term
+      Takaful (MRTTA for syariah). Reduces outstanding mortgage balance
+      in event of borrower's death or TPD. Jiwasraya/Asuransi Jiwa
+      partner insurers. Kebakaran (fire) insurance also required for
+      the mortgaged property throughout the loan tenure.
+    insuranceTypes:
+      MRTA:
+        description: Conventional mortality-linked reducing cover
+        premiumModel: Single premium (dibayar di muka, bisa difinansir ke dalam pinjaman)
+        sumInsured: Reducing â€” matches outstanding balance schedule
+
+      MRTTA:
+        description: Syariah takaful equivalent of MRTA
+        premiumModel: Single tabarru payment
+
+      KEBAKARAN:
+        description: Fire and property damage insurance on mortgaged property
+        premiumModel: Annual premium
+        coverAmount: At least replacement cost of building
+        mandatoryBy: All KPR lenders per industry standard
+
+    steps:
+      - step: mrta-offer
+        trigger: on_select
+        requiredFields:
+          - offerAttributes.insurancePolicy.mrta.provider
+          - offerAttributes.insurancePolicy.mrta.premiumRate
+          - offerAttributes.insurancePolicy.kebakaran.provider
+          - offerAttributes.insurancePolicy.kebakaran.premiumRate
+
+      - step: mrta-premium-financing
+        description: >
+          MRTA single premium may be financed as part of the mortgage
+          (added to loan principal). Borrower must consent explicitly.
+        conditionalFields:
+          - field: contractAttributes.mrtaPremiumFinanced
+            condition: if borrower elects to finance MRTA premium
+          - field: contractAttributes.mrtaPremiumAmount
+
+      - step: mrta-policy-issuance
+        trigger: on_confirm
+        requiredFields:
+          - contractAttributes.mrtaPolicyNumber
+          - contractAttributes.mrtaCertificateUrl
+          - contractAttributes.kebakaranPolicyNumber
+          - contractAttributes.kebakaranCertificateUrl
+
+      - step: annual-kebakaran-renewal
+        trigger: "on_status[KEBAKARAN_RENEWAL_DUE]" (annual)
+        description: Fire insurance renewed annually. BPP may auto-renew via bancassurance.
+
+  vehicle-insurance:
+    id: vehicle-insurance
+    appliesTo: [FNC-lending]
+    description: >
+      All-risk (comprehensive) vehicle insurance mandatory for KKB tenure.
+      Policy beneficiary is the lender (BPP) as loss payee to protect
+      collateral value. Borrower is the insured. Insurance is typically
+      placed via lender's bancassurance partner.
+    steps:
+      - step: vehicle-insurance-offer
+        trigger: on_select
+        requiredFields:
+          - offerAttributes.insurancePolicy.vehicleInsurance.provider
+          - offerAttributes.insurancePolicy.vehicleInsurance.coverType
+          - offerAttributes.insurancePolicy.vehicleInsurance.premiumRate
+
+      - step: vehicle-insurance-issuance
+        trigger: on_confirm
+        requiredFields:
+          - contractAttributes.vehicleInsurancePolicyNumber
+          - contractAttributes.vehicleInsuranceCertificateUrl
+          - contractAttributes.vehicleInsuranceSumInsured
+          - contractAttributes.vehicleInsuranceLossPayeeClause
+
+      - step: annual-vehicle-insurance-renewal
+        trigger: "on_status[VEHICLE_INSURANCE_RENEWAL_DUE]" (annual)
+        description: BPP ensures continuous coverage. Gap in coverage is a contract breach.
+
+  on_init_additions:
+    conditionalFields:
+      - field: considerationAttributes.insurancePremium
+        condition: if insurance is opted in or mandatory
+      - field: considerationAttributes.breakup[type=INSURANCE_PREMIUM]
+        condition: insurance premium must be itemised in the breakup
+
+  on_confirm_additions:
+    conditionalFields:
+      - field: contractAttributes.insuranceCertificateUrl
+        condition: all insurance types â€” certificate URL returned at confirm
+
+  errors: []
+
+policyReferences:
+  - ion://policy/finance/insurance/mrta/v1
+  - ion://policy/finance/insurance/credit-life/v1
+  - ion://policy/finance/insurance/kendaraan/v1
+  - ion://policy/finance/bancassurance/ojk-pojk-69-2016/v1
+

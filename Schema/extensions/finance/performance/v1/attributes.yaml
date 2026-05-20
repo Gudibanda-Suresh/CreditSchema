@@ -1,0 +1,49 @@
+﻿openapi: "3.1.1"
+info:
+  title: "ION Finance Credit Performance Extension (v1)"
+  version: 1.0.0
+  description: |
+    Credit disbursement performance attributes for the Finance domain. Tracks
+    fund transfer execution after on_confirm. Attaches to: beckn:Performance.performanceAttributes
+  license:
+    name: Apache-2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+  contact:
+    name: ION Network
+    url: https://schema.ion.id
+
+components:
+  schemas:
+
+    DisbursementPerformance:
+      type: object
+      description: |
+        Loan disbursement execution details. Placed in Beckn Contract.performance[]
+        with performanceAttributes["@type"] = "ion:DisbursementPerformance".
+        Beckn Performance.status.code = COMPLETE once funds have been transferred.
+      x-jsonld:
+        '@context': ./context.jsonld
+        '@type': ion:DisbursementPerformance
+      x-beckn-attaches-to: Performance.performanceAttributes
+      additionalProperties: true
+      required:
+        - disbursementMethod
+      properties:
+        disbursementDate:
+          type: string
+          format: date
+          description: Actual date funds were disbursed (ISO 8601 YYYY-MM-DD).
+          example: "2024-03-22"
+        targetBusinessDays:
+          type: integer
+          description: Target business days from complete documentation to disbursement.
+          example: 14
+        disbursementMethod:
+          type: string
+          description: Mechanism through which funds are transferred.
+          enum: [BANK_TRANSFER, DEVELOPER_TRANSFER, DEALER_TRANSFER, CASH, VIRTUAL_ACCOUNT]
+          example: "BANK_TRANSFER"
+      x-ion-closed-extensions: false
+      allOf:
+        - $ref: ../../../../../core/v2/api/v2.0.0/beckn.yaml#/components/schemas/Attributes
+

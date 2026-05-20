@@ -1,0 +1,43 @@
+{
+  "$schema": "https://schema.ion.id/finance/contract/v1/schema.json",
+  "@context": "https://schema.ion.id/finance/contract/v1/context.jsonld",
+  "description": "Example: contractAttributes for a KPR (mortgage) that has undergone TENOR_EXTENSION restructuring per POJK 40/2019. Original 240 months, extended to 264 months.",
+  "contractAttributes": {
+    "@context": "https://schema.ion.id/finance/contract/v1/context.jsonld",
+    "@type": "ion:LoanAgreement",
+    "contractNumber": "PKS-BTN-KPR-2024-00012345",
+    "loanAccountNumber": "100100123456789",
+    "agreementDate": "2024-03-20",
+    "maturityDate": "2046-03-20",
+    "loanStatus": "RESTRUCTURED",
+    "loanTerms": {
+      "approvedPrincipal": 450000000,
+      "effectiveRatePercent": 9.5,
+      "calculationMethod": "ANNUITY",
+      "yieldType": "COMBINED",
+      "tenorMonths": 264,
+      "monthlyInstallmentIDR": 3921000,
+      "monthlyDueDay": 20,
+      "outstandingPrincipalIDR": 440250000,
+      "totalInterestPaid": 14292000,
+      "islamicContractType": null
+    },
+    "legalDocuments": {
+      "creditAgreementUrl": "https://docs.btn.co.id/akad/PKS-BTN-KPR-2024-00012345.pdf",
+      "collateralCertificateUrl": "https://docs.btn.co.id/ht/HT-2024-SBY-000123.pdf",
+      "notarialDeedNumber": "Akta No. 45/2024/Notaris Hendra Wahyudi, SH",
+      "mortgageLienNumber": "HT-2024-SBY-000123",
+      "riplayDocumentUrl": "https://docs.btn.co.id/riplay/PKS-BTN-KPR-2024-00012345-riplay.pdf",
+      "approvalLetterUrl": "https://docs.btn.co.id/sppp/PKS-BTN-KPR-2024-00012345-sppp.pdf",
+      "eMateraiSerial": "EM-2024-112233445"
+    },
+    "restructuring": {
+      "restructuringDate": "2026-02-15",
+      "restructuringType": "TENOR_EXTENSION",
+      "regulatoryBasis": "POJK 40/POJK.03/2019 tentang Penilaian Kualitas Aset Bank Umum",
+      "newTenorMonths": 264,
+      "newRatePercent": 9.5,
+      "restructuringReason": "Borrower experienced temporary income reduction due to company downsizing; resumed employment confirmed"
+    }
+  }
+}

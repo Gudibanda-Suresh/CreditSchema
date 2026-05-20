@@ -1,0 +1,52 @@
+{
+  "$schema": "https://schema.ion.id/finance/offer/v1/schema.json",
+  "@context": "https://schema.ion.id/finance/offer/v1/context.jsonld",
+  "description": "Example: CreditApproval offer for a KTA (unsecured personal loan) — IDR 50jt, 36 months, 12% p.a. flat.",
+  "id": "OFFER-BRI-KTA-2026-008821",
+  "resourceIds": ["RES-BRI-KTA-001"],
+  "validity": {
+    "endDate": "2026-06-15T23:59:59+07:00"
+  },
+  "offerAttributes": {
+    "@context": "https://schema.ion.id/finance/offer/v1/context.jsonld",
+    "@type": "ion:CreditApproval",
+    "offerReference": "OFFER-BRI-KTA-2026-008821",
+    "validUntil": "2026-06-15T23:59:59+07:00",
+    "offerStatus": "APPROVED",
+    "approvedPrincipal": {
+      "value": 50000000,
+      "currency": "IDR"
+    },
+    "approvedTenor": {
+      "value": 36,
+      "unit": "MONTHS"
+    },
+    "effectiveRate": {
+      "percentPerYear": 12.0,
+      "method": "FLAT",
+      "yieldType": "FIXED"
+    },
+    "monthlyInstallment": {
+      "totalIDR": 1888889,
+      "principalIDR": 1388889,
+      "interestIDR": 500000
+    },
+    "totalFees": {
+      "provisionFeeIDR": 500000,
+      "administrationFeeIDR": 150000,
+      "lifeInsurancePremiumIDR": 450000,
+      "stampDutyIDR": 10000,
+      "totalUpfrontCostsIDR": 1110000,
+      "aprEquivalent": 24.8
+    },
+    "disbursementSchedule": {
+      "targetBusinessDays": 3,
+      "disbursementMethod": "BANK_TRANSFER"
+    },
+    "internalCreditScore": {
+      "score": 685,
+      "category": "GOOD",
+      "slikGrade": "1"
+    }
+  }
+}

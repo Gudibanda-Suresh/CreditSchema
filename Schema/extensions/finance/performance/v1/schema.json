@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schema.ion.id/finance/performance/v1/schema.json",
+  "title": "DisbursementPerformance",
+  "description": "ION Finance Credit Performance Extension v1 — disbursement execution details placed in Performance.performanceAttributes.",
+  "type": "object",
+  "required": [
+    "@context",
+    "@type",
+    "disbursementMethod"
+  ],
+  "additionalProperties": true,
+  "properties": {
+    "@context": {
+      "type": "string",
+      "const": "https://schema.ion.id/finance/performance/v1/context.jsonld"
+    },
+    "@type": {
+      "type": "string",
+      "const": "ion:DisbursementPerformance"
+    },
+    "disbursementDate": {
+      "type": "string",
+      "format": "date"
+    },
+    "targetBusinessDays": {
+      "type": "integer"
+    },
+    "disbursementMethod": {
+      "type": "string",
+      "enum": [
+        "BANK_TRANSFER",
+        "DEVELOPER_TRANSFER",
+        "DEALER_TRANSFER",
+        "CASH",
+        "VIRTUAL_ACCOUNT"
+      ]
+    }
+  }
+}
