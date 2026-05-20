@@ -2,7 +2,7 @@
   "@context": {
     "@version": 1.1,
     "@protected": true,
-    "ion": "file:///F:/ION/credit_schema/Schema/extensions/finance/resource/v1#",
+    "ion": "https://github.com/Gudibanda-Suresh/CreditSchema/edit/main/Schema/extensions/finance/resource/v1",
     "beckn":  "https://spec.beckn.io/vocab/v2.0.0#",
     "rdf":    "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
     "rdfs":   "http://www.w3.org/2000/01/rdf-schema#",
