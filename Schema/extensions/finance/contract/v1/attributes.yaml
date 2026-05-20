@@ -78,7 +78,7 @@ components:
           description: Present only if the loan has undergone formal restructuring per POJK 40/POJK.03/2019.
       x-ion-closed-extensions: false
       allOf:
-        - $ref: ../../../../../core/v2/api/v2.0.0/beckn.yaml#/components/schemas/Attributes
+        - $ref: ../../../../core/v2/api/v2.0.0/beckn.yaml#/components/schemas/Attributes
 
     ActiveLoanTerms:
       type: object
