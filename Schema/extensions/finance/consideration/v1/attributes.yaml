@@ -47,5 +47,5 @@ components:
           example: 11.24
       x-ion-closed-extensions: false
       allOf:
-        - $ref: ../../../../../core/v2/api/v2.0.0/beckn.yaml#/components/schemas/Attributes
+        - $ref: ../../../../core/v2/api/v2.0.0/beckn.yaml#/components/schemas/Attributes
 
